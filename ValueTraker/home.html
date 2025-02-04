@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home page</title>
+</head>
+<body>
+
+    <h1>Welcome <span id="username"></span> </h1>
+    <button id="logoutBtn">Logout !</button>
+    
+</body>
+
+<script type="module">
+    // Get the URL parameters
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB40rVrlpYIqEFwfzxRKgk8D_BdNk4zeMg",
+            authDomain: "valuetraker.firebaseapp.com",
+            projectId: "valuetraker",
+            storageBucket: "valuetraker.appspot.com",
+            messagingSenderId: "17970814557",
+            appId: "1:17970814557:web:1bc0cf2d89855dcd0177b4",
+            measurementId: "G-039THJY2QK"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Retrieve the 'username' parameter
+    const username = urlParams.get('username');
+    
+    // Display the username on the page
+    document.getElementById('username').textContent = username;
+
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    logoutBtn.addEventListener('click', () => {
+        // Sign out the user
+        auth.signOut()
+            .then(() => {
+                console.log('User signed out');
+                window.location.href = 'index.html';
+            })
+            .catch((error) => {
+                console.error('Sign out error:', error);
+            });
+    });
+</script>
+</html>

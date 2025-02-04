@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Tracker</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB40rVrlpYIqEFwfzxRKgk8D_BdNk4zeMg",
+            authDomain: "valuetraker.firebaseapp.com",
+            projectId: "valuetraker",
+            storageBucket: "valuetraker.appspot.com",
+            messagingSenderId: "17970814557",
+            appId: "1:17970814557:web:1bc0cf2d89855dcd0177b4",
+            measurementId: "G-039THJY2QK"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // 🔹 Save User Info in Firestore
+        async function saveUserToFirebase(user) {
+            try {
+                await setDoc(doc(db, "users", user.uid), {
+                    name: user.displayName,
+                    email: user.email,
+                    profilePicture: user.photoURL,
+                    lastLogin: new Date().toISOString()
+                });
+                console.log("User saved to Firebase:", user.email);
+            } catch (error) {
+                console.error("Error saving user to Firestore:", error);
+            }
+        }
+
+        // Google Sign-In
+        function GoogleLogin() {
+            signInWithPopup(auth, provider)  // Open Google login popup
+                .then((result) => {
+                    const user = result.user;
+                    console.log("User logged in via Google:", user);
+                    saveUserToFirebase(user); // Save user info to Firestore
+                    redirectToHome(user.displayName || "User");
+                })
+                .catch((error) => {
+                    console.error("Google Sign-In Error:", error.message);
+                });
+        }
+
+
+        // Check if user is authenticated after page reload
+        // onAuthStateChanged(auth, (user) => {
+        //     if (user) {
+        //         console.log("User is already logged in:", user);
+        //         redirectToHome(user.displayName || "User");
+        //     }
+        // });
+
+        // Redirect to Home Page
+        function redirectToHome(username) {
+            window.location.href = `home.html?username=${encodeURIComponent(username)}`;
+        }
+
+        // Event listeners for buttons
+        document.getElementById("google-btn").addEventListener("click", GoogleLogin);
+
+        // Handle other login/signup functionality here (email/password etc.)
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const createNewUser = document.getElementById("create-btn");
+        const LoginBtn = document.getElementById("sign-btn");
+
+        createNewUser.addEventListener("click", () => {
+            console.log("New User:", emailInput.value, passwordInput.value);
+            SignIn(emailInput.value, passwordInput.value);
+        });
+
+        LoginBtn.addEventListener("click", () => {
+            LogIn(emailInput.value, passwordInput.value);
+        });
+
+        // ✅ Sign-up function (MODULAR Firebase)
+        function SignIn(email, password) {
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("User Created Successfully:", userCredential.user);
+                    saveUserToFirebase(userCredential.user); // Save user info to Firestore
+                    redirectToHome(userCredential.user.displayName || "User");
+                })
+                .catch((error) => {
+                    console.error("Error:", error.message);
+                });
+        }
+
+        // Log-in function (MODULAR Firebase)
+        function LogIn(email, password) {
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Signed in 
+                    const user = userCredential.user;
+                    console.log("User Is logged in:", user.email);
+                    redirectToHome(user.email || "User");
+                })
+                .catch((error) => {
+                    console.error("Error:", error.message);
+                });
+        }
+    </script>
+
+    <!-- Jquery option -->
+    <script
+    src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+    crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+
+    <header class="header">
+        <h1>Value Tracker</h1>
+    </header>
+
+    <form action="" class="login-form">
+        <label for="email">Email</label><br>
+        <input type="email" id="email" placeholder="Enter your email"> <br><br>
+
+        <label for="password">Password</label><br>
+        <input type="password" id="password" placeholder="Enter a password .." > <br><br>
+
+        <button id="sign-btn" type="button" >Sign in</button>
+        <button id="google-btn" style="background-color: #fff; color: #000;" type="button" >Log In With Google</button>
+        <button id="create-btn" type="button" >Create New Account</button>
+    </form>
+
+</body>
+</html>
