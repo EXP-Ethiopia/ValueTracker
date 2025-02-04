@@ -3,14 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="home.css">
     <title>Home page</title>
 </head>
 <body>
 
+    <header class="home-header">
+        <div class="leftNav" >
+            <img src="" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
+            <input type="search" name="" id="searchBtn" placeholder="Search here">
+        </div>
+
+        <div class="rigthNav">
+            <ul class="UnorderedList">
+                <li>Home</li>
+                <li>Home</li>
+                <li>Home</li>
+                <li>Home</li>
+                <li>Home</li>
+            </ul>
+        </div>
+    </header>
     <h1>Welcome <span id="username"></span> </h1>
     <button id="logoutBtn">Logout !</button>
     
 </body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <script type="module">
     // Get the URL parameters
@@ -45,6 +78,8 @@
     const logoutBtn = document.getElementById('logoutBtn');
 
     logoutBtn.addEventListener('click', () => {
+
+
         // Sign out the user
         auth.signOut()
             .then(() => {
@@ -55,5 +90,19 @@
                 console.error('Sign out error:', error);
             });
     });
+
+    const profilePic = document.getElementById("profile-pic");
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                if (user.photoURL) {
+                    profilePic.src = user.photoURL; // ✅ Set the image src
+                } else {
+                    profilePic.src = "default-profile.png"; // ✅ Use a default image if no photo is available
+                }
+            } else {
+                console.log("No user is signed in.");
+            }
+        });
 </script>
 </html>

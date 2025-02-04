@@ -1,0 +1,45 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.home-header {
+    background-color: rgb(212, 211, 211);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+#searchBtn{
+    border-radius: 50px;
+    width: 300px;
+    border: none;
+    outline: none;
+    padding: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.leftNav {
+    display: flex;
+    justify-content: center;
+}
+
+.UnorderedList{
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    list-style: none;
+    background-color: gainsboro;
+    padding: 7px;
+    border-radius: 5px;
+}
+
+.UnorderedList li {
+    margin: 5px;
+    cursor: pointer;
+}
+
+.
