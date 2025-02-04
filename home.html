@@ -12,7 +12,8 @@
         <div  >
             <div class="leftNav">
                 <img src="" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
-                <input type="search" name="" id="searchBtn" placeholder="Search here">
+                <input type="search" name="" id="searchInput" placeholder="Search here">
+                <button id="searchBtn">Search</button>
             </div>
         </div>
 
@@ -52,7 +53,7 @@
 
 <script type="module">
     // Get the URL parameters
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 

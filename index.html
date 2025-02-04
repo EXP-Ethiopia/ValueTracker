@@ -45,7 +45,23 @@
                 });
                 console.log("User saved to Firebase:", user.email);
             } catch (error) {
-                console.error("Error saving user to Firestore:", error);
+                Swal.fire({
+                        title: "Error in sending data to FireBase Database",
+                        showClass: {
+                            popup: `
+                            animate__animated
+                            animate__fadeInUp
+                            animate__faster
+                            `
+                        },
+                        hideClass: {
+                            popup: `
+                            animate__animated
+                            animate__fadeOutDown
+                            animate__faster
+                            `
+                        }
+                        });
             }
         }
 
@@ -59,7 +75,23 @@
                     redirectToHome(user.displayName || "User");
                 })
                 .catch((error) => {
-                    console.error("Google Sign-In Error:", error.message);
+                    Swal.fire({
+                        title: "Something went wrong",
+                        showClass: {
+                            popup: `
+                            animate__animated
+                            animate__fadeInUp
+                            animate__faster
+                            `
+                        },
+                        hideClass: {
+                            popup: `
+                            animate__animated
+                            animate__fadeOutDown
+                            animate__faster
+                            `
+                        }
+                        });
                 });
         }
 
