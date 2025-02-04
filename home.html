@@ -100,16 +100,21 @@
 
     const profilePic = document.getElementById("profile-pic");
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Use a timeout or interval to check if the photoURL is available
+            let checkPhotoInterval = setInterval(() => {
                 if (user.photoURL) {
-                    profilePic.src = user.photoURL; // ✅ Set the image src
+                    profilePic.src = user.photoURL; // Set the image src when photoURL is available
+                    clearInterval(checkPhotoInterval); // Stop checking once it's set
                 } else {
-                    profilePic.src = "default-profile.png"; // ✅ Use a default image if no photo is available
+                    profilePic.src = "default-profile.png"; // Use a default image if no photo is available
                 }
-            } else {
-                console.log("No user is signed in.");
-            }
-        });
+            }, 100); // Check every 100ms
+        } else {
+            console.log("No user is signed in.");
+        }
+    });
+
 </script>
 </html>
