@@ -91,3 +91,113 @@
     font-size: 35px;
     margin-top: 20px;
 }
+
+.box {
+    width: 100px;
+    height: 100px;
+    margin: 10px;
+    background-color: lightblue;
+    display: inline-block;
+    text-align: center;
+    line-height: 100px;
+    cursor: pointer;
+}
+
+.firstText {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.container{
+    margin-top: 120px;
+    width: 1800px;
+    margin-inline: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+.saveBtn{
+    border: none;
+    background-color: navy;
+    color: #fff;
+    padding: 7px;
+    border-radius: 10px;
+    width: 180px;
+    padding: 10px;
+    font-size: 22px;
+}
+
+#box-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  
+  .modal {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 300px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+
+  input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+
+  select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+
+  .submitBTN {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 5px;
+  }
+  
+  .submitBTN:hover {
+    background-color: #0056b3;
+  }
+
+  .selected {
+    background-color: red;
+    color: #fff;
+  }
+  
