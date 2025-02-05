@@ -3,6 +3,7 @@
         this.id = id;
         this.boxContainer = boxContainer;
         this.element = this.createBox();
+        this.TimeVale = 0.5; //767
         }
     
         createBox() {
@@ -15,27 +16,27 @@
     
         handleClick() {
 
+        this.showCustomPopup(`Box ${this.id}`);
         this.selectBox();
         this.toggleInArray();
-        // this.showCustomPopup(`Box ${this.id}`);
         }
 
         selectBox() {
-            // Toggle the "selected" class for the clicked box
+            
             this.element.classList.toggle('selected');
         }
 
         toggleInArray() {
             const index = this.boxContainer.selectedBoxes.indexOf(this.id);
         
-            // If the box is selected, add it to the array
+        
             if (this.element.classList.contains('selected')) {
-                if (index === -1) {  // Only add if it's not already in the array
+                if (index === -1) {  
                     this.boxContainer.selectedBoxes.push(this.id);
                 }
             } else {
-                // If the box is unselected, remove it from the array
-                if (index !== -1) {  // Only remove if it's already in the array
+            
+                if (index !== -1) {  
                     this.boxContainer.selectedBoxes.splice(index, 1);
                 }
             }
