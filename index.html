@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Value Tracker</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles/config.css">
+    <link rel="stylesheet" href="styles/style.css">
 
     <!-- Firebase -->
     <script type="module">
@@ -129,20 +130,24 @@
 <body>
 
     <header class="header">
-        <h1>Value Tracker</h1>
+        <h1>Value<span>Tracker</span></h1>
     </header>
 
-    <form action="" class="login-form">
-        <label for="email">Email</label><br>
-        <input type="email" id="email" placeholder="Enter your email"> <br><br>
-
-        <label for="password">Password</label><br>
-        <input type="password" id="password" placeholder="Enter a password .." > <br><br>
-
-        <button id="sign-btn" type="button" >Sign in</button>
-        <button id="google-btn" style="background-color: #fff; color: #000;" type="button" >Log In With Google</button>
-        <button id="create-btn" type="button" >Create New Account</button>
-    </form>
+    <div class="homeContent">
+        <form action="" class="login-form">
+            <label for="email">Email</label><br>
+            <input type="email" id="email" placeholder="e.g: janeacne"> <br><br>
+    
+            <label for="password">Password</label><br>
+            <input type="password" id="password" placeholder="e.g: janeacne@gmail.com" > <br><br>
+    
+            <button id="sign-btn" type="button" >Sign in</button>
+            <button id="google-btn" style="background-color: #fff; color: #000;" type="button" >
+                <img src="images/google-icon.png" alt=""> Log In With Google
+            </button>
+            <!-- <button id="create-btn" type="button" >Create New Account</button> -->
+        </form>
+    </div>
 
 </body>
 </html>
