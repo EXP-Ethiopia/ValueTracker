@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Value Tracker</title>
-    <link rel="stylesheet" href="style.css">
-
-    <!-- sweet Altert library  -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <link rel="stylesheet" href="styles/config.css">
+    <link rel="stylesheet" href="styles/style.css">
 
     <!-- Firebase -->
     <script type="module">
@@ -18,15 +15,14 @@
 
         // Firebase Configuration
         const firebaseConfig = {
-        apiKey: "AIzaSyClF_kUmfMyrxDqP_iuu7BgoqqTtX67JRY",
-        authDomain: "valutracker-391c6.firebaseapp.com",
-        databaseURL: "https://valutracker-391c6-default-rtdb.firebaseio.com",
-        projectId: "valutracker-391c6",
-        storageBucket: "valutracker-391c6.firebasestorage.app",
-        messagingSenderId: "268267434732",
-        appId: "1:268267434732:web:49e075d9a0b22df4c4abc9",
-        measurementId: "G-X8RX5C4WKS"
-};
+            apiKey: "AIzaSyB40rVrlpYIqEFwfzxRKgk8D_BdNk4zeMg",
+            authDomain: "valuetraker.firebaseapp.com",
+            projectId: "valuetraker",
+            storageBucket: "valuetraker.appspot.com",
+            messagingSenderId: "17970814557",
+            appId: "1:17970814557:web:1bc0cf2d89855dcd0177b4",
+            measurementId: "G-039THJY2QK"
+        };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -45,23 +41,7 @@
                 });
                 console.log("User saved to Firebase:", user.email);
             } catch (error) {
-                Swal.fire({
-                        title: "Error in sending data to FireBase Database",
-                        showClass: {
-                            popup: `
-                            animate__animated
-                            animate__fadeInUp
-                            animate__faster
-                            `
-                        },
-                        hideClass: {
-                            popup: `
-                            animate__animated
-                            animate__fadeOutDown
-                            animate__faster
-                            `
-                        }
-                        });
+                console.error("Error saving user to Firestore:", error);
             }
         }
 
@@ -75,23 +55,7 @@
                     redirectToHome(user.displayName || "User");
                 })
                 .catch((error) => {
-                    Swal.fire({
-                        title: "Something went wrong",
-                        showClass: {
-                            popup: `
-                            animate__animated
-                            animate__fadeInUp
-                            animate__faster
-                            `
-                        },
-                        hideClass: {
-                            popup: `
-                            animate__animated
-                            animate__fadeOutDown
-                            animate__faster
-                            `
-                        }
-                        });
+                    console.error("Google Sign-In Error:", error.message);
                 });
         }
 
@@ -118,43 +82,27 @@
         const createNewUser = document.getElementById("create-btn");
         const LoginBtn = document.getElementById("sign-btn");
 
-        // createNewUser.addEventListener("click", () => {
-        //     console.log("New User:", emailInput.value, passwordInput.value);
-        //     SignIn(emailInput.value, passwordInput.value);
-        // });
+        createNewUser.addEventListener("click", () => {
+            console.log("New User:", emailInput.value, passwordInput.value);
+            SignIn(emailInput.value, passwordInput.value);
+        });
 
         LoginBtn.addEventListener("click", () => {
             LogIn(emailInput.value, passwordInput.value);
         });
 
         // ✅ Sign-up function (MODULAR Firebase)
-        // function SignIn(email, password) {
-        //     createUserWithEmailAndPassword(auth, email, password)
-        //         .then((userCredential) => {
-        //             console.log("User Created Successfully:", userCredential.user);
-        //             saveUserToFirebase(userCredential.user); // Save user info to Firestore
-        //             redirectToHome(userCredential.user.displayName || "User");
-        //         })
-        //         .catch((error) => {
-        //             Swal.fire({
-        //                 title: "Incorrect email or password",
-        //                 showClass: {
-        //                     popup: `
-        //                     animate__animated
-        //                     animate__fadeInUp
-        //                     animate__faster
-        //                     `
-        //                 },
-        //                 hideClass: {
-        //                     popup: `
-        //                     animate__animated
-        //                     animate__fadeOutDown
-        //                     animate__faster
-        //                     `
-        //                 }
-        //                 });
-        //         });
-        // }
+        function SignIn(email, password) {
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("User Created Successfully:", userCredential.user);
+                    saveUserToFirebase(userCredential.user); // Save user info to Firestore
+                    redirectToHome(userCredential.user.displayName || "User");
+                })
+                .catch((error) => {
+                    console.error("Error:", error.message);
+                });
+        }
 
         // Log-in function (MODULAR Firebase)
         function LogIn(email, password) {
@@ -163,26 +111,10 @@
                     // Signed in 
                     const user = userCredential.user;
                     console.log("User Is logged in:", user.email);
-                    redirectToHome(user.email || "No User Information");
+                    redirectToHome(user.email || "User");
                 })
                 .catch((error) => {
-                    Swal.fire({
-                        title: "Incorrect email or password",
-                        showClass: {
-                            popup: `
-                            animate__animated
-                            animate__fadeInUp
-                            animate__faster
-                            `
-                        },
-                        hideClass: {
-                            popup: `
-                            animate__animated
-                            animate__fadeOutDown
-                            animate__faster
-                            `
-                        }
-                        });
+                    console.error("Error:", error.message);
                 });
         }
     </script>
@@ -198,20 +130,24 @@
 <body>
 
     <header class="header">
-        <h1>Value Tracker</h1>
+        <h1>Value<span>Tracker</span></h1>
     </header>
 
-    <form action="" class="login-form">
-        <label for="email">Email</label><br>
-        <input type="email" id="email" placeholder="Enter your email"> <br><br>
-
-        <label for="password">Password</label><br>
-        <input type="password" id="password" placeholder="Enter a password .." > <br><br>
-
-        <button id="sign-btn" type="button" >Sign in</button>
-        <button id="google-btn" style="background-color: #fff; color: #000;" type="button" >Log In With Google</button>
-        <!-- <button id="create-btn" type="button" >Create New Account</button> -->
-    </form>
+    <div class="homeContent">
+        <form action="" class="login-form">
+            <label for="email">Email</label><br>
+            <input type="email" id="email" placeholder="e.g: janeacne"> <br><br>
+    
+            <label for="password">Password</label><br>
+            <input type="password" id="password" placeholder="e.g: janeacne@gmail.com" > <br><br>
+    
+            <button id="sign-btn" type="button" >Sign in</button>
+            <button id="google-btn" style="background-color: #fff; color: #000;" type="button" >
+                <img src="images/google-icon.png" alt=""> Log In With Google
+            </button>
+            <!-- <button id="create-btn" type="button" >Create New Account</button> -->
+        </form>
+    </div>
 
 </body>
 </html>
