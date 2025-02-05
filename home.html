@@ -11,7 +11,7 @@
 
     <header class="home-header">
         <div class="leftNav">
-            <img src="images/default.jpg" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
+            <img src="" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
             <input type="search" id="searchInput" placeholder="Search here">
             <button id="searchBtn">Search</button>
         </div>
@@ -84,20 +84,27 @@
     const profilePic = document.getElementById("profile-pic");
 
     onAuthStateChanged(auth, (user) => {
-        if (user) {
-            // Use a timeout or interval to check if the photoURL is available
-            let checkPhotoInterval = setInterval(() => {
-                if (user.photoURL) {
-                    profilePic.src = user.photoURL; // Set the image src when photoURL is available
-                    clearInterval(checkPhotoInterval); // Stop checking once it's set
-                } else {
-                    profilePic.src = "default-profile.png"; // Use a default image if no photo is available
-                }
-            }, 100); // Check every 100ms
-        } else {
-            console.log("No user is signed in.");
-        }
-    });
+    console.log("🔥 Auth State Changed:", user); // Log user info
+
+    if (user) {
+        console.log("✅ User signed in:", user.displayName, user.email, user.uid);
+        
+        let checkPhotoInterval = setInterval(() => {
+            if (user.photoURL) {
+                console.log("🖼 Found Profile Pic:", user.photoURL);
+                alert("Found url");
+                profilePic.src = user.photoURL; 
+                clearInterval(checkPhotoInterval);
+            } else {
+                console.warn("⚠ No photoURL found, using default.");
+                profilePic.src = "images/default.jpg"; 
+            }
+        }, 100); 
+    } else {
+        console.warn("❌ No user is signed in.");
+    }
+});
+
 
 </script>
 </html>
