@@ -92,7 +92,6 @@
         let checkPhotoInterval = setInterval(() => {
             if (user.photoURL) {
                 console.log("🖼 Found Profile Pic:", user.photoURL);
-                alert("Found url");
                 profilePic.src = user.photoURL; 
                 clearInterval(checkPhotoInterval);
             } else {
