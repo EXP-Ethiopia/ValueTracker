@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/config.css">
+    <link rel="stylesheet" href="css/home.css">
+    <!-- Firebase configuration and initialization -->
+    <script type="module" src="firebase.js" defer></script>
+    <script type="module" src="js/home.js" defer></script>
+    <title>Home page</title>
+</head>
+<body>
+
+    <header class="home-header">
+        <div class="leftNav">
+            <img src="" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
+            <input type="search" id="searchInput" placeholder="Search here">
+            <button id="searchBtn">Search</button>
+        </div>
+
+        <div class="rightNav">
+            <ul class="UnorderedList">
+                <li><button id="homeBtn">Home</button></li>
+                <li><button id="FinancetBtn">Finance</button></li>
+                <li><button id="WorkBtn">Work</button></li>
+                <li><button id="HealthBtn">Health</button></li>
+                <li><button id="logoutBtn">LogOut</button></li>
+            </ul>
+        </div>
+    </header>
+
+    <h1 class="welcome">Welcome <span id="username"></span> </h1>
+    
+</body>
+</html>

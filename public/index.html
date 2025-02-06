@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Tracker</title>
+    <link rel="stylesheet" href="css/config.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Firebase -->
+     <script type="module" src="../firebase.js" defer></script>
+     <script type="module" src="js/index.js"></script>
+
+    <!-- Jquery option -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+
+    <header class="header">
+        <h1>Value<span>Tracker</span></h1>
+    </header>
+
+    <div class="homeContent">
+        <form action="" class="login-form">
+            <label for="email">Email</label><br>
+            <input type="email" id="email" placeholder="e.g: janeacne"> <br><br>
+    
+            <label for="password">Password</label><br>
+            <input type="password" id="password" placeholder="e.g: janeacne@gmail.com" > <br><br>
+    
+            <button id="sign-btn" type="button" >Sign in</button>
+            <button id="google-btn" style="background-color: #fff; color: #000;" type="button" >
+                <img src="images/google-icon.png" alt=""> Log In With Google
+            </button>
+            <!-- <button id="create-btn" type="button" >Create New Account</button> -->
+        </form>
+    </div>
+
+</body>
+</html>
