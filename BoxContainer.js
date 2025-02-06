@@ -131,7 +131,7 @@ class BoxContainer {
 
 document.addEventListener('DOMContentLoaded', () => {
     const submitBTN = document.getElementById('saveBoxes');
-    const boxContainer = new BoxContainer('boxContainer');
+    // const boxContainer = new BoxContainer('boxContainer');
 
     const initializeTags = () => {
         const tags = [
