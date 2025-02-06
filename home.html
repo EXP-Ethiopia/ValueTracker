@@ -37,7 +37,7 @@
 
             <div><h1>Today: <span id="current-day"></span></h1></div>
     
-            <div ><button class="saveBtn">Save</button></div>
+            <div ><button class="saveBtn" id="saveBoxes">Save</button></div>
     
         </div>
         <div id="box-container">
@@ -54,6 +54,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+       
+
+        
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -122,6 +125,8 @@
 
 
 </script>
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script src="getday.js"></script>
 <script  src="Box.js"></script>

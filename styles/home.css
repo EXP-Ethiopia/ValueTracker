@@ -99,8 +99,16 @@
     background-color: lightblue;
     display: inline-block;
     text-align: center;
-    line-height: 100px;
     cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    padding: 1px;
+    justify-content: center;
+    align-items: center;
+}
+
+.titleBox {
+    font-size: 10px;
 }
 
 .firstText {
