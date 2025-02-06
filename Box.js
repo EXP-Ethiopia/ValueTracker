@@ -5,6 +5,7 @@
         this.element = this.createBox();
         this.TimeValue = 0.5; //767
         }
+
     
         createBox() {
             const div = document.createElement('div');
@@ -34,8 +35,8 @@
         }
 
         calculateTime(slotIndex) {
-            const baseHour = 5;        // Starting hour (5:00 AM)
-            const baseMinute = 30;     // Starting minute (30 minutes past the hour)
+            const baseHour = 5;
+            const baseMinute = 30;    
             
             // Calculate the total minutes from the base time (5:30 AM) based on the slot index
             let totalMinutes = baseHour * 60 + baseMinute + (slotIndex - 1) * 30;

@@ -1,4 +1,23 @@
 
+
+const comboBox = document.createElement('select');
+comboBox.id = 'tagSelect';
+
+// Method to populate comboBox with tags (only once)
+function populateComboBox() {
+    comboBox.innerHTML = '';  // Clear any previous options
+
+    // Add tags dynamically to the comboBox
+    boxContainer.tags.forEach(tag => {
+        const option = document.createElement('option');
+        option.value = tag.tagName;
+        option.textContent = tag.tagName;
+        option.style.color = tag.color;
+        comboBox.appendChild(option);
+    });
+}
+
+
 class BoxContainer {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
@@ -56,9 +75,9 @@ class BoxContainer {
         return `${startTime} - ${endTime}`;
     }
     
-
     
-
+    
+    
     showCustomPopup() {
         if (this.selectedBoxes.length === 0) {
             Swal.fire({
@@ -72,27 +91,33 @@ class BoxContainer {
             });
             return;
         }
-
+    
         let selectedBoxesMessage = this.selectedBoxes
             .map(id => this.getTimeSlot(id))
             .join(', ');
-
+    
         const overlay = document.createElement('div');
         overlay.classList.add('overlay');
-
+    
         const modal = document.createElement('div');
         modal.classList.add('modal');
 
+    
         const title = document.createElement('h2');
         title.textContent = `Selected Boxes: ${selectedBoxesMessage}`;
-
+    
         const inputField = document.createElement('input');
         inputField.type = 'text';
         inputField.placeholder = 'Enter Task here...';
 
-        const comboBox = document.createElement('select');
-        comboBox.id = 'tagSelect';
+        populateComboBox();
+    
 
+    
+        // Clear previous options in comboBox to avoid duplication
+      
+    
+        // Add the tags dynamically from the tags array
         this.tags.forEach(tag => {
             const option = document.createElement('option');
             option.value = tag.tagName;
@@ -100,34 +125,54 @@ class BoxContainer {
             option.style.color = tag.color;  // Use the color property from the Tag class
             comboBox.appendChild(option);
         });
-
+    
         const submitButton = document.createElement('button');
         submitButton.classList.add('submitBTN');
         submitButton.textContent = 'Submit';
-
+    
         submitButton.addEventListener('click', () => {
             const inputData = inputField.value;
             const selectedOption = comboBox.value;
+    
+            // Find the selected tag by name
+            const selectedTag = this.tags.find(tag => tag.tagName === selectedOption);
+    
+            if (selectedTag) {
+                // Apply the color of the selected tag to each selected box
+                this.selectedBoxes.forEach(boxId => {
+                    const box = this.boxes.find(b => b.id === boxId);
+                    if (box) {
+                        box.element.style.backgroundColor = selectedTag.color;
+                    }
+                });
+            }
+    
             alert(`Input: ${inputData}, Selected Option: ${selectedOption}`);
             document.body.removeChild(overlay);
         });
-
+    
         const closeButton = document.createElement('button');
         closeButton.classList.add('submitBTN');
         closeButton.textContent = 'Close';
         closeButton.addEventListener('click', () => {
             document.body.removeChild(overlay);
         });
-
+    
         modal.appendChild(title);
         modal.appendChild(inputField);
         modal.appendChild(comboBox);
         modal.appendChild(submitButton);
         modal.appendChild(closeButton);
-
+    
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }
+    
+    
+    
+    
+    
+    
 
     addTag(tagName, color) {
         this.tags.push(new Tag(tagName, color));
@@ -149,14 +194,19 @@ class BoxContainer {
 // Now bind the button click to show the popup
 document.addEventListener('DOMContentLoaded', () => {
     const submitBTN = document.getElementById('saveBoxes');
+    const comboBox = document.getElementById('tagSelect');
+    
     if (submitBTN) {
         submitBTN.addEventListener('click', () => {
+            // Add tags dynamically
+              
             boxContainer.addTag("Work", "#FF0000");
             boxContainer.addTag("Personal Dev", "brown");
             boxContainer.addTag("School", "green");
-            boxContainer.addTag("FunTime", "Blue");
+            boxContainer.addTag("FuncTime", "Blue");
             boxContainer.addTag("Team Time", "purple");
             boxContainer.showCustomPopup();
+            comboBox.innerHTML = '';   // Display the popup
         });
     } else {
         console.error('Button with ID "saveBoxes" not found!');
