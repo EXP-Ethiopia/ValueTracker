@@ -137,6 +137,7 @@
     width: 180px;
     padding: 10px;
     font-size: 22px;
+    cursor: pointer;
 }
 
 #box-container {

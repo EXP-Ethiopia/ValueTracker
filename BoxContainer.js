@@ -3,7 +3,8 @@ class BoxContainer {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
         this.boxes = [];
-        this.selectedBoxes = this.loadSelectedBoxes();  
+        this.selectedBoxes = this.loadSelectedBoxes(); 
+        this.tags = [];  // Store the tags dynamically 
     }
 
     loadSelectedBoxes() {
@@ -29,23 +30,34 @@ class BoxContainer {
     }
 
     getTimeSlot(id) {
-        const startHour = 5 + Math.floor((id - 1) / 2);  // Start hour
-        const startMinute = (id % 2 === 1) ? 30 : 0;    // 30-minute intervals
-        const endHour = startHour + (startMinute === 30 ? 1 : 0);  // End hour
-        const endMinute = (startMinute === 0) ? 30 : 0;
-
+        // Start hour calculation, ensuring it handles hours properly after midnight
+        const startHour = 5 + Math.floor((id) / 2);  // Start hour (5:00 AM onwards)
+        const startMinute = (id % 2 === 1) ? 30 : 0;     // 30-minute intervals (odd = 30 mins, even = 00 min)
+    
+        let endHour = startHour;
+        let endMinute = (startMinute === 0) ? 30 : 0; // Add 30 minutes if start minute is 00
+    
+        if (startMinute === 30) {
+            endHour = startHour + 1;
+        }
+    
+        // Handle AM/PM correctly based on start hour and end hour
         const startAMPM = startHour >= 12 ? 'PM' : 'AM';
         const endAMPM = endHour >= 12 ? 'PM' : 'AM';
-
+    
+        // Adjust hours for proper AM/PM transition and handle 12-hour format
         const formattedStartHour = startHour % 12 === 0 ? 12 : startHour % 12;
         const formattedEndHour = endHour % 12 === 0 ? 12 : endHour % 12;
-
+    
+        // Ensure minutes are shown correctly (either 00 or 30)
         const startTime = `${formattedStartHour}:${startMinute === 0 ? '00' : '30'} ${startAMPM}`;
         const endTime = `${formattedEndHour}:${endMinute === 0 ? '00' : '30'} ${endAMPM}`;
-
+    
         return `${startTime} - ${endTime}`;
     }
+    
 
+    
 
     showCustomPopup() {
         if (this.selectedBoxes.length === 0) {
@@ -80,14 +92,14 @@ class BoxContainer {
 
         const comboBox = document.createElement('select');
         comboBox.id = 'tagSelect';
-        const option1 = document.createElement('option');
-        option1.value = 'option1';
-        option1.textContent = 'Work';
-        const option2 = document.createElement('option');
-        option2.value = 'option2';
-        option2.textContent = 'Personal';
-        comboBox.appendChild(option1);
-        comboBox.appendChild(option2);
+
+        this.tags.forEach(tag => {
+            const option = document.createElement('option');
+            option.value = tag.tagName;
+            option.textContent = tag.tagName;
+            option.style.color = tag.color;  // Use the color property from the Tag class
+            comboBox.appendChild(option);
+        });
 
         const submitButton = document.createElement('button');
         submitButton.classList.add('submitBTN');
@@ -117,11 +129,36 @@ class BoxContainer {
         document.body.appendChild(overlay);
     }
 
+    addTag(tagName, color) {
+        this.tags.push(new Tag(tagName, color));
+
+        const comboBox = document.getElementById('tagSelect');
+        if (comboBox) {
+            const option = document.createElement('option');
+            option.value = tagName;
+            option.textContent = tagName;
+            option.style.color = color;
+            comboBox.appendChild(option);
+        }
+    }
+
 
 
 }
 
-const submitBTN = document.getElementById('saveBoxes');
-submitBTN.addEventListener('click', () => {
-    boxContainer.showCustomPopup();
+// Now bind the button click to show the popup
+document.addEventListener('DOMContentLoaded', () => {
+    const submitBTN = document.getElementById('saveBoxes');
+    if (submitBTN) {
+        submitBTN.addEventListener('click', () => {
+            boxContainer.addTag("Work", "#FF0000");
+            boxContainer.addTag("Personal Dev", "brown");
+            boxContainer.addTag("School", "green");
+            boxContainer.addTag("FunTime", "Blue");
+            boxContainer.addTag("Team Time", "purple");
+            boxContainer.showCustomPopup();
+        });
+    } else {
+        console.error('Button with ID "saveBoxes" not found!');
+    }
 });
