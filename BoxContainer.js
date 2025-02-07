@@ -17,6 +17,21 @@ class BoxContainer {
     //     localStorage.setItem('selectedBoxes', JSON.stringify(this.selectedBoxes));
     // }
 
+    calculateTotalTime() {
+        let totalTime = 0;
+    
+        // Loop through all the boxes and add the TimeValue of selected boxes
+        this.boxes.forEach(box => {
+            if (box.element.classList.contains('selected')) {
+                totalTime += box.TimeValue;  // Add the TimeValue of the selected box
+            }
+        });
+    
+        console.log(`Total Time for Selected Boxes: ${totalTime} hours`); // Log the total time
+        return totalTime;  // Return the total time
+    }
+    
+
     generateBoxes(num) {
         for (let i = 1; i <= num; i++) {
             const box = new Box(i, this);

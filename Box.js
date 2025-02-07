@@ -61,6 +61,8 @@
             this.boxContainer.selectedBoxes = this.boxContainer.boxes
         .filter(box => box.element.classList.contains('selected'))
         .map(box => box.id);
+
+        this.boxContainer.calculateTotalTime();
         }
 
         
