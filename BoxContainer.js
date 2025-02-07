@@ -50,7 +50,7 @@ class BoxContainer {
     }
 
     populateComboBox() {
-        this.comboBox.innerHTML = '';  // Clear previous options to prevent duplicates
+        this.comboBox.innerHTML = ''; 
         this.tags.forEach(tag => {
             const option = document.createElement('option');
             option.value = tag.tagName;
@@ -63,7 +63,7 @@ class BoxContainer {
     showCustomPopup() {
        
 
-        // 🔄 Refill selectedBoxes with only the currently selected boxes
+        // Refill selectedBoxes with only the currently selected boxes
         this.selectedBoxes = this.boxes
             .filter(box => box.element.classList.contains('selected'))
             .map(box => box.id);
@@ -79,7 +79,6 @@ class BoxContainer {
             return;
         }
     
-        // 🎯 Generate correct time slots message
         let selectedBoxesMessage = this.selectedBoxes.map(id => this.getTimeSlot(id)).join(', ');
     
         const overlay = document.createElement('div');
@@ -110,16 +109,17 @@ class BoxContainer {
                     const box = this.boxes.find(b => b.id === boxId);
                     if (box) {
                         box.element.style.backgroundColor = selectedTag.color;
+                        box.element.style.color = "#fff";
                     }
                 });
             }
         
             alert(`Input: ${inputData}, Selected Option: ${selectedOption}`);
         
-            // 🛑 Clear selectedBoxes array
+            
             this.selectedBoxes = [];
         
-            // ❌ Remove 'selected' class from boxes so UI updates
+           // Remove 'selected' class from boxes so UI updates
             this.boxes.forEach(box => {
                 box.element.classList.remove('selected');
             });
@@ -154,7 +154,6 @@ class BoxContainer {
 
 document.addEventListener('DOMContentLoaded', () => {
     const submitBTN = document.getElementById('saveBoxes');
-    // const boxContainer = new BoxContainer('boxContainer');
 
     const initializeTags = () => {
         const tags = [
