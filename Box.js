@@ -1,6 +1,6 @@
     class Box {
 
-        constructor(id) {
+        constructor(id,boxContainer) {
         this.id = id;
         this.boxContainer = boxContainer;
         this.element = this.createBox();

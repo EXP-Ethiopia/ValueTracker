@@ -1,21 +1,15 @@
 class BoxContainer {
-    constructor(containerId) {
+    constructor(containerId, auth, db) {
         this.container = document.getElementById(containerId);
         this.boxes = [];
         this.selectedBoxes = []; 
         this.tags = [];  // Store the tags dynamically
         this.comboBox = document.createElement('select');
         this.comboBox.id = 'tagSelect';
+
+        this.auth = auth; 
+        this.db = db;     
     }
-
-    // loadSelectedBoxes() {
-    //     const savedBoxes = localStorage.getItem('selectedBoxes');
-    //     return savedBoxes ? JSON.parse(savedBoxes) : [];
-    // }
-
-    // saveSelectedBoxes() {
-    //     localStorage.setItem('selectedBoxes', JSON.stringify(this.selectedBoxes));
-    // }
 
     calculateTotalTime() {
         let totalTime = 0;
@@ -23,14 +17,13 @@ class BoxContainer {
         // Loop through all the boxes and add the TimeValue of selected boxes
         this.boxes.forEach(box => {
             if (box.element.classList.contains('selected')) {
-                totalTime += box.TimeValue;  // Add the TimeValue of the selected box
+                totalTime += box.TimeValue; 
             }
         });
     
-        console.log(`Total Time for Selected Boxes: ${totalTime} hours`); // Log the total time
-        return totalTime;  // Return the total time
+        console.log(`Total Time for Selected Boxes: ${totalTime} hours`); 
+        return totalTime;  
     }
-    
 
     generateBoxes(num) {
         for (let i = 1; i <= num; i++) {
@@ -76,8 +69,6 @@ class BoxContainer {
     }
 
     showCustomPopup() {
-       
-
         // Refill selectedBoxes with only the currently selected boxes
         this.selectedBoxes = this.boxes
             .filter(box => box.element.classList.contains('selected'))
@@ -114,11 +105,13 @@ class BoxContainer {
         const submitButton = document.createElement('button');
         submitButton.classList.add('submitBTN');
         submitButton.textContent = 'Submit';
-        submitButton.addEventListener('click', () => {
+        submitButton.addEventListener('click', async () => {
             const inputData = inputField.value;
             const selectedOption = this.comboBox.value;
-        
+    
             const selectedTag = this.tags.find(tag => tag.tagName === selectedOption);
+            let selectedTagColor = selectedTag ? selectedTag.color : "#000"; // Default color if none selected
+    
             if (selectedTag) {
                 this.selectedBoxes.forEach(boxId => {
                     const box = this.boxes.find(b => b.id === boxId);
@@ -128,22 +121,47 @@ class BoxContainer {
                     }
                 });
             }
+
         
-            alert(`Input: ${inputData}, Selected Option: ${selectedOption}`);
-        
-            
-            this.selectedBoxes = [];
-        
-           // Remove 'selected' class from boxes so UI updates
-            this.boxes.forEach(box => {
-                box.element.classList.remove('selected');
+
+        const taskRef = ref(this.db, 'userTasks/' + userId + '/' + new Date().getTime()); // Using timestamp as a unique ID
+
+        set(taskRef, {
+            task: inputData,  
+            selectedBoxes: this.selectedBoxes, 
+            totalTime: this.calculateTotalTime(), 
+            tag: selectedOption,  
+            color: selectedTagColor,  
+            timestamp: new Date().toISOString()  // Timestamp of the task creation
+        })
+        .then(() => {
+            console.log("Data saved to Realtime Database successfully");
+            Swal.fire({
+                title: "Saved!",
+                text: "Your task has been saved successfully.",
+                icon: "success",
+                confirmButtonText: "OK"
             });
-        
-            console.log("Cleared Selected Boxes:", this.selectedBoxes);
-        
-            document.body.removeChild(overlay);
+        })
+        .catch(error => {
+            console.error("Error saving to Realtime Database:", error);
+            Swal.fire({
+                title: "Error",
+                text: "Failed to save data. Please try again.",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
         });
-    
+                    this.selectedBoxes = [];
+            
+                    // Remove 'selected' class from boxes so UI updates
+                    this.boxes.forEach(box => {
+                        box.element.classList.remove('selected');
+                    });
+            
+                    document.body.removeChild(overlay);
+                });
+            
         const closeButton = document.createElement('button');
         closeButton.classList.add('submitBTN');
         closeButton.textContent = 'Close';
@@ -156,16 +174,14 @@ class BoxContainer {
         document.body.appendChild(overlay);
     }
     
-    
-
     addTag(tagName, color) {
         if (!this.tags.some(tag => tag.tagName === tagName)) {
             this.tags.push(new Tag(tagName, color));
-            this.populateComboBox();  // Refresh dropdown
+            this.populateComboBox();  
         }
     }
-
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const submitBTN = document.getElementById('saveBoxes');
@@ -178,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: "FuncTime", color: "Blue" },
             { name: "Team Time", color: "purple" }
         ];
-        tags.forEach(tag => boxContainer.addTag(tag.name, tag.color));
+        tags.forEach(tag => boxContainer.addTag(tag.name, tag.color)); 
     };
     initializeTags();
 

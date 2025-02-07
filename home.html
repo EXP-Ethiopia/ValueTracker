@@ -53,7 +53,12 @@
     // Get the URL parameters
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        // import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { ref, set,getDatabase } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+
+
        
 
         
@@ -73,7 +78,18 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getDatabase(app);
 
+        // const boxContainer = new BoxContainer('box-container', auth, db);
+        window.boxContainer = new BoxContainer('box-container', auth, db) ;
+        boxContainer.generateBoxes(48);
+
+        window.auth = auth;
+        window.addDoc = addDoc;
+        window.collection =collection;
+        window.db = db;
+        window.ref = ref;
+        window.set = set;
         
     const urlParams = new URLSearchParams(window.location.search);
     
@@ -106,6 +122,7 @@
 
     if (user) {
         console.log("✅ User signed in:", user.displayName, user.email, user.uid);
+        window.userId = user.uid;
         
         let checkPhotoInterval = setInterval(() => {
             if (user.photoURL) {
@@ -131,6 +148,6 @@
 <script src="Tag.js"></script>
 <script src="getday.js"></script>
 <script  src="Box.js"></script>
-<script  src="BoxContainer.js"></script>
-<script  src="app.js"></script>
+<script src="BoxContainer.js"></script>
+<!-- <script type="module" src="app.js"></script> -->
 </html>
