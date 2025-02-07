@@ -1,6 +1,6 @@
 /* Header */
 .home-header {
-    background-color: white;
+    background-color: red;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;

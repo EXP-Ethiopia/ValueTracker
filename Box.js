@@ -62,24 +62,14 @@
     
 
         toggleInArray() {
-            const index = this.boxContainer.selectedBoxes.indexOf(this.id);
-        
-        
-            if (this.element.classList.contains('selected')) {
-                if (index === -1) {  
-                    this.boxContainer.selectedBoxes.push(this.id);
-                }
-            } else {
-            
-                if (index !== -1) {  
-                    this.boxContainer.selectedBoxes.splice(index, 1);
-                }
-            }
-            
-        
-            this.boxContainer.saveSelectedBoxes();
-            console.log('Selected Boxes:', this.boxContainer.selectedBoxes);
+            this.boxContainer.selectedBoxes = this.boxContainer.boxes
+        .filter(box => box.element.classList.contains('selected'))
+        .map(box => box.id);
+
+        // this.boxContainer.saveSelectedBoxes(); // Save updated selection
         }
+
+        
 
 
     }

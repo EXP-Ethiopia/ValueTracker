@@ -2,20 +2,20 @@ class BoxContainer {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
         this.boxes = [];
-        this.selectedBoxes = this.loadSelectedBoxes(); 
+        this.selectedBoxes = []; 
         this.tags = [];  // Store the tags dynamically
         this.comboBox = document.createElement('select');
         this.comboBox.id = 'tagSelect';
     }
 
-    loadSelectedBoxes() {
-        const savedBoxes = localStorage.getItem('selectedBoxes');
-        return savedBoxes ? JSON.parse(savedBoxes) : [];
-    }
+    // loadSelectedBoxes() {
+    //     const savedBoxes = localStorage.getItem('selectedBoxes');
+    //     return savedBoxes ? JSON.parse(savedBoxes) : [];
+    // }
 
-    saveSelectedBoxes() {
-        localStorage.setItem('selectedBoxes', JSON.stringify(this.selectedBoxes));
-    }
+    // saveSelectedBoxes() {
+    //     localStorage.setItem('selectedBoxes', JSON.stringify(this.selectedBoxes));
+    // }
 
     generateBoxes(num) {
         for (let i = 1; i <= num; i++) {
@@ -61,6 +61,13 @@ class BoxContainer {
     }
 
     showCustomPopup() {
+       
+
+        // 🔄 Refill selectedBoxes with only the currently selected boxes
+        this.selectedBoxes = this.boxes
+            .filter(box => box.element.classList.contains('selected'))
+            .map(box => box.id);
+    
         if (this.selectedBoxes.length === 0) {
             Swal.fire({
                 title: "No Boxes Selected",
@@ -71,31 +78,32 @@ class BoxContainer {
             });
             return;
         }
-
+    
+        // 🎯 Generate correct time slots message
         let selectedBoxesMessage = this.selectedBoxes.map(id => this.getTimeSlot(id)).join(', ');
-        
+    
         const overlay = document.createElement('div');
         overlay.classList.add('overlay');
-
+    
         const modal = document.createElement('div');
         modal.classList.add('modal');
-
+    
         const title = document.createElement('h2');
         title.textContent = `Selected Boxes: ${selectedBoxesMessage}`;
-        
+    
         const inputField = document.createElement('input');
         inputField.type = 'text';
         inputField.placeholder = 'Enter Task here...';
-        
+    
         this.populateComboBox();
-        
+    
         const submitButton = document.createElement('button');
         submitButton.classList.add('submitBTN');
         submitButton.textContent = 'Submit';
         submitButton.addEventListener('click', () => {
             const inputData = inputField.value;
             const selectedOption = this.comboBox.value;
-            
+        
             const selectedTag = this.tags.find(tag => tag.tagName === selectedOption);
             if (selectedTag) {
                 this.selectedBoxes.forEach(boxId => {
@@ -105,21 +113,35 @@ class BoxContainer {
                     }
                 });
             }
+        
             alert(`Input: ${inputData}, Selected Option: ${selectedOption}`);
+        
+            // 🛑 Clear selectedBoxes array
+            this.selectedBoxes = [];
+        
+            // ❌ Remove 'selected' class from boxes so UI updates
+            this.boxes.forEach(box => {
+                box.element.classList.remove('selected');
+            });
+        
+            console.log("Cleared Selected Boxes:", this.selectedBoxes);
+        
             document.body.removeChild(overlay);
         });
-        
+    
         const closeButton = document.createElement('button');
         closeButton.classList.add('submitBTN');
         closeButton.textContent = 'Close';
         closeButton.addEventListener('click', () => {
             document.body.removeChild(overlay);
         });
-
+    
         modal.append(title, inputField, this.comboBox, submitButton, closeButton);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }
+    
+    
 
     addTag(tagName, color) {
         if (!this.tags.some(tag => tag.tagName === tagName)) {
@@ -127,6 +149,7 @@ class BoxContainer {
             this.populateComboBox();  // Refresh dropdown
         }
     }
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
