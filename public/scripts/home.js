@@ -1,13 +1,11 @@
-import {auth, db } from './firebaseConfig';
+import {auth, db } from '../../app/models/firebaseConfig.js';
+import {BoxContainer} from './BoxContainer.js';
 
-// const boxContainer = new BoxContainer('box-container', auth, db);
-window.boxContainer = new BoxContainer('box-container', auth, db) ;
+const boxContainer = new BoxContainer('box-container', auth, db) ;
 boxContainer.generateBoxes(48);
 
-window.auth = auth;
 window.addDoc = addDoc;
 window.collection =collection;
-window.db = db;
 window.ref = ref;
 window.set = set;
 
