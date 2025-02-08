@@ -60,7 +60,7 @@ function GoogleLogin() {
 
 // Redirect to Home Page
 function redirectToHome(username) {
-    window.location.href = `home.html?username=${encodeURIComponent(username)}`;
+    window.location.href = `../../app/views/home.html?username=${encodeURIComponent(username)}`;
 }
 
 // Event listeners for buttons

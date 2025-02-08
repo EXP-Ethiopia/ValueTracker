@@ -28,7 +28,6 @@
         }
 
         selectBox() {
-            
             this.element.classList.toggle('selected');
         }
 
@@ -65,8 +64,5 @@
         this.boxContainer.calculateTotalTime();
         }
 
-        
-
 
     }
-    

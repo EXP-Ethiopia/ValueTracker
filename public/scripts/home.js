@@ -75,7 +75,7 @@ let checkPhotoInterval = setInterval(() => {
         clearInterval(checkPhotoInterval);
     } else {
         console.warn("⚠ No photoURL found, using default.");
-        profilePic.src = "public/images/default.jpg"; 
+        profilePic.src = "../images/default.jpg"; 
     }
 }, 100); 
 } else {
