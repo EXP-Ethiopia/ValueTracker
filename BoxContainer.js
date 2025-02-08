@@ -204,3 +204,90 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Button with ID "saveBoxes" not found!');
     }
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const deleteBTN = document.getElementById('DeleteBoxes');
+
+    if (deleteBTN) {
+        deleteBTN.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user) {
+                Swal.fire("Not Logged In", "You need to log in to delete tasks.", "error");
+                return;
+            }
+
+            const userId = user.uid;
+            const taskPath = `userTasks/${userId}`;
+            const userTasksRef = ref(db, taskPath);
+
+            // Get the selected boxes
+            const selectedBoxes = boxContainer.boxes
+                .filter(box => box.element.classList.contains('selected'))
+                .map(box => box.id);
+
+            if (selectedBoxes.length === 0) {
+                Swal.fire("No Selection", "Please select at least one box before deleting.", "warning");
+                return;
+            }
+
+            try {
+                const snapshot = await get(userTasksRef);
+                let taskToDelete = null;
+                let taskKey = null;
+
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const data = childSnapshot.val();
+                        if (arraysEqual(data.selectedBoxes, selectedBoxes)) {
+                            taskToDelete = data;
+                            taskKey = childSnapshot.key;
+                        }
+                    });
+                }
+
+                if (taskToDelete) {
+                    Swal.fire({
+                        title: "Delete Task?",
+                        text: `Are you sure you want to delete this task?`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, Delete",
+                        cancelButtonText: "Cancel",
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            await remove(ref(db, `${taskPath}/${taskKey}`));
+                            console.log("Task deleted from Realtime Database");
+
+                            Swal.fire("Deleted!", "The task has been removed successfully.", "success");
+
+                            boxContainer.boxes.forEach(box => {
+                                if (box.element.classList.contains('selected')) { 
+                                    box.element.classList.remove('selected'); 
+                                    box.element.style.backgroundColor = "lightblue"; 
+                                    box.element.style.color = "#000"; 
+                                }
+                            });
+                            
+
+                        }
+                    });
+                } else {
+                    Swal.fire("Not Found", "No matching task found in the database.", "info");
+                }
+
+            } catch (error) {
+                console.error("Error deleting task:", error);
+                Swal.fire("Error", "Could not delete the task. Try again later.", "error");
+            }
+        });
+    } else {
+        console.error('Button with ID "deletedBoxes" not found!');
+    }
+});
+
+// Function to compare two arrays (order-independent)
+function arraysEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    return arr1.every(value => arr2.includes(value)) && arr2.every(value => arr1.includes(value));
+}

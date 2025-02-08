@@ -37,7 +37,11 @@
 
             <div><h1>Today: <span id="current-day"></span></h1></div>
     
-            <div ><button class="saveBtn" id="saveBoxes">Save</button></div>
+            <div >
+                <button class="saveBtn" id="saveBoxes">Save</button>
+                <button class="saveBtn" id="DeleteBoxes">Delete</button>
+            </div>
+          
     
         </div>
         <div id="box-container">
@@ -55,7 +59,7 @@
         import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
         // import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
         import { getFirestore, doc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-        import { ref, set,getDatabase } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+        import { remove, ref, set,getDatabase,get } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
 
 
@@ -90,6 +94,8 @@
         window.db = db;
         window.ref = ref;
         window.set = set;
+        window.remove = remove;
+        window.get = get;
         
     const urlParams = new URLSearchParams(window.location.search);
     
