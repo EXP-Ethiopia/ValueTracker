@@ -1,4 +1,4 @@
-export class BoxContainer {
+class BoxContainer {
     constructor(containerId, auth, db) {
         this.container = document.getElementById(containerId);
         this.boxes = [];

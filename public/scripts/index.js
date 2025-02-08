@@ -1,4 +1,4 @@
-import {auth, db } from '../../app/models/firebaseConfig';
+import {auth, db } from './firebaseConfig';
 
 // Initialize google provider
 const provider = new GoogleAuthProvider();
