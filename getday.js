@@ -7,8 +7,9 @@ const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Fri
 
 const currentDay = daysOfWeek[currentDate.getDay()];
 
+const currentFormattedDate = `${currentDate.getFullYear()}/${currentDate.getMonth() + 1}/${currentDate.getDate()}`;
 
 const dayElement = document.getElementById('current-day');
 
 
-dayElement.textContent = currentDay;
+dayElement.textContent = `${currentDay}, ${currentFormattedDate}`;

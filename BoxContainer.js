@@ -180,6 +180,150 @@ class BoxContainer {
             this.populateComboBox();  
         }
     }
+
+    async updateTask(userId, taskKey, updatedTaskData) {
+        const taskRef = ref(this.db, 'userTasks/' + userId + '/' + taskKey);
+    
+        try {
+            await set(taskRef, updatedTaskData);
+            console.log("Task updated successfully");
+            Swal.fire({
+                title: "Updated!",
+                text: "The task has been updated successfully.",
+                icon: "success",
+                confirmButtonText: "OK"
+            });
+        } catch (error) {
+            console.error("Error updating task:", error);
+            Swal.fire({
+                title: "Error",
+                text: "Failed to update the task. Please try again.",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        }
+    }
+    
+
+    // Function to show the update task popup
+    showUpdateTaskPopup() {
+    const user = this.auth.currentUser;
+    if (!user) {
+        Swal.fire("Not Logged In", "You need to log in to update tasks.", "error");
+        return;
+    }
+
+    const userId = user.uid;
+    const selectedBoxes = this.boxes
+        .filter(box => box.element.classList.contains('selected'))
+        .map(box => box.id);
+
+    if (selectedBoxes.length === 0) {
+        Swal.fire({
+            title: "No Boxes Selected",
+            text: "Please select at least one box before proceeding.",
+            icon: "warning",
+            confirmButtonText: "OK",
+            showClass: { popup: "animate__animated animate__shakeX animate__faster" }
+        });
+        return;
+    }
+
+    let selectedBoxesMessage = selectedBoxes.map(id => this.getTimeSlot(id)).join(', ');
+
+    const overlay = document.createElement('div');
+    overlay.classList.add('overlay');
+    const modal = document.createElement('div');
+    modal.classList.add('modal');
+    const title = document.createElement('h2');
+    title.textContent = `Update Task for Selected Boxes: ${selectedBoxesMessage}`;
+    
+    const inputField = document.createElement('input');
+    inputField.type = 'text';
+    inputField.placeholder = 'Enter new task details here...';
+
+    this.populateComboBox();
+
+    const submitButton = document.createElement('button');
+    submitButton.classList.add('submitBTN');
+    submitButton.textContent = 'Update';
+    
+    submitButton.addEventListener('click', async () => {
+        const inputData = inputField.value;
+        const selectedOption = this.comboBox.value;
+
+        const selectedTag = this.tags.find(tag => tag.tagName === selectedOption);
+        const selectedTagColor = selectedTag ? selectedTag.color : "#000"; // Default color if none selected
+
+        // Prepare the updated task data
+        const updatedTaskData = {
+            task: inputData,
+            selectedBoxes: selectedBoxes,
+            totalTime: this.calculateTotalTime(),
+            tag: selectedOption,
+            color: selectedTagColor,
+            timestamp: new Date().toISOString()  // Update timestamp
+        };
+
+        // Get the task data to update from the database
+        const taskRef = ref(this.db, 'userTasks/' + userId);
+        const snapshot = await get(taskRef);
+
+        if (snapshot.exists()) {
+            let taskKey = null;
+            snapshot.forEach(childSnapshot => {
+                const data = childSnapshot.val();
+                if (arraysEqual(data.selectedBoxes, selectedBoxes)) {
+                    taskKey = childSnapshot.key;
+                }
+            });
+
+            if (taskKey) {
+                // Confirm the update with SweetAlert
+                Swal.fire({
+                    title: "Update Task?",
+                    text: `Are you sure you want to update the task?`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, Update",
+                    cancelButtonText: "Cancel"
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        await this.updateTask(userId, taskKey, updatedTaskData);
+
+                        // Update the UI for the selected boxes with the new tag color
+                        this.selectedBoxes.forEach(boxId => {
+                            const box = this.boxes.find(b => b.id === boxId);
+                            if (box) {
+                                box.element.style.backgroundColor = selectedTagColor;
+                                box.element.style.color = "#fff";
+                            }
+                            boxContainer.boxes.forEach(box => {
+                                if (box.element.classList.contains('selected')) { 
+                                    box.element.classList.remove('selected'); 
+                                }
+                            });
+                        });
+                    }
+                });
+            } else {
+                Swal.fire("Not Found", "No matching task found to update.", "info");
+            }
+        }
+    });
+
+    const closeButton = document.createElement('button');
+    closeButton.classList.add('submitBTN');
+    closeButton.textContent = 'Close';
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+
+    modal.append(title, inputField, this.comboBox, submitButton, closeButton);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+}
+
 }
 
 
@@ -283,6 +427,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } else {
         console.error('Button with ID "deletedBoxes" not found!');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const updateBTN = document.getElementById('UpdateTask');
+
+    if (updateBTN) {
+        updateBTN.addEventListener('click', () => boxContainer.showUpdateTaskPopup());
+    } else {
+        console.error('Button with ID "UpdateTask" not found!');
     }
 });
 
