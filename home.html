@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/config.css">
+    <link rel="stylesheet" href="styles/home.css">
+    <title>Home page</title>
+</head>
+<body>
+
+    <header class="home-header">
+        <div class="leftNav">
+            <img src="" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
+            <input type="search" id="searchInput" placeholder="Search here">
+            <button id="searchBtn">Search</button>
+        </div>
+
+        <div class="rightNav">
+            <ul class="UnorderedList">
+                <li><button id="homeBtn">Home</button></li>
+                <li><button id="FinancetBtn">Finance</button></li>
+                <li><button id="WorkBtn">Work</button></li>
+                <li><button id="HealthBtn">Health</button></li>
+                <li><button id="logoutBtn">LogOut</button></li>
+
+            </ul>
+
+        </div>
+        
+    </header>
+    <h1 class="welcome">Welcome <span id="username"></span> </h1>
+
+    <div class="container">
+
+        <div class="firstText">
+
+            <div><h1>Today: <span id="current-day"></span></h1></div>
+    
+            <div ><button class="saveBtn" id="saveBoxes">Save</button></div>
+    
+        </div>
+        <div id="box-container">
+    
+        </div>
+
+    </div>
+    
+    
+</body>
+
+<script type="module">
+    // Get the URL parameters
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        // import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { ref, set,getDatabase } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+
+
+       
+
+        
+
+        // Firebase Configuration
+        const firebaseConfig = {
+        apiKey: "AIzaSyClF_kUmfMyrxDqP_iuu7BgoqqTtX67JRY",
+        authDomain: "valutracker-391c6.firebaseapp.com",
+        databaseURL: "https://valutracker-391c6-default-rtdb.firebaseio.com",
+        projectId: "valutracker-391c6",
+        storageBucket: "valutracker-391c6.firebasestorage.app",
+        messagingSenderId: "268267434732",
+        appId: "1:268267434732:web:49e075d9a0b22df4c4abc9",
+        measurementId: "G-X8RX5C4WKS"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // const boxContainer = new BoxContainer('box-container', auth, db);
+        window.boxContainer = new BoxContainer('box-container', auth, db) ;
+        boxContainer.generateBoxes(48);
+
+        window.auth = auth;
+        window.addDoc = addDoc;
+        window.collection =collection;
+        window.db = db;
+        window.ref = ref;
+        window.set = set;
+        
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Retrieve the 'username' parameter
+    const username = urlParams.get('username');
+    
+    // Display the username on the page
+    document.getElementById('username').textContent = username;
+
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    logoutBtn.addEventListener('click', () => {
+
+
+        // Sign out the user
+        auth.signOut()
+            .then(() => {
+                console.log('User signed out');
+                window.location.href = 'index.html';
+            })
+            .catch((error) => {
+                console.error('Sign out error:', error);
+            });
+    });
+
+    const profilePic = document.getElementById("profile-pic");
+
+    onAuthStateChanged(auth, (user) => {
+    console.log("🔥 Auth State Changed:", user); // Log user info
+
+    if (user) {
+        console.log("✅ User signed in:", user.displayName, user.email, user.uid);
+        window.userId = user.uid;
+        
+        let checkPhotoInterval = setInterval(() => {
+            if (user.photoURL) {
+                console.log("🖼 Found Profile Pic:", user.photoURL);
+            
+                profilePic.src = user.photoURL; 
+                clearInterval(checkPhotoInterval);
+            } else {
+                console.warn("⚠ No photoURL found, using default.");
+                profilePic.src = "images/default.jpg"; 
+            }
+        }, 100); 
+    } else {
+        console.warn("❌ No user is signed in.");
+    }
+});
+
+
+</script>
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="Tag.js"></script>
+<script src="getday.js"></script>
+<script  src="Box.js"></script>
+<script src="BoxContainer.js"></script>
+<!-- <script type="module" src="app.js"></script> -->
+</html>
