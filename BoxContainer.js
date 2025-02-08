@@ -121,47 +121,90 @@ class BoxContainer {
                     }
                 });
             }
-
-        
-
-        const taskRef = ref(this.db, 'userTasks/' + userId + '/' + new Date().getTime()); // Using timestamp as a unique ID
-
-        set(taskRef, {
-            task: inputData,  
-            selectedBoxes: this.selectedBoxes, 
-            totalTime: this.calculateTotalTime(), 
-            tag: selectedOption,  
-            color: selectedTagColor,  
-            timestamp: new Date().toISOString()  // Timestamp of the task creation
-        })
-        .then(() => {
-            console.log("Data saved to Realtime Database successfully");
-            Swal.fire({
-                title: "Saved!",
-                text: "Your task has been saved successfully.",
-                icon: "success",
-                confirmButtonText: "OK"
+    
+            // Group selected boxes by their current background color
+            const groupedBoxes = {};
+            this.selectedBoxes.forEach(boxId => {
+                const box = this.boxes.find(b => b.id === boxId);
+                if (box) {
+                    const color = box.element.style.backgroundColor;
+                    if (!groupedBoxes[color]) {
+                        groupedBoxes[color] = [];
+                    }
+                    groupedBoxes[color].push(boxId);
+                }
             });
-        })
-        .catch(error => {
-            console.error("Error saving to Realtime Database:", error);
-            Swal.fire({
-                title: "Error",
-                text: "Failed to save data. Please try again.",
-                icon: "error",
-                confirmButtonText: "OK"
-            });
-        });
-                    this.selectedBoxes = [];
-            
-                    // Remove 'selected' class from boxes so UI updates
-                    this.boxes.forEach(box => {
-                        box.element.classList.remove('selected');
+    
+            // Check if a task with the same color already exists in the database
+            const userId = this.auth.currentUser.uid;
+            const userTasksRef = ref(this.db, `userTasks/${userId}`);
+    
+            try {
+                const snapshot = await get(userTasksRef);
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const taskData = childSnapshot.val();
+                        const taskColor = taskData.color;
+    
+                        // If a task with the same color exists, update it
+                        if (groupedBoxes[taskColor]) {
+                            const updatedSelectedBoxes = [...taskData.selectedBoxes, ...groupedBoxes[taskColor]];
+                            const updatedTotalTime = taskData.totalTime + this.calculateTotalTime();
+    
+                            // Update the existing task
+                            update(childSnapshot.ref, {
+                                selectedBoxes: updatedSelectedBoxes,
+                                totalTime: updatedTotalTime
+                            });
+    
+                            // Remove the color from groupedBoxes since it's been handled
+                            delete groupedBoxes[taskColor];
+                        }
                     });
-            
-                    document.body.removeChild(overlay);
+                }
+    
+                // Create new tasks for any remaining color groups
+                for (const [color, boxIds] of Object.entries(groupedBoxes)) {
+                    const taskRef = ref(this.db, `userTasks/${userId}/${new Date().getTime()}`); // New timestamp
+    
+                    set(taskRef, {
+                        task: inputData,
+                        selectedBoxes: boxIds,
+                        totalTime: this.calculateTotalTime(),
+                        tag: selectedOption,
+                        color: color,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+    
+                console.log("Data saved/updated in Realtime Database successfully");
+                Swal.fire({
+                    title: "Saved!",
+                    text: "Your task has been saved/updated successfully.",
+                    icon: "success",
+                    confirmButtonText: "OK"
                 });
-            
+            } catch (error) {
+                console.error("Error saving/updating to Realtime Database:", error);
+                Swal.fire({
+                    title: "Error",
+                    text: "Failed to save/update data. Please try again.",
+                    icon: "error",
+                    confirmButtonText: "OK"
+                });
+            }
+    
+            // Reset selection
+            this.selectedBoxes = [];
+    
+            // Remove 'selected' class from boxes so UI updates
+            this.boxes.forEach(box => {
+                box.element.classList.remove('selected');
+            });
+    
+            document.body.removeChild(overlay);
+        });
+    
         const closeButton = document.createElement('button');
         closeButton.classList.add('submitBTN');
         closeButton.textContent = 'Close';
@@ -426,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: "Work", color: "#FF0000" },
             { name: "Personal Dev", color: "brown" },
             { name: "School", color: "green" },
-            { name: "FuncTime", color: "Blue" },
+            { name: "FunTime", color: "Blue" },
             { name: "Team Time", color: "purple" }
         ];
         tags.forEach(tag => boxContainer.addTag(tag.name, tag.color)); 
@@ -474,10 +517,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (snapshot.exists()) {
                     snapshot.forEach((childSnapshot) => {
                         const data = childSnapshot.val();
-                        if (arraysEqual(data.selectedBoxes, selectedBoxes)) {
                             taskToDelete = data;
                             taskKey = childSnapshot.key;
-                        }
+
                     });
                 }
 
