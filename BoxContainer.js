@@ -532,6 +532,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 .filter(box => box.element.classList.contains('selected'))
                 .map(box => box.id);
 
+            console.log("Selected Boxes for Deletion:", selectedBoxes); // Debugging log
+
             if (selectedBoxes.length === 0) {
                 Swal.fire("No Selection", "Please select at least one box before deleting.", "warning");
                 return;
@@ -539,57 +541,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const snapshot = await get(userTasksRef);
-                let taskToDelete = null;
-                let taskKey = null;
 
-                if (snapshot.exists()) {
-                    snapshot.forEach((childSnapshot) => {
-                        const data = childSnapshot.val();
-                            taskToDelete = data;
-                            taskKey = childSnapshot.key;
-
-                    });
+                if (!snapshot.exists()) {
+                    console.log("No tasks found for user:", userId); // Debugging log
+                    Swal.fire("Not Found", "No tasks found in the database.", "info");
+                    return;
                 }
 
-                if (taskToDelete) {
-                    Swal.fire({
-                        title: "Delete Task?",
-                        text: `Are you sure you want to delete this task?`,
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "Yes, Delete",
-                        cancelButtonText: "Cancel",
-                    }).then(async (result) => {
-                        if (result.isConfirmed) {
-                            await remove(ref(db, `${taskPath}/${taskKey}`));
-                            console.log("Task deleted from Realtime Database");
+                let tasksUpdated = false;
 
-                            Swal.fire("Deleted!", "The task has been removed successfully.", "success");
+                const updatePromises = [];
 
-                            boxContainer.boxes.forEach(box => {
-                                if (box.element.classList.contains('selected')) { 
-                                    box.element.classList.remove('selected'); 
-                                    box.element.style.backgroundColor = "lightblue"; 
-                                    box.element.style.color = "#000"; 
-                                }
-                            });
-                            
+                snapshot.forEach((childSnapshot) => {
+                    const taskKey = childSnapshot.key;
+                    const taskData = childSnapshot.val();
 
+                    console.log("Checking Task:", taskKey, "Data:", taskData); // Debugging log
+
+                    if (!Array.isArray(taskData.selectedBoxes)) {
+                        console.log(`Task ${taskKey} does not have an array of selectedBoxes`); // Debugging log
+                        return;
+                    }
+
+                    // Filter out the selected boxes
+                    const remainingBoxes = taskData.selectedBoxes.filter(boxId => !selectedBoxes.includes(boxId));
+
+                    console.log("Remaining Boxes after removal:", remainingBoxes); // Debugging log
+
+                    // Calculate the time being removed
+                    const removedTime = taskData.selectedBoxes
+                        .filter(boxId => selectedBoxes.includes(boxId))
+                        .reduce((total, boxId) => {
+                            const box = boxContainer.boxes.find(b => b.id === boxId);
+                            return total + (box ? box.TimeValue : 0);
+                        }, 0);
+
+                    if (remainingBoxes.length === 0) {
+                        console.log(`Deleting Task: ${taskKey}`); // Debugging log
+                        updatePromises.push(remove(ref(db, `${taskPath}/${taskKey}`)));
+                    } else {
+                        console.log(`Updating Task: ${taskKey}, New Remaining Boxes:`, remainingBoxes); // Debugging log
+                        updatePromises.push(update(ref(db, `${taskPath}/${taskKey}`), {
+                            selectedBoxes: remainingBoxes,
+                            totalTime: Math.max(0, taskData.totalTime - removedTime)
+                        }));
+                    }
+
+                    tasksUpdated = true;
+                });
+
+                // Execute all Firebase updates
+                await Promise.all(updatePromises);
+
+                if (tasksUpdated) {
+                    Swal.fire("Deleted!", "The selected boxes have been removed successfully.", "success");
+
+                    // Reset UI for selected boxes
+                    boxContainer.boxes.forEach(box => {
+                        if (box.element.classList.contains('selected')) {
+                            box.element.classList.remove('selected');
+                            box.element.style.backgroundColor = "lightblue"; 
+                            box.element.style.color = "#000"; // Reset text color
                         }
                     });
                 } else {
-                    Swal.fire("Not Found", "No matching task found in the database.", "info");
+                    Swal.fire("Not Found", "No matching tasks found for the selected boxes.", "info");
                 }
 
             } catch (error) {
-                console.error("Error deleting task:", error);
-                Swal.fire("Error", "Could not delete the task. Try again later.", "error");
+                console.error("Error deleting boxes:", error);
+                Swal.fire("Error", "Could not delete the selected boxes. Try again later.", "error");
             }
         });
     } else {
-        console.error('Button with ID "deletedBoxes" not found!');
+        console.error('Button with ID "DeleteBoxes" not found!');
     }
 });
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const updateBTN = document.getElementById('UpdateTask');
