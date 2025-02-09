@@ -68,7 +68,7 @@ class BoxContainer {
         });
     }
 
-    showCustomPopup() {
+    async showCustomPopup() {
         // Refill selectedBoxes with only the currently selected boxes
         this.selectedBoxes = this.boxes
             .filter(box => box.element.classList.contains('selected'))
@@ -251,73 +251,100 @@ class BoxContainer {
 
     async updateSingleBoxTask(userId, taskKey, updatedTaskData, selectedBoxesToUpdate) {
         const taskRef = ref(this.db, 'userTasks/' + userId + '/' + taskKey);
+        const userTasksRef = ref(this.db, 'userTasks/' + userId);
     
         try {
-            // Check if selectedBoxesToUpdate is a valid array
             if (!Array.isArray(selectedBoxesToUpdate)) {
                 console.error("selectedBoxesToUpdate is not an array:", selectedBoxesToUpdate);
                 Swal.fire("Error", "Selected boxes to update is invalid. Please try again.", "error");
                 return;
             }
     
-            // Log the selectedBoxesToUpdate for debugging
             console.log("Selected Boxes to Update:", selectedBoxesToUpdate);
     
-            // First, retrieve the current task data from the database
             const snapshot = await get(taskRef);
             if (snapshot.exists()) {
                 let taskData = snapshot.val();
     
-                // Ensure taskData.selectedBoxes is defined and is an array
                 if (!Array.isArray(taskData.selectedBoxes)) {
                     console.log("taskData.selectedBoxes is not an array, initializing it.");
-                    taskData.selectedBoxes = []; // Initialize as an empty array if it's undefined
+                    taskData.selectedBoxes = [];
                 }
     
-                // Log the task data to check for selectedBoxes
                 console.log("Task Data retrieved:", taskData);
     
-                // Perform the filtering operation, checking if each selected box is in taskData.selectedBoxes
+                const timeToRemove = selectedBoxesToUpdate.reduce((total, boxId) => {
+                    const box = this.boxes.find(b => b.id === boxId);
+                    return total + (box ? box.TimeValue : 0);
+                }, 0);
+    
                 taskData.selectedBoxes = taskData.selectedBoxes.filter(
-                    boxId => !selectedBoxesToUpdate.includes(boxId)  // This should now work without error
+                    boxId => !selectedBoxesToUpdate.includes(boxId)
                 );
     
-                console.log("Updated taskData.selectedBoxes after filter:", taskData.selectedBoxes);
+                taskData.totalTime -= timeToRemove;
+
+                if (taskData.selectedBoxes.length === 0) {
+                    await remove(taskRef);
+                    console.log("Previous task deleted as no boxes remain.");
+                } else {
+                    await set(taskRef, taskData);
+                    console.log("Original task updated successfully");
+                }
     
-                // Update the old task (without the updated boxes)
-                await set(taskRef, taskData);
-                console.log("Old task updated successfully");
+
     
-                // Create a new task for the updated boxes with the new tag and color
-                const newTaskData = {
-                    task: updatedTaskData.task,
-                    selectedBoxes: selectedBoxesToUpdate,
-                    totalTime: updatedTaskData.totalTime,
-                    tag: updatedTaskData.tag,
-                    color: updatedTaskData.color,
-                    timestamp: new Date().toISOString()  // New timestamp for the updated task
-                };
+                // Check for an existing task with the same color
+                const allTasksSnapshot = await get(userTasksRef);
+                let existingTaskKey = null;
+                let existingTaskData = null;
     
-                const newTaskRef = ref(this.db, 'userTasks/' + userId + '/' + new Date().getTime()); // New unique task ID
-                await set(newTaskRef, newTaskData);
-                console.log("New task created for updated boxes");
+                if (allTasksSnapshot.exists()) {
+                    allTasksSnapshot.forEach((childSnapshot) => {
+                        const childTask = childSnapshot.val();
+                        if (childTask.color === updatedTaskData.color) {
+                            existingTaskKey = childSnapshot.key;
+                            existingTaskData = childTask;
+                        }
+                    });
+                }
     
-                // Update the UI for the updated boxes
+                if (existingTaskKey) {
+                    // Merge with the existing task
+                    existingTaskData.selectedBoxes = [...existingTaskData.selectedBoxes, ...selectedBoxesToUpdate];
+                    existingTaskData.totalTime += timeToRemove;
+                    await set(ref(this.db, 'userTasks/' + userId + '/' + existingTaskKey), existingTaskData);
+                    console.log("Merged with existing task", existingTaskKey);
+                } else {
+                    // Create a new task if no matching color is found
+                    const newTaskData = {
+                        task: updatedTaskData.task,
+                        selectedBoxes: selectedBoxesToUpdate,
+                        totalTime: timeToRemove,
+                        tag: updatedTaskData.tag,
+                        color: updatedTaskData.color,
+                        timestamp: new Date().toISOString()
+                    };
+    
+                    const newTaskRef = ref(this.db, 'userTasks/' + userId + '/' + new Date().getTime());
+                    await set(newTaskRef, newTaskData);
+                    console.log("New task created for updated boxes");
+                }
+    
                 selectedBoxesToUpdate.forEach(boxId => {
                     const box = this.boxes.find(b => b.id === boxId);
                     if (box) {
-                        box.element.style.backgroundColor = updatedTaskData.color;  // Update color
-                        box.element.style.color = "#fff";  // White text
+                        box.element.style.backgroundColor = updatedTaskData.color;
+                        box.element.style.color = "#fff";
                     }
                 });
     
                 Swal.fire({
                     title: "Updated!",
-                    text: "The updated boxes have been moved to a new task.",
+                    text: "The updated boxes have been moved.",
                     icon: "success",
                     confirmButtonText: "OK"
                 });
-    
             } else {
                 console.error("No task found for the provided taskKey.");
                 Swal.fire("Error", "Failed to find the task to update. Please try again.", "error");
@@ -332,6 +359,7 @@ class BoxContainer {
             });
         }
     }
+    
     
     
     
