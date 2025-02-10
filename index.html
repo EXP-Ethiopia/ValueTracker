@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Tracker</title>
+    <link rel="stylesheet" href="public/styles/config.css">
+    <link rel="stylesheet" href="public/styles/style.css">
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyClF_kUmfMyrxDqP_iuu7BgoqqTtX67JRY",
+            authDomain: "valutracker-391c6.firebaseapp.com",
+            databaseURL: "https://valutracker-391c6-default-rtdb.firebaseio.com",
+            projectId: "valutracker-391c6",
+            storageBucket: "valutracker-391c6.firebasestorage.app",
+            messagingSenderId: "268267434732",
+            appId: "1:268267434732:web:49e075d9a0b22df4c4abc9",
+            measurementId: "G-X8RX5C4WKS"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // 🔹 Save User Info in Firestore
+        async function saveUserToFirebase(user) {
+            try {
+                await setDoc(doc(db, "users", user.uid), {
+                    name: user.displayName,
+                    email: user.email,
+                    profilePicture: user.photoURL,
+                    lastLogin: new Date().toISOString()
+                });
+                console.log("User saved to Firebase:", user.email);
+            } catch (error) {
+                console.error("Error saving user to Firestore:", error);
+            }
+        }
+
+        // Google Sign-In
+        function GoogleLogin() {
+            signInWithPopup(auth, provider)  // Open Google login popup
+                .then((result) => {
+                    const user = result.user;
+                    console.log("User logged in via Google:", user);
+                    saveUserToFirebase(user); // Save user info to Firestore
+                    redirectToHome(user.displayName || "User");
+                })
+                .catch((error) => {
+                    console.error("Google Sign-In Error:", error.message);
+                });
+        }
+
+
+        // Check if user is authenticated after page reload
+        // onAuthStateChanged(auth, (user) => {
+        //     if (user) {
+        //         console.log("User is already logged in:", user);
+        //         redirectToHome(user.displayName || "User");
+        //     }
+        // });
+
+        // Redirect to Home Page
+        function redirectToHome(username) {
+            window.location.href = `home.html?username=${encodeURIComponent(username)}`;
+        }
+
+        // Event listeners for buttons
+        document.getElementById("google-btn").addEventListener("click", GoogleLogin);
+
+        // Handle other login/signup functionality here (email/password etc.)
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const createNewUser = document.getElementById("create-btn");
+        const LoginBtn = document.getElementById("sign-btn");
+
+        // createNewUser.addEventListener("click", () => {
+        //     console.log("New User:", emailInput.value, passwordInput.value);
+        //     SignIn(emailInput.value, passwordInput.value);
+        // });
+
+        LoginBtn.addEventListener("click", () => {
+            LogIn(emailInput.value, passwordInput.value);
+        });
+
+        // ✅ Sign-up function (MODULAR Firebase)
+        function SignIn(email, password) {
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("User Created Successfully:", userCredential.user);
+                    saveUserToFirebase(userCredential.user); // Save user info to Firestore
+                    redirectToHome(userCredential.user.displayName || "User");
+                })
+                .catch((error) => {
+                    console.error("Error:", error.message);
+                });
+        }
+
+        // Log-in function (MODULAR Firebase)
+        function LogIn(email, password) {
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Signed in 
+                    const user = userCredential.user;
+                    console.log("User Is logged in:", user.email);
+                    redirectToHome(user.email || "User");
+                })
+                .catch((error) => {
+                    console.error("Error:", error.message);
+                });
+        }
+    </script>
+
+    <!-- Jquery option -->
+    <script
+    src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+    crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+
+    <header class="header">
+        <h1>Value<span>Tracker</span></h1>
+    </header>
+
+    <div class="homeContent">
+        <form action="" class="login-form">
+            <label for="email">Email</label><br>
+            <input type="email" id="email" placeholder="e.g: janeacne"> <br><br>
+    
+            <label for="password">Password</label><br>
+            <input type="password" id="password" placeholder="e.g: janeacne@gmail.com" > <br><br>
+    
+            <button id="sign-btn" type="button" >Sign in</button>
+            <button id="google-btn" style="background-color: #fff; color: #000;" type="button" >
+                <img src="public/images/google-icon.png" alt=""> Log In With Google
+            </button>
+            <!-- <button id="create-btn" type="button" >Create New Account</button> -->
+        </form>
+    </div>
+
+</body>
+</html>
