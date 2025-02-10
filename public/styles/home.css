@@ -243,3 +243,6 @@ body {
     background-color: red;    
   }
   
+  select {
+    width: 99px;
+  }

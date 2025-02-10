@@ -412,7 +412,6 @@ class BoxContainer {
                     const timeStamp = data.timestamp;
 
                     if(timeStamp) {
-                        const dataOject = new Date(timeStamp);  
                         const date = new Date(timeStamp).toISOString().split('T')[0];
                         console.log("Date: " + date);
                         const currentDate = new Date().toISOString().split('T')[0];
@@ -442,6 +441,18 @@ class BoxContainer {
 
 
         });
+    }
+
+   async ShowData(Day, Month, Year) {
+        let UserTask =  ref(this.db, 'userTasks/' + userId);
+        let snapshot = await get(UserTask);
+
+        if(snapshot.exists() ){
+            console.log("Task is found");
+            console.log(snapshot.val());
+        } else {
+            console.log("Task is not found");
+        }
     }
     
     
@@ -682,8 +693,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedDate =  document.getElementById("getSelectedDate");
 
     selectedDate.addEventListener("click", () => {
+        boxContainer.ShowData();
+        let day = document.getElementById("dayComboBox").value;
+        let month = document.getElementById("monthComboBox").value;
+        let Year = document.getElementById("yearComboBox").value;
+
+        if(day < 10) {
+            day = `0${day}`;
+        }
+
+        if(month < 10) {
+            month = `0${month}`;    
+        }
+
+        try {
+            const UserTask = ref
+
+        }catch(e) {
+            console.log(e.message);
+        }
+
+        console.log("Selected Day: " +  day);
+        console.log("Selected month: " +  month);
+        console.log("Selected Year: " +  Year);
+
+        const selectedDate = `${Year}-${month}-${day}`;
        
-        console.log("Selected Date: gegege");
+
+        console.log(selectedDate);
     })
 });
 

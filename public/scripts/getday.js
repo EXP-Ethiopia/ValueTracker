@@ -14,6 +14,8 @@ const dayElement = document.getElementById('current-day');
 
 // dayElement.textContent = `${currentDay}, ${currentFormattedDate}`;
 
+
+
 let DaySelection = document.getElementById("dayComboBox");
 let MonthSelection = document.getElementById("monthComboBox");
 let YearSelection = document.getElementById("yearComboBox");
@@ -23,8 +25,11 @@ const Months = ["January", "February", "March", "April", "May", "June", "July", 
 function PopulateMonths() {
     for(let i =0; Months.length > i; i++) {
         let option = document.createElement("option");
+
         option.value = i +1;
         option.text = Months[i];
+
+        option.selected = Months[i] === Months[currentDate.getMonth()] ? true : false;
         MonthSelection.appendChild(option);
         console.log(`Month: ${Months[i]} ==> ${option.value} `);
 
@@ -36,20 +41,27 @@ function populateYear() {
     for(let i = 0; i < 100; i++) {
         let option = document.createElement("option");
         option.text = currentYear - i;
+        option.selected = currentYear - i === currentDate.getFullYear() ? true : false;
         YearSelection.appendChild(option);
     }
 
 }
 
 function popualteDays (months) {
-    // let months = MonthSelection.options[MonthSelection.selectedIndex].text;
-    // let months = YearSelection.options[YearSelection.selectedIndex].text;
 
     let days = 31;
 
+
+
     if(months === "February") {
+        if(days < 10) {
+            days = `0${days}`;
+        }
         days = 28;
     } else if (months === "April" || months === "June" || months === "September" || months === "November") {
+        if(days < 10) {
+            days = `0${days}`;
+        }
         days = 30;
     }
 
@@ -58,6 +70,7 @@ function popualteDays (months) {
     for(let i = 1; i <= days; i++) {
         let option = document.createElement("option");
         option.text = i;
+        option.selected = i === currentDate.getDate() ? true : false;
         DaySelection.appendChild(option);
         
     }
@@ -66,6 +79,10 @@ function popualteDays (months) {
 MonthSelection.addEventListener("change", () => {
     popualteDays(MonthSelection.options[MonthSelection.selectedIndex].text);
 });
+
+
+
+const dt = new Date();
 
 PopulateMonths();
 populateYear();
