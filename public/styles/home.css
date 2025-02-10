@@ -1,5 +1,8 @@
 /* Header */
 .home-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
     background-color: white;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -9,11 +12,17 @@
     height: 68px;
 }
 
+body {
+    background-color: hsl(0, 0%, 87%);
+    /* border: 3px solid black; */
+    padding: 5.6rem 0 5.8rem;
+}
+
 /* Header left */
 .leftNav {
     display: flex;
-    /* align-items: center; */
-    margin-top: 5px;
+    align-items: center;
+    /* border: 3px solid red; */
 }
 
 .leftNav img {
@@ -22,28 +31,6 @@
     border: 2px solid rgb(48, 127, 231);
     border-radius: 50%;
     margin-right: 8px;
-}
-
-#searchInput{
-    border-top-left-radius: 7px;
-    max-width: 250px;
-    border: none;
-    outline: none;
-    background-color: #f6f3f3;
-    padding: 8px 8px;
-    margin-left: 10px;
-    height: 100%;
-}
-
-#searchBtn {
-    outline: none;
-    border: none;
-    padding: 8px;
-    height: 100%;
-    background-color: rgb(60, 60, 253);
-    color: #fff;
-    border-top-right-radius: 7px;
-    cursor: pointer;
 }
 
 /* Header right */
@@ -67,10 +54,7 @@
 }
 
 #logoutBtn,
-#homeBtn,
-#FinancetBtn,
-#WorkBtn,
-#HealthBtn {
+#analyticsBtn {
     padding: 0.35rem 0.7rem;
     border: none;
     outline: none;
@@ -88,40 +72,54 @@
 
 .welcome{
     text-align: center;
-    font-size: 35px;
-    margin-top: 20px;
+    color: #08080B;
+    /* font-size: 18px; */
+    margin: 10px 0;
+    font-size: 20px;
 }
 
 .box {
-    width: 100px;
-    height: 100px;
+    width: 112px;
+    height: 112px;
     margin: 10px;
     background-color: lightblue;
+    border-radius: 6px;
     display: inline-block;
     text-align: center;
     cursor: pointer;
     font-size: 12px;
     display: flex;
-    padding: 1px;
+    padding: 3px;
     justify-content: center;
     align-items: center;
     border: 5px solid transparent;
 }
-
+/* 
 .titleBox {
-    font-size: 10px;
-}
+    font-size: 8px;
+} */
 
 .firstText {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 32px;
+    padding: .4rem .9rem;
+    border-radius: 53px;
+    /* border: 3px solid green; */
+    background-color: hsl(0, 0%, 93%);
+}
+
+.firstText h1 {
+    font-size: 21px;
+    color: #3e3e4c;
 }
 
 .container{
-    margin-top: 120px;
-    width: 1800px;
+    /* border: 3px solid red; */
+    /* margin-top: 62px; */
+    /* padding-top: 9.9rem; */
+    max-width: 1234px;
     margin-inline: auto;
     padding: 10px;
     display: flex;
@@ -133,18 +131,26 @@
     border: none;
     background-color: navy;
     color: #fff;
-    padding: 7px;
+    padding: 7px 9px;
     border-radius: 10px;
-    width: 180px;
-    padding: 10px;
-    font-size: 22px;
+    width: 62px;
+    font-size: 14px;
     cursor: pointer;
 }
 
 #box-container {
+    width: 97%;
+    height: 442px;
+    margin: 0 auto;
+    overflow-y: scroll;
+    border: 2px solid white;
+    box-shadow: 0 4px 0.3rem white;
+    background-color: white;
+    border-radius: 27px;
+    padding: 0.2rem 0.4rem;
     display: flex;
     gap: 10px;
-    justify-content: center;
+    justify-content: left;
     flex-wrap: wrap;
 }
 
@@ -207,8 +213,25 @@
   }
 
   .selected {
-    border-color: #000;
-    color: #fff;
+    background-color: hsl(195, 53%, 28%);
+    box-shadow: 3px 2px .6rem hsl(195, 53%, 79%);
+    border-radius: 3px;
+    /* color: #fff; */
+    width: 112px;
+    height: 112px;
+    margin: 10px;
+    border-radius: 6px;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    padding: 3px;
+    justify-content: center;
+    align-items: center;
+    /* border: 5px solid transparent; */
+    border: 5px solid #000;
+
   }
 
   #DeleteBoxes{
