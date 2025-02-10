@@ -390,6 +390,21 @@ class BoxContainer {
 
     retrievedData() {
 
+        let TaskFound = false;
+
+        let day = document.getElementById("dayComboBox").value;
+        let month = document.getElementById("monthComboBox").value;
+        let year = document.getElementById("yearComboBox").value;
+
+        if(day < 10) {
+            day = `0${day}`;
+        }
+
+        if(month < 10) {
+            month = `0${month}`;    
+        }    
+        const givenDate = `${year}-${month}-${day}`;
+    
         onAuthStateChanged(this.auth, (user) => {
             if (!user) {
                 console.log("User not logged in (retrievedData function)");
@@ -399,26 +414,33 @@ class BoxContainer {
             console.log("User is logged in:", user.uid);
             const retrievedData = ref(this.db, `userTasks/${user.uid}`);
     
-        onValue(retrievedData, (snapshot) => {
+            onValue(retrievedData, (snapshot) => {
                 const datas = snapshot.val();
                 console.log("Retrieved Data:", datas);
-
-
+    
                 Object.values(datas).forEach(data => {
-                    console.log("selected boxes: " + data.selectedBoxes);
-                    console.log("task: " + data.task);
+                    // console.log("selected boxes: " + data.selectedBoxes);
+                    // console.log("task: " + data.task);
                     console.log("timeStamp: " + data.timestamp);
 
+
+
+    
                     const timeStamp = data.timestamp;
+    
+                    if (timeStamp) {
+                        const date = new Date(timeStamp).toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    
+                        // Compare the date derived from the timestamp with the givenDate
+                        if (date === givenDate) {
+                            console.log(`true same date!!:  ${date} ==> ${givenDate}`);
+                            TaskFound = true;
+                            // Perform actions for matching dates
 
-                    if(timeStamp) {
-                        const date = new Date(timeStamp).toISOString().split('T')[0];
-                        console.log("Date: " + date);
-                        const currentDate = new Date().toISOString().split('T')[0];
-                        console.log("Current Date: " + currentDate);
+                            // write here the logic for removing the boxes before inserting the new tsak based on date
 
+                            
 
-                        if(date == currentDate) {
                             data.selectedBoxes.forEach(boxId => {
                                 const box = this.boxes.find(b => b.id === boxId);
                                 if (box) {
@@ -426,24 +448,36 @@ class BoxContainer {
                                     box.element.style.color = "#fff";
                                 }
                             });
-                            
-                        } else {
-                        Swal.fire("No Task Found", "No task found for today", "info");
 
+
+
+                        } else {
+                            this.boxes.forEach(box => {
+                                box.element.style.backgroundColor = ""; // Reset background color
+                                box.element.style.color = ""; // Reset text color
+
+                                if (box.element.classList.contains('selected')) {
+                                    console.log("remove the selected class");
+                                }
+                            });
+                            Swal.fire(`No task for this date mate !! ${givenDate} ==> ${date}`);    
                         }
 
-                    }else {
-                        Swal.fire("No TimeStamp Found", "No TimeStamp found for today !", "info");
+    
+                    } else {
+                        Swal.fire("No TimeStamp Found", "No TimeStamp found for today!", "info");
                         console.log("No timestamp found");
                     }
+
+                    
+
+
                 });
             });
-
-
         });
     }
 
-   async ShowData(Day, Month, Year) {
+    async ShowData(Day, Month, Year) {
         let UserTask =  ref(this.db, 'userTasks/' + userId);
         let snapshot = await get(UserTask);
 
@@ -616,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-document.addEventListener('DOMContentLoaded', () => { boxContainer.retrievedData(); });
+// document.addEventListener('DOMContentLoaded', () => { boxContainer.retrievedData(); });
 
 
 
@@ -661,12 +695,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                if(this.selectedBoxes) {
-
-                } else {
-
-                }
-
             } catch (error) {
                 console.error("Error deleting boxes:", error);
                 Swal.fire("Error", "Could not delete the selected boxes. Try again later.", "error");
@@ -693,39 +721,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedDate =  document.getElementById("getSelectedDate");
 
     selectedDate.addEventListener("click", () => {
-        boxContainer.ShowData();
-        let day = document.getElementById("dayComboBox").value;
-        let month = document.getElementById("monthComboBox").value;
-        let Year = document.getElementById("yearComboBox").value;
 
-        if(day < 10) {
-            day = `0${day}`;
-        }
 
-        if(month < 10) {
-            month = `0${month}`;    
-        }
-
-        try {
-            const UserTask = ref
-
-        }catch(e) {
-            console.log(e.message);
-        }
-
-        console.log("Selected Day: " +  day);
-        console.log("Selected month: " +  month);
-        console.log("Selected Year: " +  Year);
-
-        const selectedDate = `${Year}-${month}-${day}`;
-       
-
-        console.log(selectedDate);
+        boxContainer.retrievedData();
     })
 });
 
 // Function to compare two arrays (order-independent)
 function arraysEqual(arr1, arr2) {
-    if (arr1.length !== arr2.length) return false;
+    // if (arr1.length !== arr2.length) return false;
     return arr1.every(value => arr2.includes(value)) && arr2.every(value => arr1.includes(value));
 }
