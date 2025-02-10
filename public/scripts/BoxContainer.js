@@ -68,7 +68,7 @@ class BoxContainer {
         });
     }
 
-    showCustomPopup() {
+    async showCustomPopup() {
         // Refill selectedBoxes with only the currently selected boxes
         this.selectedBoxes = this.boxes
             .filter(box => box.element.classList.contains('selected'))
@@ -121,47 +121,90 @@ class BoxContainer {
                     }
                 });
             }
-
-        
-
-        const taskRef = ref(this.db, 'userTasks/' + userId + '/' + new Date().getTime()); // Using timestamp as a unique ID
-
-        set(taskRef, {
-            task: inputData,  
-            selectedBoxes: this.selectedBoxes, 
-            totalTime: this.calculateTotalTime(), 
-            tag: selectedOption,  
-            color: selectedTagColor,  
-            timestamp: new Date().toISOString()  // Timestamp of the task creation
-        })
-        .then(() => {
-            console.log("Data saved to Realtime Database successfully");
-            Swal.fire({
-                title: "Saved!",
-                text: "Your task has been saved successfully.",
-                icon: "success",
-                confirmButtonText: "OK"
+    
+            // Group selected boxes by their current background color
+            const groupedBoxes = {};
+            this.selectedBoxes.forEach(boxId => {
+                const box = this.boxes.find(b => b.id === boxId);
+                if (box) {
+                    const color = box.element.style.backgroundColor;
+                    if (!groupedBoxes[color]) {
+                        groupedBoxes[color] = [];
+                    }
+                    groupedBoxes[color].push(boxId);
+                }
             });
-        })
-        .catch(error => {
-            console.error("Error saving to Realtime Database:", error);
-            Swal.fire({
-                title: "Error",
-                text: "Failed to save data. Please try again.",
-                icon: "error",
-                confirmButtonText: "OK"
-            });
-        });
-                    this.selectedBoxes = [];
-            
-                    // Remove 'selected' class from boxes so UI updates
-                    this.boxes.forEach(box => {
-                        box.element.classList.remove('selected');
+    
+            // Check if a task with the same color already exists in the database
+            const userId = this.auth.currentUser.uid;
+            const userTasksRef = ref(this.db, `userTasks/${userId}`);
+    
+            try {
+                const snapshot = await get(userTasksRef);
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const taskData = childSnapshot.val();
+                        const taskColor = taskData.color;
+    
+                        // If a task with the same color exists, update it
+                        if (groupedBoxes[taskColor]) {
+                            const updatedSelectedBoxes = [...taskData.selectedBoxes, ...groupedBoxes[taskColor]];
+                            const updatedTotalTime = taskData.totalTime + this.calculateTotalTime();
+    
+                            // Update the existing task
+                            update(childSnapshot.ref, {
+                                selectedBoxes: updatedSelectedBoxes,
+                                totalTime: updatedTotalTime
+                            });
+    
+                            // Remove the color from groupedBoxes since it's been handled
+                            delete groupedBoxes[taskColor];
+                        }
                     });
-            
-                    document.body.removeChild(overlay);
+                }
+    
+                // Create new tasks for any remaining color groups
+                for (const [color, boxIds] of Object.entries(groupedBoxes)) {
+                    const taskRef = ref(this.db, `userTasks/${userId}/${new Date().getTime()}`); // New timestamp
+    
+                    set(taskRef, {
+                        task: inputData,
+                        selectedBoxes: boxIds,
+                        totalTime: this.calculateTotalTime(),
+                        tag: selectedOption,
+                        color: color,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+    
+                console.log("Data saved/updated in Realtime Database successfully");
+                Swal.fire({
+                    title: "Saved!",
+                    text: "Your task has been saved/updated successfully.",
+                    icon: "success",
+                    confirmButtonText: "OK"
                 });
-            
+            } catch (error) {
+                console.error("Error saving/updating to Realtime Database:", error);
+                Swal.fire({
+                    title: "Error",
+                    text: "Failed to save/update data. Please try again.",
+                    icon: "error",
+                    confirmButtonText: "OK"
+                });
+            }
+    
+            // Reset selection
+            this.selectedBoxes = [];
+    
+            // Remove 'selected' class from boxes so UI updates
+            this.boxes.forEach(box => {
+                box.element.classList.remove('selected');
+            });
+    
+            document.body.removeChild(overlay);
+        });
+    
         const closeButton = document.createElement('button');
         closeButton.classList.add('submitBTN');
         closeButton.textContent = 'Close';
@@ -208,73 +251,100 @@ class BoxContainer {
 
     async updateSingleBoxTask(userId, taskKey, updatedTaskData, selectedBoxesToUpdate) {
         const taskRef = ref(this.db, 'userTasks/' + userId + '/' + taskKey);
+        const userTasksRef = ref(this.db, 'userTasks/' + userId);
     
         try {
-            // Check if selectedBoxesToUpdate is a valid array
             if (!Array.isArray(selectedBoxesToUpdate)) {
                 console.error("selectedBoxesToUpdate is not an array:", selectedBoxesToUpdate);
                 Swal.fire("Error", "Selected boxes to update is invalid. Please try again.", "error");
                 return;
             }
     
-            // Log the selectedBoxesToUpdate for debugging
             console.log("Selected Boxes to Update:", selectedBoxesToUpdate);
     
-            // First, retrieve the current task data from the database
             const snapshot = await get(taskRef);
             if (snapshot.exists()) {
                 let taskData = snapshot.val();
     
-                // Ensure taskData.selectedBoxes is defined and is an array
                 if (!Array.isArray(taskData.selectedBoxes)) {
                     console.log("taskData.selectedBoxes is not an array, initializing it.");
-                    taskData.selectedBoxes = []; // Initialize as an empty array if it's undefined
+                    taskData.selectedBoxes = [];
                 }
     
-                // Log the task data to check for selectedBoxes
                 console.log("Task Data retrieved:", taskData);
     
-                // Perform the filtering operation, checking if each selected box is in taskData.selectedBoxes
+                const timeToRemove = selectedBoxesToUpdate.reduce((total, boxId) => {
+                    const box = this.boxes.find(b => b.id === boxId);
+                    return total + (box ? box.TimeValue : 0);
+                }, 0);
+    
                 taskData.selectedBoxes = taskData.selectedBoxes.filter(
-                    boxId => !selectedBoxesToUpdate.includes(boxId)  // This should now work without error
+                    boxId => !selectedBoxesToUpdate.includes(boxId)
                 );
     
-                console.log("Updated taskData.selectedBoxes after filter:", taskData.selectedBoxes);
+                taskData.totalTime -= timeToRemove;
+
+                if (taskData.selectedBoxes.length === 0) {
+                    await remove(taskRef);
+                    console.log("Previous task deleted as no boxes remain.");
+                } else {
+                    await set(taskRef, taskData);
+                    console.log("Original task updated successfully");
+                }
     
-                // Update the old task (without the updated boxes)
-                await set(taskRef, taskData);
-                console.log("Old task updated successfully");
+
     
-                // Create a new task for the updated boxes with the new tag and color
-                const newTaskData = {
-                    task: updatedTaskData.task,
-                    selectedBoxes: selectedBoxesToUpdate,
-                    totalTime: updatedTaskData.totalTime,
-                    tag: updatedTaskData.tag,
-                    color: updatedTaskData.color,
-                    timestamp: new Date().toISOString()  // New timestamp for the updated task
-                };
+                // Check for an existing task with the same color
+                const allTasksSnapshot = await get(userTasksRef);
+                let existingTaskKey = null;
+                let existingTaskData = null;
     
-                const newTaskRef = ref(this.db, 'userTasks/' + userId + '/' + new Date().getTime()); // New unique task ID
-                await set(newTaskRef, newTaskData);
-                console.log("New task created for updated boxes");
+                if (allTasksSnapshot.exists()) {
+                    allTasksSnapshot.forEach((childSnapshot) => {
+                        const childTask = childSnapshot.val();
+                        if (childTask.color === updatedTaskData.color) {
+                            existingTaskKey = childSnapshot.key;
+                            existingTaskData = childTask;
+                        }
+                    });
+                }
     
-                // Update the UI for the updated boxes
+                if (existingTaskKey) {
+                    // Merge with the existing task
+                    existingTaskData.selectedBoxes = [...existingTaskData.selectedBoxes, ...selectedBoxesToUpdate];
+                    existingTaskData.totalTime += timeToRemove;
+                    await set(ref(this.db, 'userTasks/' + userId + '/' + existingTaskKey), existingTaskData);
+                    console.log("Merged with existing task", existingTaskKey);
+                } else {
+                    // Create a new task if no matching color is found
+                    const newTaskData = {
+                        task: updatedTaskData.task,
+                        selectedBoxes: selectedBoxesToUpdate,
+                        totalTime: timeToRemove,
+                        tag: updatedTaskData.tag,
+                        color: updatedTaskData.color,
+                        timestamp: new Date().toISOString()
+                    };
+    
+                    const newTaskRef = ref(this.db, 'userTasks/' + userId + '/' + new Date().getTime());
+                    await set(newTaskRef, newTaskData);
+                    console.log("New task created for updated boxes");
+                }
+    
                 selectedBoxesToUpdate.forEach(boxId => {
                     const box = this.boxes.find(b => b.id === boxId);
                     if (box) {
-                        box.element.style.backgroundColor = updatedTaskData.color;  // Update color
-                        box.element.style.color = "#fff";  // White text
+                        box.element.style.backgroundColor = updatedTaskData.color;
+                        box.element.style.color = "#fff";
                     }
                 });
     
                 Swal.fire({
                     title: "Updated!",
-                    text: "The updated boxes have been moved to a new task.",
+                    text: "The updated boxes have been moved.",
                     icon: "success",
                     confirmButtonText: "OK"
                 });
-    
             } else {
                 console.error("No task found for the provided taskKey.");
                 Swal.fire("Error", "Failed to find the task to update. Please try again.", "error");
@@ -289,6 +359,7 @@ class BoxContainer {
             });
         }
     }
+    
     
     
     
@@ -426,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: "Work", color: "#FF0000" },
             { name: "Personal Dev", color: "brown" },
             { name: "School", color: "green" },
-            { name: "FuncTime", color: "Blue" },
+            { name: "FunTime", color: "Blue" },
             { name: "Team Time", color: "purple" }
         ];
         tags.forEach(tag => boxContainer.addTag(tag.name, tag.color)); 
@@ -461,6 +532,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 .filter(box => box.element.classList.contains('selected'))
                 .map(box => box.id);
 
+            console.log("Selected Boxes for Deletion:", selectedBoxes); // Debugging log
+
             if (selectedBoxes.length === 0) {
                 Swal.fire("No Selection", "Please select at least one box before deleting.", "warning");
                 return;
@@ -468,58 +541,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const snapshot = await get(userTasksRef);
-                let taskToDelete = null;
-                let taskKey = null;
 
-                if (snapshot.exists()) {
-                    snapshot.forEach((childSnapshot) => {
-                        const data = childSnapshot.val();
-                        if (arraysEqual(data.selectedBoxes, selectedBoxes)) {
-                            taskToDelete = data;
-                            taskKey = childSnapshot.key;
-                        }
-                    });
+                if (!snapshot.exists()) {
+                    console.log("No tasks found for user:", userId); // Debugging log
+                    Swal.fire("Not Found", "No tasks found in the database.", "info");
+                    return;
                 }
 
-                if (taskToDelete) {
-                    Swal.fire({
-                        title: "Delete Task?",
-                        text: `Are you sure you want to delete this task?`,
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "Yes, Delete",
-                        cancelButtonText: "Cancel",
-                    }).then(async (result) => {
-                        if (result.isConfirmed) {
-                            await remove(ref(db, `${taskPath}/${taskKey}`));
-                            console.log("Task deleted from Realtime Database");
+                let tasksUpdated = false;
 
-                            Swal.fire("Deleted!", "The task has been removed successfully.", "success");
+                const updatePromises = [];
 
-                            boxContainer.boxes.forEach(box => {
-                                if (box.element.classList.contains('selected')) { 
-                                    box.element.classList.remove('selected'); 
-                                    box.element.style.backgroundColor = "lightblue"; 
-                                    box.element.style.color = "#000"; 
-                                }
-                            });
-                            
+                snapshot.forEach((childSnapshot) => {
+                    const taskKey = childSnapshot.key;
+                    const taskData = childSnapshot.val();
 
+                    console.log("Checking Task:", taskKey, "Data:", taskData); // Debugging log
+
+                    if (!Array.isArray(taskData.selectedBoxes)) {
+                        console.log(`Task ${taskKey} does not have an array of selectedBoxes`); // Debugging log
+                        return;
+                    }
+
+                    // Filter out the selected boxes
+                    const remainingBoxes = taskData.selectedBoxes.filter(boxId => !selectedBoxes.includes(boxId));
+
+                    console.log("Remaining Boxes after removal:", remainingBoxes); // Debugging log
+
+                    // Calculate the time being removed
+                    const removedTime = taskData.selectedBoxes
+                        .filter(boxId => selectedBoxes.includes(boxId))
+                        .reduce((total, boxId) => {
+                            const box = boxContainer.boxes.find(b => b.id === boxId);
+                            return total + (box ? box.TimeValue : 0);
+                        }, 0);
+
+                    if (remainingBoxes.length === 0) {
+                        console.log(`Deleting Task: ${taskKey}`); // Debugging log
+                        updatePromises.push(remove(ref(db, `${taskPath}/${taskKey}`)));
+                    } else {
+                        console.log(`Updating Task: ${taskKey}, New Remaining Boxes:`, remainingBoxes); // Debugging log
+                        updatePromises.push(update(ref(db, `${taskPath}/${taskKey}`), {
+                            selectedBoxes: remainingBoxes,
+                            totalTime: Math.max(0, taskData.totalTime - removedTime)
+                        }));
+                    }
+
+                    tasksUpdated = true;
+                });
+
+                // Execute all Firebase updates
+                await Promise.all(updatePromises);
+
+                if (tasksUpdated) {
+                    Swal.fire("Deleted!", "The selected boxes have been removed successfully.", "success");
+
+                    // Reset UI for selected boxes
+                    boxContainer.boxes.forEach(box => {
+                        if (box.element.classList.contains('selected')) {
+                            box.element.classList.remove('selected');
+                            box.element.style.backgroundColor = "lightblue"; 
+                            box.element.style.color = "#000"; // Reset text color
                         }
                     });
                 } else {
-                    Swal.fire("Not Found", "No matching task found in the database.", "info");
+                    Swal.fire("Not Found", "No matching tasks found for the selected boxes.", "info");
                 }
 
             } catch (error) {
-                console.error("Error deleting task:", error);
-                Swal.fire("Error", "Could not delete the task. Try again later.", "error");
+                console.error("Error deleting boxes:", error);
+                Swal.fire("Error", "Could not delete the selected boxes. Try again later.", "error");
             }
         });
     } else {
-        console.error('Button with ID "deletedBoxes" not found!');
+        console.error('Button with ID "DeleteBoxes" not found!');
     }
 });
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const updateBTN = document.getElementById('UpdateTask');
