@@ -204,6 +204,27 @@ class BoxContainer {
     
             document.body.removeChild(overlay);
         });
+
+        const addTagBtn = document.createElement('button');
+        addTagBtn.classList.add('submitBTN');
+        addTagBtn.textContent = 'Add Tag';
+        addTagBtn.addEventListener('click', () => {
+            const tagName = prompt("Enter the tag name:");
+            const tagColor = prompt("Enter the tag color:");
+            
+            if(tagName && tagColor) {
+
+                this.addTag(tagName, tagColor);
+
+
+                this.saveTagsToLocalStorage(tagName, tagColor);
+            }
+
+            console.log("Add Tag Button Clicked");
+
+            
+        });
+    
     
         const closeButton = document.createElement('button');
         closeButton.classList.add('submitBTN');
@@ -212,9 +233,16 @@ class BoxContainer {
             document.body.removeChild(overlay);
         });
     
-        modal.append(title, inputField, this.comboBox, submitButton, closeButton);
+        modal.append(title, inputField, this.comboBox, submitButton, closeButton, addTagBtn);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
+    }
+
+    saveTagsToLocalStorage(name, color) {
+        let storedTags = JSON.parse(localStorage.getItem('tags')) || [];
+        storedTags.push({ name, color });
+        localStorage.setItem('tags', JSON.stringify(storedTags));
+
     }
     
     addTag(tagName, color) {
@@ -359,6 +387,40 @@ class BoxContainer {
             });
         }
     }
+
+    retrievedData() {
+
+        onAuthStateChanged(this.auth, (user) => {
+            if (!user) {
+                console.log("User not logged in (retrievedData function)");
+                return;
+            }
+    
+            console.log("User is logged in:", user.uid);
+            const retrievedData = ref(this.db, `userTasks/${user.uid}`);
+    
+        onValue(retrievedData, (snapshot) => {
+                const datas = snapshot.val();
+                console.log("Retrieved Data:", datas);
+                console.log("Retrieved Data:", typeof (datas));
+
+                Object.values(datas).forEach(data => {
+                    console.log("selected boxes: " + data.selectedBoxes);
+                    console.log("task: " + data.task);
+
+                    data.selectedBoxes.forEach(boxId => {
+                        const box = this.boxes.find(b => b.id === boxId);
+                        if (box) {
+                            box.element.style.backgroundColor = data.color;
+                            box.element.style.color = "#fff";
+                        }
+                    });
+                });
+            });
+
+
+        });
+    }
     
     
     
@@ -481,7 +543,7 @@ class BoxContainer {
         document.body.removeChild(overlay);
     });
 
-    modal.append(title, inputField, this.comboBox, submitButton, closeButton);
+    modal.append(title, inputField, this.comboBox, submitButton, closeButton, addTagBtn);
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 }
@@ -493,14 +555,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitBTN = document.getElementById('saveBoxes');
 
     const initializeTags = () => {
-        const tags = [
-            { name: "Work", color: "#FF0000" },
-            { name: "Personal Dev", color: "brown" },
-            { name: "School", color: "green" },
-            { name: "FunTime", color: "Blue" },
-            { name: "Team Time", color: "purple" }
-        ];
-        tags.forEach(tag => boxContainer.addTag(tag.name, tag.color)); 
+        let storedTags = JSON.parse(localStorage.getItem('tags'));
+
+        if (!storedTags || storedTags.length === 0) {
+            storedTags = [
+                { name: "Work", color: "red" },
+                { name: "Personal Dev", color: "brown" },
+                { name: "School", color: "green" },
+                { name: "FunTime", color: "Blue" },
+                { name: "Team Time", color: "purple" }
+            ];
+            localStorage.setItem('tags', JSON.stringify(storedTags)); // Save default tags if none exist
+        } 
+    
+        storedTags.forEach(tag => boxContainer.addTag(tag.name, tag.color)); 
     };
     initializeTags();
 
@@ -509,7 +577,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Button with ID "saveBoxes" not found!');
     }
+
+    // console.log("Document is Loaded");
+
+
 });
+
+document.addEventListener('DOMContentLoaded', () => { boxContainer.retrievedData(); });
+
 
 
 document.addEventListener('DOMContentLoaded', () => {
