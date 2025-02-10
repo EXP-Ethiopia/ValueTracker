@@ -402,19 +402,41 @@ class BoxContainer {
         onValue(retrievedData, (snapshot) => {
                 const datas = snapshot.val();
                 console.log("Retrieved Data:", datas);
-                console.log("Retrieved Data:", typeof (datas));
+
 
                 Object.values(datas).forEach(data => {
                     console.log("selected boxes: " + data.selectedBoxes);
                     console.log("task: " + data.task);
+                    console.log("timeStamp: " + data.timestamp);
 
-                    data.selectedBoxes.forEach(boxId => {
-                        const box = this.boxes.find(b => b.id === boxId);
-                        if (box) {
-                            box.element.style.backgroundColor = data.color;
-                            box.element.style.color = "#fff";
+                    const timeStamp = data.timestamp;
+
+                    if(timeStamp) {
+                        const dataOject = new Date(timeStamp);  
+                        const date = new Date(timeStamp).toISOString().split('T')[0];
+                        console.log("Date: " + date);
+                        const currentDate = new Date().toISOString().split('T')[0];
+                        console.log("Current Date: " + currentDate);
+
+
+                        if(date == currentDate) {
+                            data.selectedBoxes.forEach(boxId => {
+                                const box = this.boxes.find(b => b.id === boxId);
+                                if (box) {
+                                    box.element.style.backgroundColor = data.color;
+                                    box.element.style.color = "#fff";
+                                }
+                            });
+                            
+                        } else {
+                        Swal.fire("No Task Found", "No task found for today", "info");
+
                         }
-                    });
+
+                    }else {
+                        Swal.fire("No TimeStamp Found", "No TimeStamp found for today !", "info");
+                        console.log("No timestamp found");
+                    }
                 });
             });
 
@@ -543,7 +565,7 @@ class BoxContainer {
         document.body.removeChild(overlay);
     });
 
-    modal.append(title, inputField, this.comboBox, submitButton, closeButton, addTagBtn);
+    modal.append(title, inputField, this.comboBox, submitButton, closeButton);
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 }
@@ -616,71 +638,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const snapshot = await get(userTasksRef);
+                const getValue = snapshot.val();
 
-                if (!snapshot.exists()) {
-                    console.log("No tasks found for user:", userId); // Debugging log
-                    Swal.fire("Not Found", "No tasks found in the database.", "info");
-                    return;
-                }
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
 
-                let tasksUpdated = false;
-
-                const updatePromises = [];
-
-                snapshot.forEach((childSnapshot) => {
-                    const taskKey = childSnapshot.key;
-                    const taskData = childSnapshot.val();
-
-                    console.log("Checking Task:", taskKey, "Data:", taskData); // Debugging log
-
-                    if (!Array.isArray(taskData.selectedBoxes)) {
-                        console.log(`Task ${taskKey} does not have an array of selectedBoxes`); // Debugging log
-                        return;
-                    }
-
-                    // Filter out the selected boxes
-                    const remainingBoxes = taskData.selectedBoxes.filter(boxId => !selectedBoxes.includes(boxId));
-
-                    console.log("Remaining Boxes after removal:", remainingBoxes); // Debugging log
-
-                    // Calculate the time being removed
-                    const removedTime = taskData.selectedBoxes
-                        .filter(boxId => selectedBoxes.includes(boxId))
-                        .reduce((total, boxId) => {
-                            const box = boxContainer.boxes.find(b => b.id === boxId);
-                            return total + (box ? box.TimeValue : 0);
-                        }, 0);
-
-                    if (remainingBoxes.length === 0) {
-                        console.log(`Deleting Task: ${taskKey}`); // Debugging log
-                        updatePromises.push(remove(ref(db, `${taskPath}/${taskKey}`)));
-                    } else {
-                        console.log(`Updating Task: ${taskKey}, New Remaining Boxes:`, remainingBoxes); // Debugging log
-                        updatePromises.push(update(ref(db, `${taskPath}/${taskKey}`), {
-                            selectedBoxes: remainingBoxes,
-                            totalTime: Math.max(0, taskData.totalTime - removedTime)
-                        }));
-                    }
-
-                    tasksUpdated = true;
-                });
-
-                // Execute all Firebase updates
-                await Promise.all(updatePromises);
-
-                if (tasksUpdated) {
-                    Swal.fire("Deleted!", "The selected boxes have been removed successfully.", "success");
-
-                    // Reset UI for selected boxes
-                    boxContainer.boxes.forEach(box => {
-                        if (box.element.classList.contains('selected')) {
-                            box.element.classList.remove('selected');
-                            box.element.style.backgroundColor = "lightblue"; 
-                            box.element.style.color = "#000"; // Reset text color
+                    Object.keys(data).forEach(key => {
+                        if(arraysEqual(data[key].selectedBoxes, this.selectedBoxes)) {
+                            remove(ref(db, `${taskPath}/${key}`));
                         }
                     });
+                }
+
+                if(this.selectedBoxes) {
+
                 } else {
-                    Swal.fire("Not Found", "No matching tasks found for the selected boxes.", "info");
+
                 }
 
             } catch (error) {
@@ -703,6 +676,15 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Button with ID "UpdateTask" not found!');
     }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const selectedDate =  document.getElementById("getSelectedDate");
+
+    selectedDate.addEventListener("click", () => {
+       
+        console.log("Selected Date: gegege");
+    })
 });
 
 // Function to compare two arrays (order-independent)

@@ -12,4 +12,61 @@ const currentFormattedDate = `${currentDate.getFullYear()}/${currentDate.getMont
 const dayElement = document.getElementById('current-day');
 
 
-dayElement.textContent = `${currentDay}, ${currentFormattedDate}`;
+// dayElement.textContent = `${currentDay}, ${currentFormattedDate}`;
+
+let DaySelection = document.getElementById("dayComboBox");
+let MonthSelection = document.getElementById("monthComboBox");
+let YearSelection = document.getElementById("yearComboBox");
+
+const Months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+function PopulateMonths() {
+    for(let i =0; Months.length > i; i++) {
+        let option = document.createElement("option");
+        option.value = i +1;
+        option.text = Months[i];
+        MonthSelection.appendChild(option);
+        console.log(`Month: ${Months[i]} ==> ${option.value} `);
+
+    }
+}
+
+function populateYear() {
+    let currentYear = new Date().getFullYear();
+    for(let i = 0; i < 100; i++) {
+        let option = document.createElement("option");
+        option.text = currentYear - i;
+        YearSelection.appendChild(option);
+    }
+
+}
+
+function popualteDays (months) {
+    // let months = MonthSelection.options[MonthSelection.selectedIndex].text;
+    // let months = YearSelection.options[YearSelection.selectedIndex].text;
+
+    let days = 31;
+
+    if(months === "February") {
+        days = 28;
+    } else if (months === "April" || months === "June" || months === "September" || months === "November") {
+        days = 30;
+    }
+
+    DaySelection.innerHTML = "";
+
+    for(let i = 1; i <= days; i++) {
+        let option = document.createElement("option");
+        option.text = i;
+        DaySelection.appendChild(option);
+        
+    }
+}
+
+MonthSelection.addEventListener("change", () => {
+    popualteDays(MonthSelection.options[MonthSelection.selectedIndex].text);
+});
+
+PopulateMonths();
+populateYear();
+popualteDays(Months);

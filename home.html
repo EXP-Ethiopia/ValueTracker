@@ -70,7 +70,21 @@
 
     <div class="container">
         <div class="firstText">
-            <div><h1>Today: <span id="current-day"></span></h1><span id="date"></span></div>
+            <div>
+                <select id="dayComboBox">
+                    <option value="">Day</option>
+                </select>
+                
+                <select id="monthComboBox">
+                    <option value="">Month</option>
+                </select>
+                
+                <select id="yearComboBox">
+                    <option value="">Year</option>
+                </select>
+                
+                <button id="getSelectedDate">Get Selected Date</button>
+            </div>
             <div >
                 <button class="saveBtn" id="saveBoxes">Save</button>
                 <button class="saveBtn" id="DeleteBoxes">Delete</button>

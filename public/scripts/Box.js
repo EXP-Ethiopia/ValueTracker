@@ -62,6 +62,7 @@
         .map(box => box.id);
 
         this.boxContainer.calculateTotalTime();
+        console.log(this.boxContainer.selectedBoxes);
         }
 
 
