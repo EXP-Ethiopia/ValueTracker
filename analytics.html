@@ -14,9 +14,11 @@
             // Initialize the state from localStorage, defaulting to false (home page)
             let toggled = localStorage.getItem('toggled') === 'true';
 
+            // Update the button text based on the initial state
+            updateButtonText(toggled);
+
             // Trigger the button switch
             triggerSwitch();
-
 
             function triggerSwitch() {
                 const toggleBtn = document.querySelector("#analyticsBtn");
@@ -31,7 +33,6 @@
                 } else {
                     console.warn("❌ Toggle Button not found. Check ID or ensure the button exists.");
                 }
-
             }
 
             function toggleState() {
@@ -40,7 +41,10 @@
 
                 // Save the new state to localStorage
                 localStorage.setItem('toggled', toggled);
-                console.log(`Current state of the browser's page is: ${localStorage.getItem('toggled')}`)
+                console.log(`Current state of the browser's page is: ${localStorage.getItem('toggled')}`);
+
+                // Update the button text
+                updateButtonText(toggled);
 
                 // Navigate to the appropriate page
                 if (toggled) {
@@ -49,12 +53,17 @@
                     window.location.href = 'home.html';
                 }
             }
-            
+
+            function updateButtonText(toggled) {
+                const toggleBtn = document.querySelector("#analyticsBtn");
+                if (toggleBtn) {
+                    toggleBtn.textContent = toggled ? "Hide Analytics" : "View Analytics";
+                }
+            }
         });
     </script>
 </head>
 <body>
-    
     <header class="home-header">
         <div class="leftNav">
             <img src="./images/default.jpg" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
@@ -110,15 +119,12 @@
 
     <script type="module">
         // Get the URL parameters
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-            import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-            // import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-            import { getFirestore, doc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-            import { remove, ref, set,getDatabase,get,update } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
-            
-    
-            // Firebase Configuration
-            const firebaseConfig = {
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
             apiKey: "AIzaSyClF_kUmfMyrxDqP_iuu7BgoqqTtX67JRY",
             authDomain: "valutracker-391c6.firebaseapp.com",
             databaseURL: "https://valutracker-391c6-default-rtdb.firebaseio.com",
@@ -127,34 +133,19 @@
             messagingSenderId: "268267434732",
             appId: "1:268267434732:web:49e075d9a0b22df4c4abc9",
             measurementId: "G-X8RX5C4WKS"
-            };
-    
-            // Initialize Firebase
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getDatabase(app);
-    
-            window.auth = auth;
-            window.addDoc = addDoc;
-            window.collection =collection;
-            window.db = db;
-            window.ref = ref;
-            window.set = set;
-            window.remove = remove;
-            window.get = get;
-            window.update = update;
-            
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
         const urlParams = new URLSearchParams(window.location.search);
-        
-        // Retrieve the 'username' parameter
         const username = urlParams.get('username');
-        
-        // Display the username on the page
         document.getElementById('username').textContent = username;
-    
+
         const logoutBtn = document.getElementById('logoutBtn');
         logoutBtn.addEventListener('click', () => {    
-            // Sign out the user
             auth.signOut()
                 .then(() => {
                     console.log('User signed out');
@@ -164,169 +155,237 @@
                     console.error('Sign out error:', error);
                 });
         });
-    
+
         const profilePic = document.getElementById("profile-pic");
-    
+
         onAuthStateChanged(auth, (user) => {
-        console.log("🔥 Auth State Changed:", user); // Log user info
-    
-        if (user) {
-            console.log("✅ User signed in:", user.displayName, user.email, user.uid);
-            window.userId = user.uid;
-            
-            let checkPhotoInterval = setInterval(() => {
-                if (user.photoURL) {
-                    console.log("🖼 Found Profile Pic:", user.photoURL);
-                
-                    profilePic.src = user.photoURL; 
-                    clearInterval(checkPhotoInterval);
+            if (user) {
+                console.log("✅ User signed in:", user.displayName, user.email, user.uid);
+                window.userId = user.uid;
+
+                // Set profile picture
+                let checkPhotoInterval = setInterval(() => {
+                    if (user.photoURL) {
+                        console.log("🖼 Found Profile Pic:", user.photoURL);
+                        profilePic.src = user.photoURL;
+                        clearInterval(checkPhotoInterval);
+                    } else {
+                        console.warn("⚠ No photoURL found, using default.");
+                        profilePic.src = "public/images/default.jpg";
+                    }
+                }, 100); 
+
+                // Fetch tasks
+                fetchTasks(user.uid);
+            } else {
+                console.warn("❌ No user is signed in.");
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Function to fetch and display tasks for the current day
+        function fetchTasks(userId) {
+            const userTasksRef = ref(db, `userTasks/${userId}`);
+
+            onValue(userTasksRef, (snapshot) => {
+                console.log("Fetching tasks for user:", userId);
+                console.log("📌 Snapshot Data:", snapshot.val());
+
+                const tableBody = document.querySelector("#taskTable tbody");
+                tableBody.innerHTML = "";
+
+                const tagTimeMap = {};
+                const tagCountMap = {};
+                const tagColorMap = {};
+                const selectedBoxesMap = {}; // Map to store selected boxes for heatmap
+
+                if (snapshot.exists()) {
+                    const tasks = snapshot.val();
+                    const currentDate = new Date().toDateString(); // Get current date
+
+                    Object.keys(tasks).forEach((taskId) => {
+                        const task = tasks[taskId];
+                        const taskDate = new Date(task.timestamp).toDateString(); // Get task date
+
+                        // Only process tasks for the current day
+                        if (taskDate === currentDate) {
+                            const taskText = task.task || "No task name";
+                            const tag = task.tag || "No tag";
+                            const color = task.color || "#CCCCCC";
+
+                            tagColorMap[tag] = color;
+
+                            const selectedBoxes = Array.isArray(task.selectedBoxes) ? task.selectedBoxes : [];
+                            const totalTime = task.totalTime || 0; // Total time is in hours
+                            const timestamp = task.timestamp ? new Date(task.timestamp).toLocaleString() : "N/A";
+
+                            // Populate table
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${taskText}</td>
+                                <td>${tag}</td>
+                                <td style="background-color: ${color};"></td>
+                                <td>${selectedBoxes.join(", ")}</td>
+                                <td>${totalTime}</td>
+                                <td>${timestamp}</td>
+                            `;
+                            tableBody.appendChild(row);
+
+                            // Aggregate data for charts
+                            tagTimeMap[tag] = (tagTimeMap[tag] || 0) + totalTime; // Total time is in hours
+                            tagCountMap[tag] = (tagCountMap[tag] || 0) + 1;
+
+                            // Map selected boxes to their colors and tags
+                            selectedBoxes.forEach(boxId => {
+                                selectedBoxesMap[boxId] = { color, tag };
+                            });
+                        }
+                    });
+
+                    // Update charts and heatmap
+                    updateCharts(tagTimeMap, tagCountMap, tagColorMap);
+                    updateHeatmap(selectedBoxesMap);
                 } else {
-                    console.warn("⚠ No photoURL found, using default.");
-                    profilePic.src = "public/images/default.jpg"; 
+                    console.warn("⚠ No tasks found for this user.");
                 }
-            }, 100); 
-        } else {
-            console.warn("❌ No user is signed in.");
+            });
         }
-    });   
-    </script>
 
-    <script type="module">
-        // Dummy Data
-        const dummyData = [
-            {
-                task: "Complete project report",
-                tag: "Work",
-                color: "#FF0000",
-                selectedBoxes: [1, 2, 3],
-                totalTime: 5,
-                timestamp: "2023-10-10T12:00:00Z",
-            },
-            {
-                task: "Study for exam",
-                tag: "School",
-                color: "#0000FF",
-                selectedBoxes: [4, 5],
-                totalTime: 3,
-                timestamp: "2023-10-11T14:00:00Z",
-            },
-            {
-                task: "Go for a walk",
-                tag: "Health",
-                color: "#0000FF",
-                selectedBoxes: [3, 4],
-                totalTime: 12,
-                timestamp: "2023-10-01T14:00:00Z",
-            },
-            {
-                task: "Study for exam",
-                tag: "School",
-                color: "#0000FF",
-                selectedBoxes: [4, 5],
-                totalTime: 8,
-                timestamp: "2023-10-15T14:00:00Z",
-            },
-            {
-                task: "Meeting attended",
-                tag: "Work",
-                color: "#0000FF",
-                selectedBoxes: [4, 5],
-                totalTime: 4,
-                timestamp: "2023-09-11T14:00:00Z",
-            },
-            {
-                task: "Exercise",
-                tag: "Health",
-                color: "#00FF00",
-                selectedBoxes: [6, 7],
-                totalTime: 2,
-                timestamp: "2023-10-12T16:00:00Z",
-            },
-        ];
+        // Function to update charts dynamically with colors from Firebase data
+        function updateCharts(tagTimeMap, tagCountMap, tagColorMap) {
+            const barCtx = document.getElementById("barChart").getContext("2d");
+            const pieCtx = document.getElementById("pieChart").getContext("2d");
 
-        // Populate Table with Dummy Data
-        const tableBody = document.querySelector("#taskTable tbody");
-        dummyData.forEach((task) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${task.task}</td>
-                <td>${task.tag}</td>
-                <td style="background-color: ${task.color};"></td>
-                <td>${task.selectedBoxes.join(", ")}</td>
-                <td>${task.totalTime}</td>
-                <td>${new Date(task.timestamp).toLocaleString()}</td>
-            `;
-            tableBody.appendChild(row);
-        });
+            const tags = Object.keys(tagTimeMap);
+            const totalTimeData = Object.values(tagTimeMap); // Total time is in hours
+            const taskCountData = Object.values(tagCountMap);
+            const tagColors = tags.map(tag => tagColorMap[tag] || "#CCCCCC");
 
-        // Aggregate Data for Charts
-        const tagTimeMap = {}; // For bar chart
-        const tagCountMap = {}; // For pie chart
+            // Calculate the maximum time value for the y-axis
+            const maxTime = Math.max(...totalTimeData, 0); // Total time is in hours
+            const maxHours = Math.ceil(maxTime); // Maximum hours
 
-        dummyData.forEach((task) => {
-            // Aggregate data for bar chart (total time per tag)
-            if (!tagTimeMap[task.tag]) {
-                tagTimeMap[task.tag] = 0;
+            // Generate y-axis ticks dynamically
+            const yAxisTicks = [];
+            for (let i = 0; i <= maxHours; i += 0.5) { // Increment by 0.5 hours (30 minutes)
+                yAxisTicks.push(i);
             }
-            tagTimeMap[task.tag] += task.totalTime;
 
-            // Aggregate data for pie chart (task count per tag)
-            if (!tagCountMap[task.tag]) {
-                tagCountMap[task.tag] = 0;
+            // Bar Chart - Total Time per Tag
+            if (window.barChartInstance) {
+                window.barChartInstance.destroy();
             }
-            tagCountMap[task.tag] += 1;
-        });
-
-        // Render Bar Chart
-        const barCtx = document.getElementById("barChart").getContext("2d");
-        new Chart(barCtx, {
-            type: "bar",
-            data: {
-                labels: Object.keys(tagTimeMap),
-                datasets: [{
-                    label: "Total Time (hours)",
-                    data: Object.values(tagTimeMap),
-                    backgroundColor: ["red", "blue", "green"],
-                }],
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
+            window.barChartInstance = new Chart(barCtx, {
+                type: "bar",
+                data: {
+                    labels: tags,
+                    datasets: [
+                        {
+                            label: "Total Time (hours)",
+                            data: totalTimeData,
+                            backgroundColor: tagColors,
+                            borderColor: tagColors.map(color => color.replace(/0.7/, "1")),
+                            borderWidth: 1,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 0.5, // Set y-axis interval to 0.5 hours (30 minutes)
+                                callback: (value) => {
+                                    // Format the tick label as hours and minutes
+                                    const hours = Math.floor(value);
+                                    const minutes = (value % 1) * 60;
+                                    return `${hours}h ${minutes}m`;
+                                },
+                                max: maxHours, // Set the maximum value for the y-axis
+                            },
+                        },
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.dataset.label || '';
+                                    const value = context.raw || 0;
+                                    const hours = Math.floor(value);
+                                    const minutes = (value % 1) * 60;
+                                    return `${label}: ${hours}h ${minutes}m`;
+                                },
+                            },
+                        },
                     },
                 },
-            },
-        });
+            });
 
-        // Render Pie Chart
-        const pieCtx = document.getElementById("pieChart").getContext("2d");
-        new Chart(pieCtx, {
-            type: "pie",
-            data: {
-                labels: Object.keys(tagCountMap),
-                datasets: [{
-                    label: "Task Count",
-                    data: Object.values(tagCountMap),
-                    backgroundColor: ["red", "blue", "green"],
-                }],
-            },
-        });
-
-        // Render GitHub-like Green Boxes Heatmap
-        const heatmapContainer = document.getElementById("heatmap");
-        const heatmapGrid = document.createElement("div");
-        heatmapGrid.className = "heatmap-grid";
-
-        // Generate heatmap grid (e.g., 7 days x 52 weeks)
-        for (let i = 0; i < 365; i++) {
-            const box = document.createElement("div");
-            box.className = "heatmap-box";
-            const randomIntensity = Math.floor(Math.random() * 4); // Random intensity (0-3)
-            box.style.backgroundColor = `rgba(0, 128, 0, ${0.25 * (randomIntensity + 1)})`;
-            heatmapGrid.appendChild(box);
+            // Pie Chart - Task Count per Tag
+            if (window.pieChartInstance) {
+                window.pieChartInstance.destroy();
+            }
+            window.pieChartInstance = new Chart(pieCtx, {
+                type: "pie",
+                data: {
+                    labels: tags,
+                    datasets: [
+                        {
+                            label: "Task Distribution",
+                            data: taskCountData,
+                            backgroundColor: tagColors,
+                            borderWidth: 1,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} tasks`;
+                                },
+                            },
+                        },
+                    },
+                },
+            });
         }
 
-        heatmapContainer.appendChild(heatmapGrid);
+        // Function to update heatmap with user's colors and tooltips
+        function updateHeatmap(selectedBoxesMap) {
+            const heatmapContainer = document.getElementById("heatmap");
+            heatmapContainer.innerHTML = ""; // Clear previous heatmap
+
+            const heatmapGrid = document.createElement("div");
+            heatmapGrid.className = "heatmap-grid";
+
+            // Generate heatmap grid (48 boxes for 24 hours in 30-minute intervals)
+            for (let i = 1; i <= 48; i++) {
+                const box = document.createElement("div");
+                box.className = "heatmap-box";
+                box.id = `box-${i}`; // Assign ID to each box
+
+                // Set color based on selectedBoxesMap
+                if (selectedBoxesMap[i]) {
+                    box.style.backgroundColor = selectedBoxesMap[i].color;
+                    box.title = `Tag: ${selectedBoxesMap[i].tag}`; // Add tooltip for the tag
+                } else {
+                    box.style.backgroundColor = "rgba(0, 128, 0, 0.1)"; // Default color
+                    box.title = "No task"; // Default tooltip
+                }
+
+                heatmapGrid.appendChild(box);
+            }
+
+            heatmapContainer.appendChild(heatmapGrid);
+        }
     </script>
 </body>
 </html>

@@ -147,32 +147,45 @@ tr:hover {
 .chart {
     flex: 1;
     background-color: #ffffff;
-    padding: 10px;
+    padding: 12px;
     border-radius: 8px;
     /* border: 3px solid blue; */
     width: 500px;
-    height: 450px;
+    height: 356px;
+    padding-bottom: 3.4rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.heatmap-grid {
+    padding-bottom: 0.9rem;
+}
+
+.chart h3,
+.heatmap-container h3 {
+    margin-top: 4px;
+    margin-bottom: 14px;
 }
 
 /* Heatmap Container */
 .heatmap-container {
     background-color: #ffffff;
-    padding: 10px;
+    padding: 12px;
+    /* margin-top: 32px; */
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .heatmap-grid {
     display: grid;
-    grid-template-columns: repeat(49, 1fr);
-    gap: 3px;
-    margin-top: 10px;
+    grid-template-columns: repeat(30, 1fr);
+    gap: .82rem;
+    /* margin-top: 2px; */
+    /* border: 3px solid red; */
 }
 
 .heatmap-box {
-    width: 10px;
-    height: 10px;
+    width: 27px;
+    height: 27px;
     background-color: #ebedf0;
     border-radius: 2px;
 }
