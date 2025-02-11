@@ -10,7 +10,7 @@
     <script defer>
         document.addEventListener("DOMContentLoaded", () => {
             // Initialize the state from localStorage, defaulting to false (home page)
-            let toggled = localStorage.getItem('toggled') === 'true' || 'false';
+            let toggled = localStorage.getItem('toggled') === 'true';
 
             // Trigger the button switch
             triggerSwitch();

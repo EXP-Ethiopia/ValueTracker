@@ -12,11 +12,10 @@
     <script defer>
         document.addEventListener("DOMContentLoaded", () => {
             // Initialize the state from localStorage, defaulting to false (home page)
-            let toggled = localStorage.getItem('toggled') === 'true' || 'false';
+            let toggled = localStorage.getItem('toggled') === 'true';
 
             // Trigger the button switch
             triggerSwitch();
-
 
             function triggerSwitch() {
                 const toggleBtn = document.querySelector("#analyticsBtn");
@@ -31,7 +30,6 @@
                 } else {
                     console.warn("❌ Toggle Button not found. Check ID or ensure the button exists.");
                 }
-
             }
 
             function toggleState() {
@@ -49,12 +47,10 @@
                     window.location.href = 'home.html';
                 }
             }
-            
         });
     </script>
 </head>
 <body>
-    
     <header class="home-header">
         <div class="leftNav">
             <img src="./images/default.jpg" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
@@ -111,52 +107,32 @@
     <script type="module">
         // Get the URL parameters
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        // import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-        import { getFirestore, doc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-        import { remove, ref, set, getDatabase, get, update, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
-        
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
         // Firebase Configuration
         const firebaseConfig = {
-        apiKey: "AIzaSyClF_kUmfMyrxDqP_iuu7BgoqqTtX67JRY",
-        authDomain: "valutracker-391c6.firebaseapp.com",
-        databaseURL: "https://valutracker-391c6-default-rtdb.firebaseio.com",
-        projectId: "valutracker-391c6",
-        storageBucket: "valutracker-391c6.firebasestorage.app",
-        messagingSenderId: "268267434732",
-        appId: "1:268267434732:web:49e075d9a0b22df4c4abc9",
-        measurementId: "G-X8RX5C4WKS"
+            apiKey: "AIzaSyClF_kUmfMyrxDqP_iuu7BgoqqTtX67JRY",
+            authDomain: "valutracker-391c6.firebaseapp.com",
+            databaseURL: "https://valutracker-391c6-default-rtdb.firebaseio.com",
+            projectId: "valutracker-391c6",
+            storageBucket: "valutracker-391c6.firebasestorage.app",
+            messagingSenderId: "268267434732",
+            appId: "1:268267434732:web:49e075d9a0b22df4c4abc9",
+            measurementId: "G-X8RX5C4WKS"
         };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-
-        // Reference the Firebase Database
         const db = getDatabase(app);
 
-        window.auth = auth;
-        window.addDoc = addDoc;
-        window.collection =collection;
-        window.db = db;
-        window.ref = ref;
-        window.set = set;
-        window.remove = remove;
-        window.get = get;
-        window.update = update;
-            
         const urlParams = new URLSearchParams(window.location.search);
-        
-        // Retrieve the 'username' parameter
         const username = urlParams.get('username');
-        
-        // Display the username on the page
         document.getElementById('username').textContent = username;
-    
+
         const logoutBtn = document.getElementById('logoutBtn');
         logoutBtn.addEventListener('click', () => {    
-            // Sign out the user
             auth.signOut()
                 .then(() => {
                     console.log('User signed out');
@@ -166,14 +142,10 @@
                     console.error('Sign out error:', error);
                 });
         });
-    
+
         const profilePic = document.getElementById("profile-pic");
-    
+
         onAuthStateChanged(auth, (user) => {
-            console.log("🔥 Auth State Changed:", user);
-            console.log("User UID:", user.uid);
-
-
             if (user) {
                 console.log("✅ User signed in:", user.displayName, user.email, user.uid);
                 window.userId = user.uid;
@@ -194,77 +166,87 @@
                 fetchTasks(user.uid);
             } else {
                 console.warn("❌ No user is signed in.");
-                window.location.href = 'index.html'; // Redirect to login page if user is not authenticated
+                window.location.href = 'index.html';
             }
         });
 
-
-        // Function to fetch and display tasks
+        // Function to fetch and display tasks for the current day
         function fetchTasks(userId) {
             const userTasksRef = ref(db, `userTasks/${userId}`);
 
             onValue(userTasksRef, (snapshot) => {
                 console.log("Fetching tasks for user:", userId);
-                console.log("📌 Snapshot Data:", snapshot.val()); // Debugging
+                console.log("📌 Snapshot Data:", snapshot.val());
 
                 const tableBody = document.querySelector("#taskTable tbody");
-                tableBody.innerHTML = ""; // Clear previous rows
+                tableBody.innerHTML = "";
 
-                const tagTimeMap = {}; // Total time per tag for bar chart
-                const tagCountMap = {}; // Task count per tag for pie chart
-                const tagColorMap = {}; // Color mapping for each tag
+                const tagTimeMap = {};
+                const tagCountMap = {};
+                const tagColorMap = {};
+                const selectedBoxesMap = {}; // Map to store selected boxes for heatmap
 
                 if (snapshot.exists()) {
                     const tasks = snapshot.val();
-                    
+                    const currentDate = new Date().toDateString(); // Get current date
+
                     Object.keys(tasks).forEach((taskId) => {
-                        const task = tasks[taskId]; // Access individual task object
-                        
-                        // Ensure task properties exist before accessing them
-                        const taskText = task.task || "No task name";
-                        const tag = task.tag || "No tag";
-                        const color = task.color || "#CCCCCC"; // Default gray color
-                        const selectedBoxes = Array.isArray(task.selectedBoxes) ? task.selectedBoxes.join(", ") : "N/A";
-                        const totalTime = task.totalTime || 0;
-                        const timestamp = task.timestamp ? new Date(task.timestamp).toLocaleString() : "N/A";
+                        const task = tasks[taskId];
+                        const taskDate = new Date(task.timestamp).toDateString(); // Get task date
 
-                        // Populate table
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${taskText}</td>
-                            <td>${tag}</td>
-                            <td style="background-color: ${color};"></td>
-                            <td>${selectedBoxes}</td>
-                            <td>${totalTime}</td>
-                            <td>${timestamp}</td>
-                        `;
-                        tableBody.appendChild(row);
+                        // Only process tasks for the current day
+                        if (taskDate === currentDate) {
+                            const taskText = task.task || "No task name";
+                            const tag = task.tag || "No tag";
+                            const color = task.color || "#CCCCCC";
 
-                        // Aggregate data for charts
-                        tagTimeMap[tag] = (tagTimeMap[tag] || 0) + totalTime;
-                        tagCountMap[tag] = (tagCountMap[tag] || 0) + 1;
-                        tagColorMap[tag] = color; // Store tag color
+                            tagColorMap[tag] = color;
+
+                            const selectedBoxes = Array.isArray(task.selectedBoxes) ? task.selectedBoxes : [];
+                            const totalTime = task.totalTime || 0;
+                            const timestamp = task.timestamp ? new Date(task.timestamp).toLocaleString() : "N/A";
+
+                            // Populate table
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${taskText}</td>
+                                <td>${tag}</td>
+                                <td style="background-color: ${color};"></td>
+                                <td>${selectedBoxes.join(", ")}</td>
+                                <td>${totalTime}</td>
+                                <td>${timestamp}</td>
+                            `;
+                            tableBody.appendChild(row);
+
+                            // Aggregate data for charts
+                            tagTimeMap[tag] = (tagTimeMap[tag] || 0) + totalTime;
+                            tagCountMap[tag] = (tagCountMap[tag] || 0) + 1;
+
+                            // Map selected boxes to their colors
+                            selectedBoxes.forEach(boxId => {
+                                selectedBoxesMap[boxId] = color;
+                            });
+                        }
                     });
 
-                    // Update charts with real data
+                    // Update charts and heatmap
                     updateCharts(tagTimeMap, tagCountMap, tagColorMap);
+                    updateHeatmap(selectedBoxesMap);
                 } else {
                     console.warn("⚠ No tasks found for this user.");
                 }
             });
         }
 
-
         // Function to update charts dynamically with colors from Firebase data
         function updateCharts(tagTimeMap, tagCountMap, tagColorMap) {
             const barCtx = document.getElementById("barChart").getContext("2d");
             const pieCtx = document.getElementById("pieChart").getContext("2d");
 
-            // Prepare labels and data
             const tags = Object.keys(tagTimeMap);
             const totalTimeData = Object.values(tagTimeMap);
             const taskCountData = Object.values(tagCountMap);
-            const tagColors = tags.map(tag => tagColorMap[tag] || "#CCCCCC"); // Default color if none found
+            const tagColors = tags.map(tag => tagColorMap[tag] || "#CCCCCC");
 
             // Bar Chart - Total Time per Tag
             if (window.barChartInstance) {
@@ -278,8 +260,8 @@
                         {
                             label: "Total Time (minutes)",
                             data: totalTimeData,
-                            backgroundColor: tagColors, // Use the tag's color
-                            borderColor: tagColors.map(color => color.replace(/0.7/, "1")), // Darker border
+                            backgroundColor: tagColors,
+                            borderColor: tagColors.map(color => color.replace(/0.7/, "1")),
                             borderWidth: 1,
                         },
                     ],
@@ -289,9 +271,12 @@
                     maintainAspectRatio: false,
                     scales: {
                         y: {
-                            beginAtZero: true
-                        }
-                    }
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 30, // Set y-axis interval to 30 minutes
+                            },
+                        },
+                    },
                 },
             });
 
@@ -307,7 +292,7 @@
                         {
                             label: "Task Distribution",
                             data: taskCountData,
-                            backgroundColor: tagColors, // Use the tag's color
+                            backgroundColor: tagColors,
                             borderWidth: 1,
                         },
                     ],
@@ -319,22 +304,32 @@
             });
         }
 
+        // Function to update heatmap with user's colors
+        function updateHeatmap(selectedBoxesMap) {
+            const heatmapContainer = document.getElementById("heatmap");
+            heatmapContainer.innerHTML = ""; // Clear previous heatmap
 
-        // Render GitHub-like Green Boxes Heatmap
-        const heatmapContainer = document.getElementById("heatmap");
-        const heatmapGrid = document.createElement("div");
-        heatmapGrid.className = "heatmap-grid";
+            const heatmapGrid = document.createElement("div");
+            heatmapGrid.className = "heatmap-grid";
 
-        // Generate heatmap grid (e.g., 7 days x 52 weeks)
-        for (let i = 0; i < 365; i++) {
-            const box = document.createElement("div");
-            box.className = "heatmap-box";
-            const randomIntensity = Math.floor(Math.random() * 4); // Random intensity (0-3)
-            box.style.backgroundColor = `rgba(0, 128, 0, ${0.25 * (randomIntensity + 1)})`;
-            heatmapGrid.appendChild(box);
+            // Generate heatmap grid (48 boxes for 24 hours in 30-minute intervals)
+            for (let i = 1; i <= 48; i++) {
+                const box = document.createElement("div");
+                box.className = "heatmap-box";
+                box.id = `box-${i}`; // Assign ID to each box
+
+                // Set color based on selectedBoxesMap
+                if (selectedBoxesMap[i]) {
+                    box.style.backgroundColor = selectedBoxesMap[i];
+                } else {
+                    box.style.backgroundColor = "rgba(0, 128, 0, 0.1)"; // Default color
+                }
+
+                heatmapGrid.appendChild(box);
+            }
+
+            heatmapContainer.appendChild(heatmapGrid);
         }
-
-        heatmapContainer.appendChild(heatmapGrid);
     </script>
 </body>
 </html>
