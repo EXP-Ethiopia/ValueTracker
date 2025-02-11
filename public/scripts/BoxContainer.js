@@ -613,6 +613,37 @@ class BoxContainer {
     document.body.appendChild(overlay);
 }
 
+    checkUpdateValitading() {
+        console.log("Checking Boxes");
+
+    let hasError = false; // Flag to track if an error occurs
+
+    for (const box of this.boxes) {
+        const boxElement = box.element;
+        const style = window.getComputedStyle(boxElement);
+        const backgroundColor = style.backgroundColor;
+
+        if (boxContainer.selectedBoxes.includes(box.id)) {
+            if (backgroundColor == 'rgb(173, 216, 230)') { // 'lightblue' in RGB format
+                hasError = true; // Mark that we found an invalid box
+                break; // Stop checking further boxes
+            }
+        }
+    }
+
+    if (hasError) {
+        Swal.fire({
+            title: "Error",
+            text: "Some selected boxes already have a background!",
+            icon: "error",
+            confirmButtonText: "OK"
+        });
+    } else {
+        boxContainer.showCustomPopup(); // Only runs if no error occurred
+    }
+        
+    }
+
 checkBoxes() {
     console.log("Checking Boxes");
 
@@ -787,14 +818,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateBTN = document.getElementById('UpdateTask');
 
     if (updateBTN) {
-        updateBTN.addEventListener('click', () => boxContainer.showUpdateTaskPopup());
+        updateBTN.addEventListener('click', () => boxContainer.checkUpdateValitading());
     } else {
         console.error('Button with ID "UpdateTask" not found!');
     }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const selectedDate =  document.getElementById("getSelectedDate");
+    const selectedDate =  document.getElementById("getDayButton");
 
     selectedDate.addEventListener("click", () => {
 
