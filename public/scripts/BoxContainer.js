@@ -69,7 +69,7 @@ class BoxContainer {
     }
 
     async showCustomPopup() {
-        // Refill selectedBoxes with only the currently selected boxes
+        // Refill selectedBoxes with currently selected boxes
         this.selectedBoxes = this.boxes
             .filter(box => box.element.classList.contains('selected'))
             .map(box => box.id);
@@ -106,11 +106,28 @@ class BoxContainer {
         submitButton.classList.add('submitBTN');
         submitButton.textContent = 'Submit';
         submitButton.addEventListener('click', async () => {
+            const userId = this.auth.currentUser?.uid;
+            if (!userId) {
+                console.error("User not authenticated");
+                Swal.fire("Error", "User not authenticated.", "error");
+                return;
+            }
+    
             const inputData = inputField.value;
             const selectedOption = this.comboBox.value;
     
+            // Get user-selected date
+            let day = document.getElementById("dayComboBox").value;
+            let month = document.getElementById("monthComboBox").value;
+            let year = document.getElementById("yearComboBox").value;
+    
+            day = day.padStart(2, '0');
+            month = month.padStart(2, '0');
+    
+            const givenDate = `${year}-${month}-${day}`;
+    
             const selectedTag = this.tags.find(tag => tag.tagName === selectedOption);
-            let selectedTagColor = selectedTag ? selectedTag.color : "#000"; // Default color if none selected
+            let selectedTagColor = selectedTag ? selectedTag.color : "#000"; // Default color
     
             if (selectedTag) {
                 this.selectedBoxes.forEach(boxId => {
@@ -122,7 +139,7 @@ class BoxContainer {
                 });
             }
     
-            // Group selected boxes by their current background color
+            // Group selected boxes by their background color
             const groupedBoxes = {};
             this.selectedBoxes.forEach(boxId => {
                 const box = this.boxes.find(b => b.id === boxId);
@@ -135,57 +152,59 @@ class BoxContainer {
                 }
             });
     
-            // Check if a task with the same color already exists in the database
-            const userId = this.auth.currentUser.uid;
-            const userTasksRef = ref(this.db, `userTasks/${userId}`);
+            // Reference to tasks for the selected date
+            const userTasksRef = ref(this.db, `userTasks/${userId}/${givenDate}`);
     
             try {
                 const snapshot = await get(userTasksRef);
-                if (snapshot.exists()) {
-                    snapshot.forEach((childSnapshot) => {
-                        const taskData = childSnapshot.val();
-                        const taskColor = taskData.color;
+                let existingTasks = snapshot.val() || {};
     
-                        // If a task with the same color exists, update it
-                        if (groupedBoxes[taskColor]) {
-                            const updatedSelectedBoxes = [...taskData.selectedBoxes, ...groupedBoxes[taskColor]];
-                            const updatedTotalTime = taskData.totalTime + this.calculateTotalTime();
+                // Check if a task with the same color exists
+                for (const [color, boxIds] of Object.entries(groupedBoxes)) {
+                    let taskUpdated = false;
     
-                            // Update the existing task
-                            update(childSnapshot.ref, {
-                                selectedBoxes: updatedSelectedBoxes,
-                                totalTime: updatedTotalTime
+                    Object.keys(existingTasks).forEach(taskId => {
+                        if (existingTasks[taskId].color === color) {
+                            // If task with the same color exists, update it
+                            existingTasks[taskId].selectedBoxes = [
+                                ...new Set([...existingTasks[taskId].selectedBoxes, ...boxIds])
+                            ];
+                            existingTasks[taskId].totalTime += this.calculateTotalTime();
+    
+                            taskUpdated = true;
+    
+                            update(ref(this.db, `userTasks/${userId}/${givenDate}/${taskId}`), {
+                                selectedBoxes: existingTasks[taskId].selectedBoxes,
+                                totalTime: existingTasks[taskId].totalTime
                             });
-    
-                            // Remove the color from groupedBoxes since it's been handled
-                            delete groupedBoxes[taskColor];
                         }
                     });
+    
+                    // If no task with the same color exists, create a new one
+                    if (!taskUpdated) {
+                        const newTaskId = new Date().getTime().toString();
+                        set(ref(this.db, `userTasks/${userId}/${givenDate}/${newTaskId}`), {
+                            task: inputData,
+                            selectedBoxes: boxIds,
+                            totalTime: this.calculateTotalTime(),
+                            tag: selectedOption,
+                            color: color,
+                            date: givenDate,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
                 }
     
-                // Create new tasks for any remaining color groups
-                for (const [color, boxIds] of Object.entries(groupedBoxes)) {
-                    const taskRef = ref(this.db, `userTasks/${userId}/${new Date().getTime()}`); // New timestamp
-    
-                    set(taskRef, {
-                        task: inputData,
-                        selectedBoxes: boxIds,
-                        totalTime: this.calculateTotalTime(),
-                        tag: selectedOption,
-                        color: color,
-                        timestamp: new Date().toISOString()
-                    });
-                }
-    
-                console.log("Data saved/updated in Realtime Database successfully");
+                console.log("Data saved/updated successfully");
                 Swal.fire({
                     title: "Saved!",
                     text: "Your task has been saved/updated successfully.",
                     icon: "success",
                     confirmButtonText: "OK"
                 });
+    
             } catch (error) {
-                console.error("Error saving/updating to Realtime Database:", error);
+                console.error("Error saving/updating data:", error);
                 Swal.fire({
                     title: "Error",
                     text: "Failed to save/update data. Please try again.",
@@ -196,36 +215,28 @@ class BoxContainer {
     
             // Reset selection
             this.selectedBoxes = [];
-    
-            // Remove 'selected' class from boxes so UI updates
             this.boxes.forEach(box => {
                 box.element.classList.remove('selected');
             });
     
             document.body.removeChild(overlay);
         });
-
+    
+        // Add Tag Button
         const addTagBtn = document.createElement('button');
         addTagBtn.classList.add('submitBTN');
         addTagBtn.textContent = 'Add Tag';
         addTagBtn.addEventListener('click', () => {
             const tagName = prompt("Enter the tag name:");
             const tagColor = prompt("Enter the tag color:");
-            
-            if(tagName && tagColor) {
-
+    
+            if (tagName && tagColor) {
                 this.addTag(tagName, tagColor);
-
-
                 this.saveTagsToLocalStorage(tagName, tagColor);
             }
-
-            console.log("Add Tag Button Clicked");
-
-            
         });
     
-    
+        // Close Button
         const closeButton = document.createElement('button');
         closeButton.classList.add('submitBTN');
         closeButton.textContent = 'Close';
@@ -237,6 +248,8 @@ class BoxContainer {
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }
+    
+    
 
     saveTagsToLocalStorage(name, color) {
         let storedTags = JSON.parse(localStorage.getItem('tags')) || [];
@@ -389,93 +402,78 @@ class BoxContainer {
     }
 
     retrievedData() {
-
         let TaskFound = false;
-
+    
+        // Get the selected date from dropdowns
         let day = document.getElementById("dayComboBox").value;
         let month = document.getElementById("monthComboBox").value;
         let year = document.getElementById("yearComboBox").value;
-
-        if(day < 10) {
-            day = `0${day}`;
-        }
-
-        if(month < 10) {
-            month = `0${month}`;    
-        }    
+    
+        // Ensure proper formatting (e.g., 01 instead of 1)
+        day = day.padStart(2, '0');
+        month = month.padStart(2, '0');
+    
         const givenDate = `${year}-${month}-${day}`;
     
-        onAuthStateChanged(this.auth, (user) => {
+        onAuthStateChanged(this.auth, async (user) => {
             if (!user) {
                 console.log("User not logged in (retrievedData function)");
                 return;
             }
     
             console.log("User is logged in:", user.uid);
-            const retrievedData = ref(this.db, `userTasks/${user.uid}`);
+            const userTasksRef = ref(this.db, `userTasks/${user.uid}/${givenDate}`);
     
-            onValue(retrievedData, (snapshot) => {
-                const datas = snapshot.val();
-                console.log("Retrieved Data:", datas);
+            try {
+                const snapshot = await get(userTasksRef);
     
-                Object.values(datas).forEach(data => {
-                    // console.log("selected boxes: " + data.selectedBoxes);
-                    // console.log("task: " + data.task);
-                    console.log("timeStamp: " + data.timestamp);
-
-
-
+                if (!snapshot.exists()) {
+                    console.log(`No tasks found for ${givenDate}`);
+                    Swal.fire("No Task Found", `No tasks found for ${givenDate}`, "info");
+                    this.resetBoxColors();
+                    return;
+                }
     
-                    const timeStamp = data.timestamp;
+                const tasks = snapshot.val();
+                console.log("Retrieved Data:", tasks);
     
-                    if (timeStamp) {
-                        const date = new Date(timeStamp).toISOString().split('T')[0]; // Format: YYYY-MM-DD
+                // Reset all boxes before applying new colors
+                this.resetBoxColors();
     
-                        // Compare the date derived from the timestamp with the givenDate
-                        if (date === givenDate) {
-                            console.log(`true same date!!:  ${date} ==> ${givenDate}`);
-                            TaskFound = true;
-                            // Perform actions for matching dates
-
-                            // write here the logic for removing the boxes before inserting the new tsak based on date
-
-                            
-
-                            data.selectedBoxes.forEach(boxId => {
-                                const box = this.boxes.find(b => b.id === boxId);
-                                if (box) {
-                                    box.element.style.backgroundColor = data.color;
-                                    box.element.style.color = "#fff";
-                                }
-                            });
-
-
-
-                        } else {
-                            this.boxes.forEach(box => {
-                                box.element.style.backgroundColor = ""; // Reset background color
-                                box.element.style.color = ""; // Reset text color
-
-                                if (box.element.classList.contains('selected')) {
-                                    console.log("remove the selected class");
-                                }
-                            });
-                            Swal.fire(`No task for this date mate !! ${givenDate} ==> ${date}`);    
+                Object.values(tasks).forEach(task => {
+                    console.log(`Matching task found for ${givenDate}`);
+                    TaskFound = true;
+    
+                    task.selectedBoxes.forEach(boxId => {
+                        const box = this.boxes.find(b => b.id === boxId);
+                        if (box) {
+                            box.element.style.backgroundColor = task.color;
+                            box.element.style.color = "#fff";
                         }
-
-    
-                    } else {
-                        Swal.fire("No TimeStamp Found", "No TimeStamp found for today!", "info");
-                        console.log("No timestamp found");
-                    }
-
-                    
-
-
+                    });
                 });
-            });
+    
+                if (!TaskFound) {
+                    Swal.fire("No Task Found", `No tasks found for ${givenDate}`, "info");
+                }
+            } catch (error) {
+                console.error("Error retrieving data:", error);
+                Swal.fire("Error", "Failed to retrieve tasks. Please try again.", "error");
+            }
         });
     }
+    
+    
+    // Helper function to reset all box colors
+    resetBoxColors() {
+        this.boxes.forEach(box => {
+            box.element.style.backgroundColor = "";
+            box.element.style.color = "";
+            box.element.classList.remove("selected");
+        });
+    }
+    
+    
 
     async ShowData(Day, Month, Year) {
         let UserTask =  ref(this.db, 'userTasks/' + userId);
