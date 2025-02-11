@@ -112,7 +112,6 @@ class BoxContainer {
                 Swal.fire("Error", "User not authenticated.", "error");
                 return;
             }
-
         
             const inputData = inputField.value;
             const selectedOption = this.comboBox.value;
@@ -163,10 +162,12 @@ class BoxContainer {
                 // Check if a task with the same color and selected boxes already exists
                 for (const [color, boxIds] of Object.entries(groupedBoxes)) {
                     let taskUpdated = false;
+                    let existingTimestamp = null;
         
-                    // Loop through existing tasks to check for existing color
+                    // Loop through existing tasks to check for existing color and timestamp
                     for (const [taskId, task] of Object.entries(existingTasks)) {
                         if (task.color === color) {
+                            existingTimestamp = task.timestamp; // Store the existing timestamp
                             // Check if any of the selected boxes are already part of the task
                             const existingBoxIds = task.selectedBoxes || [];
                             const newBoxIds = boxIds.filter(boxId => !existingBoxIds.includes(boxId)); // Only include new boxes
@@ -188,9 +189,11 @@ class BoxContainer {
                         }
                     }
         
-                    // If no task with the same color exists, create a new task
+                    // If no task with the same color exists, create a new task with a new timestamp
                     if (!taskUpdated) {
                         const newTaskId = new Date().getTime().toString();
+                        const newTimestamp = new Date().toISOString(); // Create a new timestamp
+        
                         set(ref(this.db, `userTasks/${userId}/${givenDate}/${newTaskId}`), {
                             task: inputData,
                             selectedBoxes: boxIds,
@@ -198,7 +201,7 @@ class BoxContainer {
                             tag: selectedOption,
                             color: color,
                             date: givenDate,
-                            timestamp: new Date().toISOString()
+                            timestamp: existingTimestamp || newTimestamp // Use existing timestamp if available, otherwise use new one
                         });
         
                         console.log(`Created new task with color ${color}.`);
