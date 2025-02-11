@@ -663,8 +663,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            let day = document.getElementById("dayComboBox").value;
+            let month = document.getElementById("monthComboBox").value;
+            let year = document.getElementById("yearComboBox").value;
+
+            day = day.padStart(2, '0');
+            month = month.padStart(2, '0');
+            const givenDate = `${year}-${month}-${day}`;
+
             const userId = user.uid;
-            const taskPath = `userTasks/${userId}`;
+            const taskPath = `userTasks/${userId}/${givenDate}`;
             const userTasksRef = ref(db, taskPath);
 
             // Get the selected boxes
@@ -672,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .filter(box => box.element.classList.contains('selected'))
                 .map(box => box.id);
 
-            console.log("Selected Boxes for Deletion:", selectedBoxes); // Debugging log
+            console.log("Selected Boxes for Deletion:", selectedBoxes);
 
             if (selectedBoxes.length === 0) {
                 Swal.fire("No Selection", "Please select at least one box before deleting.", "warning");
@@ -681,17 +689,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const snapshot = await get(userTasksRef);
-                const getValue = snapshot.val();
-
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-
-                    Object.keys(data).forEach(key => {
-                        if(arraysEqual(data[key].selectedBoxes, this.selectedBoxes)) {
-                            remove(ref(db, `${taskPath}/${key}`));
-                        }
-                    });
+                if (!snapshot.exists()) {
+                    Swal.fire("No Task Found", "No task found for this date.", "info");
+                    return;
                 }
+
+                const tasks = snapshot.val();
+
+                // Iterate over all tasks and remove selected boxes only
+                for (const taskKey in tasks) {
+                    const task = tasks[taskKey];
+
+                    // Get boxes that will remain after deletion
+                    const updatedBoxes = task.selectedBoxes.filter(boxId => !selectedBoxes.includes(boxId));
+                
+                    if (updatedBoxes.length === 0) {
+                        // If no boxes are left, delete the task entry
+                        await remove(ref(db, `${taskPath}/${taskKey}`));
+                        console.log(`Deleted entire task: ${taskKey}`);
+                    } else {
+                        // Calculate reduced time **only for boxes that belong to THIS task**
+                        const reducedTime = task.selectedBoxes
+                            .filter(boxId => selectedBoxes.includes(boxId)) // Only consider removed boxes
+                            .reduce((total, boxId) => {
+                                const box = boxContainer.boxes.find(b => b.id === boxId);
+                                return total + (box && box.TimeValue ? box.TimeValue : 0);
+                            }, 0);
+                
+                        const updatedTotalTime = Math.max(0, task.totalTime - reducedTime); // Ensure it doesn't go negative
+                
+                        // Update only the selectedBoxes and totalTime fields
+                        await update(ref(db, `${taskPath}/${taskKey}`), {
+                            selectedBoxes: updatedBoxes,
+                            totalTime: updatedTotalTime
+                        });
+                
+                        console.log(`Updated task: ${taskKey}, New Total Time: ${updatedTotalTime}`);
+                    }
+                }
+
+                boxContainer.retrievedData();
+
+                Swal.fire("Deleted", "selected  have been removed.", "success");
 
             } catch (error) {
                 console.error("Error deleting boxes:", error);
@@ -701,6 +740,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Button with ID "DeleteBoxes" not found!');
     }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    boxContainer.retrievedData();
 });
 
 
@@ -725,8 +768,3 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 });
 
-// Function to compare two arrays (order-independent)
-function arraysEqual(arr1, arr2) {
-    // if (arr1.length !== arr2.length) return false;
-    return arr1.every(value => arr2.includes(value)) && arr2.every(value => arr1.includes(value));
-}

@@ -54,14 +54,10 @@ function popualteDays (months) {
 
 
     if(months === "February") {
-        if(days < 10) {
-            days = `0${days}`;
-        }
+
         days = 28;
     } else if (months === "April" || months === "June" || months === "September" || months === "November") {
-        if(days < 10) {
-            days = `0${days}`;
-        }
+
         days = 30;
     }
 
