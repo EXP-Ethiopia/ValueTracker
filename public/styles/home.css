@@ -213,7 +213,7 @@ body {
   }
 
   .selected {
-    background-color: hsl(195, 53%, 28%);
+    background-color: lightblue;
     box-shadow: 3px 2px .6rem hsl(195, 53%, 79%);
     border-radius: 3px;
     /* color: #fff; */

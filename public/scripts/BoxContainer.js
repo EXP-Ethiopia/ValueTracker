@@ -112,23 +112,24 @@ class BoxContainer {
                 Swal.fire("Error", "User not authenticated.", "error");
                 return;
             }
-    
+
+        
             const inputData = inputField.value;
             const selectedOption = this.comboBox.value;
-    
+        
             // Get user-selected date
             let day = document.getElementById("dayComboBox").value;
             let month = document.getElementById("monthComboBox").value;
             let year = document.getElementById("yearComboBox").value;
-    
+        
             day = day.padStart(2, '0');
             month = month.padStart(2, '0');
-    
+        
             const givenDate = `${year}-${month}-${day}`;
-    
+        
             const selectedTag = this.tags.find(tag => tag.tagName === selectedOption);
             let selectedTagColor = selectedTag ? selectedTag.color : "#000"; // Default color
-    
+        
             if (selectedTag) {
                 this.selectedBoxes.forEach(boxId => {
                     const box = this.boxes.find(b => b.id === boxId);
@@ -138,7 +139,7 @@ class BoxContainer {
                     }
                 });
             }
-    
+        
             // Group selected boxes by their background color
             const groupedBoxes = {};
             this.selectedBoxes.forEach(boxId => {
@@ -151,50 +152,59 @@ class BoxContainer {
                     groupedBoxes[color].push(boxId);
                 }
             });
-    
+        
             // Reference to tasks for the selected date
             const userTasksRef = ref(this.db, `userTasks/${userId}/${givenDate}`);
-    
+        
             try {
                 const snapshot = await get(userTasksRef);
                 let existingTasks = snapshot.val() || {};
-    
-                // Check if a task with the same color exists
+        
+                // Check if a task with the same color and selected boxes already exists
                 for (const [color, boxIds] of Object.entries(groupedBoxes)) {
                     let taskUpdated = false;
-    
-                    Object.keys(existingTasks).forEach(taskId => {
-                        if (existingTasks[taskId].color === color) {
-                            // If task with the same color exists, update it
-                            existingTasks[taskId].selectedBoxes = [
-                                ...new Set([...existingTasks[taskId].selectedBoxes, ...boxIds])
-                            ];
-                            existingTasks[taskId].totalTime += this.calculateTotalTime();
-    
-                            taskUpdated = true;
-    
-                            update(ref(this.db, `userTasks/${userId}/${givenDate}/${taskId}`), {
-                                selectedBoxes: existingTasks[taskId].selectedBoxes,
-                                totalTime: existingTasks[taskId].totalTime
-                            });
+        
+                    // Loop through existing tasks to check for existing color
+                    for (const [taskId, task] of Object.entries(existingTasks)) {
+                        if (task.color === color) {
+                            // Check if any of the selected boxes are already part of the task
+                            const existingBoxIds = task.selectedBoxes || [];
+                            const newBoxIds = boxIds.filter(boxId => !existingBoxIds.includes(boxId)); // Only include new boxes
+        
+                            if (newBoxIds.length > 0) {
+                                // If there are new boxes, update the task
+                                task.selectedBoxes = [...new Set([...existingBoxIds, ...newBoxIds])];
+                                task.totalTime += this.calculateTotalTime(newBoxIds); // Only add time for the new boxes
+        
+                                await update(ref(this.db, `userTasks/${userId}/${givenDate}/${taskId}`), {
+                                    selectedBoxes: task.selectedBoxes,
+                                    totalTime: task.totalTime
+                                });
+        
+                                taskUpdated = true;
+                                console.log(`Updated task with color ${color} and added new boxes.`);
+                            }
+                            break; // Break out of the loop once we find a matching task
                         }
-                    });
-    
-                    // If no task with the same color exists, create a new one
+                    }
+        
+                    // If no task with the same color exists, create a new task
                     if (!taskUpdated) {
                         const newTaskId = new Date().getTime().toString();
                         set(ref(this.db, `userTasks/${userId}/${givenDate}/${newTaskId}`), {
                             task: inputData,
                             selectedBoxes: boxIds,
-                            totalTime: this.calculateTotalTime(),
+                            totalTime: this.calculateTotalTime(boxIds), // Calculate total time for these new boxes
                             tag: selectedOption,
                             color: color,
                             date: givenDate,
                             timestamp: new Date().toISOString()
                         });
+        
+                        console.log(`Created new task with color ${color}.`);
                     }
                 }
-    
+        
                 console.log("Data saved/updated successfully");
                 Swal.fire({
                     title: "Saved!",
@@ -202,7 +212,7 @@ class BoxContainer {
                     icon: "success",
                     confirmButtonText: "OK"
                 });
-    
+        
             } catch (error) {
                 console.error("Error saving/updating data:", error);
                 Swal.fire({
@@ -212,29 +222,16 @@ class BoxContainer {
                     confirmButtonText: "OK"
                 });
             }
-    
+        
             // Reset selection
             this.selectedBoxes = [];
             this.boxes.forEach(box => {
                 box.element.classList.remove('selected');
             });
-    
+        
             document.body.removeChild(overlay);
         });
-    
-        // Add Tag Button
-        const addTagBtn = document.createElement('button');
-        addTagBtn.classList.add('submitBTN');
-        addTagBtn.textContent = 'Add Tag';
-        addTagBtn.addEventListener('click', () => {
-            const tagName = prompt("Enter the tag name:");
-            const tagColor = prompt("Enter the tag color:");
-    
-            if (tagName && tagColor) {
-                this.addTag(tagName, tagColor);
-                this.saveTagsToLocalStorage(tagName, tagColor);
-            }
-        });
+        
     
         // Close Button
         const closeButton = document.createElement('button');
@@ -244,7 +241,7 @@ class BoxContainer {
             document.body.removeChild(overlay);
         });
     
-        modal.append(title, inputField, this.comboBox, submitButton, closeButton, addTagBtn);
+        modal.append(title, inputField, this.comboBox, submitButton, closeButton);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }
@@ -613,11 +610,45 @@ class BoxContainer {
     document.body.appendChild(overlay);
 }
 
+checkBoxes() {
+    console.log("Checking Boxes");
+
+    let hasError = false; // Flag to track if an error occurs
+
+    for (const box of this.boxes) {
+        const boxElement = box.element;
+        const style = window.getComputedStyle(boxElement);
+        const backgroundColor = style.backgroundColor;
+
+        if (boxContainer.selectedBoxes.includes(box.id)) {
+            if (backgroundColor !== 'rgb(173, 216, 230)') { // 'lightblue' in RGB format
+                hasError = true; // Mark that we found an invalid box
+                break; // Stop checking further boxes
+            }
+        }
+    }
+
+    if (hasError) {
+        Swal.fire({
+            title: "Error",
+            text: "Some selected boxes already have a background!",
+            icon: "error",
+            confirmButtonText: "OK"
+        });
+    } else {
+        boxContainer.showCustomPopup(); // Only runs if no error occurred
+    }
+}
+
+
+
+
 }
 
 
 document.addEventListener('DOMContentLoaded', () => {
     const submitBTN = document.getElementById('saveBoxes');
+    
 
     const initializeTags = () => {
         let storedTags = JSON.parse(localStorage.getItem('tags'));
@@ -636,19 +667,20 @@ document.addEventListener('DOMContentLoaded', () => {
         storedTags.forEach(tag => boxContainer.addTag(tag.name, tag.color)); 
     };
     initializeTags();
+    
 
     if (submitBTN) {
-        submitBTN.addEventListener('click', () => boxContainer.showCustomPopup());
+        submitBTN.addEventListener('click', () => {
+            boxContainer.checkBoxes();
+        });
     } else {
         console.error('Button with ID "saveBoxes" not found!');
     }
 
-    // console.log("Document is Loaded");
 
 
 });
 
-// document.addEventListener('DOMContentLoaded', () => { boxContainer.retrievedData(); });
 
 
 
@@ -767,4 +799,3 @@ document.addEventListener('DOMContentLoaded', () => {
         boxContainer.retrievedData();
     })
 });
-
