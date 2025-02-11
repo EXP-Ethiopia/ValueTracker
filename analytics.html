@@ -14,6 +14,9 @@
             // Initialize the state from localStorage, defaulting to false (home page)
             let toggled = localStorage.getItem('toggled') === 'true';
 
+            // Update the button text based on the initial state
+            updateButtonText(toggled);
+
             // Trigger the button switch
             triggerSwitch();
 
@@ -38,13 +41,23 @@
 
                 // Save the new state to localStorage
                 localStorage.setItem('toggled', toggled);
-                console.log(`Current state of the browser's page is: ${localStorage.getItem('toggled')}`)
+                console.log(`Current state of the browser's page is: ${localStorage.getItem('toggled')}`);
+
+                // Update the button text
+                updateButtonText(toggled);
 
                 // Navigate to the appropriate page
                 if (toggled) {
                     window.location.href = 'analytics.html';
                 } else {
                     window.location.href = 'home.html';
+                }
+            }
+
+            function updateButtonText(toggled) {
+                const toggleBtn = document.querySelector("#analyticsBtn");
+                if (toggleBtn) {
+                    toggleBtn.textContent = toggled ? "Hide Analytics" : "View Analytics";
                 }
             }
         });
@@ -203,7 +216,7 @@
                             tagColorMap[tag] = color;
 
                             const selectedBoxes = Array.isArray(task.selectedBoxes) ? task.selectedBoxes : [];
-                            const totalTime = task.totalTime || 0;
+                            const totalTime = task.totalTime || 0; // Total time is in hours
                             const timestamp = task.timestamp ? new Date(task.timestamp).toLocaleString() : "N/A";
 
                             // Populate table
@@ -219,12 +232,12 @@
                             tableBody.appendChild(row);
 
                             // Aggregate data for charts
-                            tagTimeMap[tag] = (tagTimeMap[tag] || 0) + totalTime;
+                            tagTimeMap[tag] = (tagTimeMap[tag] || 0) + totalTime; // Total time is in hours
                             tagCountMap[tag] = (tagCountMap[tag] || 0) + 1;
 
-                            // Map selected boxes to their colors
+                            // Map selected boxes to their colors and tags
                             selectedBoxes.forEach(boxId => {
-                                selectedBoxesMap[boxId] = color;
+                                selectedBoxesMap[boxId] = { color, tag };
                             });
                         }
                     });
@@ -244,9 +257,19 @@
             const pieCtx = document.getElementById("pieChart").getContext("2d");
 
             const tags = Object.keys(tagTimeMap);
-            const totalTimeData = Object.values(tagTimeMap);
+            const totalTimeData = Object.values(tagTimeMap); // Total time is in hours
             const taskCountData = Object.values(tagCountMap);
             const tagColors = tags.map(tag => tagColorMap[tag] || "#CCCCCC");
+
+            // Calculate the maximum time value for the y-axis
+            const maxTime = Math.max(...totalTimeData, 0); // Total time is in hours
+            const maxHours = Math.ceil(maxTime); // Maximum hours
+
+            // Generate y-axis ticks dynamically
+            const yAxisTicks = [];
+            for (let i = 0; i <= maxHours; i += 0.5) { // Increment by 0.5 hours (30 minutes)
+                yAxisTicks.push(i);
+            }
 
             // Bar Chart - Total Time per Tag
             if (window.barChartInstance) {
@@ -258,7 +281,7 @@
                     labels: tags,
                     datasets: [
                         {
-                            label: "Total Time (minutes)",
+                            label: "Total Time (hours)",
                             data: totalTimeData,
                             backgroundColor: tagColors,
                             borderColor: tagColors.map(color => color.replace(/0.7/, "1")),
@@ -273,7 +296,27 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                stepSize: 30, // Set y-axis interval to 30 minutes
+                                stepSize: 0.5, // Set y-axis interval to 0.5 hours (30 minutes)
+                                callback: (value) => {
+                                    // Format the tick label as hours and minutes
+                                    const hours = Math.floor(value);
+                                    const minutes = (value % 1) * 60;
+                                    return `${hours}h ${minutes}m`;
+                                },
+                                max: maxHours, // Set the maximum value for the y-axis
+                            },
+                        },
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.dataset.label || '';
+                                    const value = context.raw || 0;
+                                    const hours = Math.floor(value);
+                                    const minutes = (value % 1) * 60;
+                                    return `${label}: ${hours}h ${minutes}m`;
+                                },
                             },
                         },
                     },
@@ -300,11 +343,22 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} tasks`;
+                                },
+                            },
+                        },
+                    },
                 },
             });
         }
 
-        // Function to update heatmap with user's colors
+        // Function to update heatmap with user's colors and tooltips
         function updateHeatmap(selectedBoxesMap) {
             const heatmapContainer = document.getElementById("heatmap");
             heatmapContainer.innerHTML = ""; // Clear previous heatmap
@@ -320,9 +374,11 @@
 
                 // Set color based on selectedBoxesMap
                 if (selectedBoxesMap[i]) {
-                    box.style.backgroundColor = selectedBoxesMap[i];
+                    box.style.backgroundColor = selectedBoxesMap[i].color;
+                    box.title = `Tag: ${selectedBoxesMap[i].tag}`; // Add tooltip for the tag
                 } else {
                     box.style.backgroundColor = "rgba(0, 128, 0, 0.1)"; // Default color
+                    box.title = "No task"; // Default tooltip
                 }
 
                 heatmapGrid.appendChild(box);
