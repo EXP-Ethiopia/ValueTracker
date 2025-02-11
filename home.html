@@ -3,59 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles/config.css">
-    <link rel="stylesheet" href="styles/home.css">
+    <link rel="stylesheet" href="public/styles/config.css">
+    <link rel="stylesheet" href="public/styles/home.css">
     <title>Home page</title>
+
+    <script defer>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Initialize the state from localStorage, defaulting to false (home page)
+            let toggled = localStorage.getItem('toggled') === 'true';
+
+            // Trigger the button switch
+            triggerSwitch();
+
+
+            function triggerSwitch() {
+                const toggleBtn = document.querySelector("#analyticsBtn");
+            
+                if (toggleBtn) {
+                    console.log("✅ Toggle button exists/found");
+
+                    toggleBtn.addEventListener("click", () => {
+                        console.log("🔥 Toggle button clicked");
+                        toggleState();
+                    });
+                } else {
+                    console.warn("❌ Toggle Button not found. Check ID or ensure the button exists.");
+                }
+
+            }
+
+            function toggleState() {
+                // Toggle the state
+                toggled = !toggled;
+
+                // Save the new state to localStorage
+                localStorage.setItem('toggled', toggled);
+                console.log(`Current state of the browser's page is: ${localStorage.getItem('toggled')}`)
+
+                // Navigate to the appropriate page
+                if (toggled) {
+                    window.location.href = 'analytics.html';
+                } else {
+                    window.location.href = 'home.html';
+                }
+            }
+     
+        });
+    </script>
+
 </head>
 <body>
 
     <header class="home-header">
         <div class="leftNav">
             <img src="" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
-            <input type="search" id="searchInput" placeholder="Search here">
-            <button id="searchBtn">Search</button>
+            <h1 class="welcome">Welcome <span id="username"></span> </h1>
         </div>
 
         <div class="rightNav">
             <ul class="UnorderedList">
-                <li><button id="homeBtn">Home</button></li>
-                <li><button id="FinancetBtn">Finance</button></li>
-                <li><button id="WorkBtn">Work</button></li>
-                <li><button id="HealthBtn">Health</button></li>
+                <li><button id="analyticsBtn">View Analytics</button></li>
                 <li><button id="logoutBtn">LogOut</button></li>
-
             </ul>
-
         </div>
-        
     </header>
-    <h1 class="welcome">Welcome <span id="username"></span> </h1>
+
+    <div class="container">
+        <div class="firstText">
+            <div>
+                <select id="dayComboBox">
+                    <option value="">Day</option>
+                </select>
+                
+                <select id="monthComboBox">
+                    <option value="">Month</option>
+                </select>
+                
+                <select id="yearComboBox">
+                    <option value="">Year</option>
+                </select>
+                
+                <button id="getSelectedDate">Get Selected Date</button>
+            </div>
+            <div >
+                <button class="saveBtn" id="saveBoxes">Save</button>
+                <button class="saveBtn" id="DeleteBoxes">Delete</button>
+                <button class="saveBtn" id="UpdateTask">Update</button>
+            </div> 
+        </div>
+
+        <div id="box-container">
+        </div>
+    </div>
     
     
 </body>
 
 <script type="module">
     // Get the URL parameters
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    // import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+    import { remove, ref, onValue , set,getDatabase,get,update } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+    
 
-        // Firebase Configuration
-        const firebaseConfig = {
-        apiKey: "AIzaSyClF_kUmfMyrxDqP_iuu7BgoqqTtX67JRY",
-        authDomain: "valutracker-391c6.firebaseapp.com",
-        databaseURL: "https://valutracker-391c6-default-rtdb.firebaseio.com",
-        projectId: "valutracker-391c6",
-        storageBucket: "valutracker-391c6.firebasestorage.app",
-        messagingSenderId: "268267434732",
-        appId: "1:268267434732:web:49e075d9a0b22df4c4abc9",
-        measurementId: "G-X8RX5C4WKS"
-        };
+    // Firebase Configuration
+    const firebaseConfig = {
+    apiKey: "AIzaSyClF_kUmfMyrxDqP_iuu7BgoqqTtX67JRY",
+    authDomain: "valutracker-391c6.firebaseapp.com",
+    databaseURL: "https://valutracker-391c6-default-rtdb.firebaseio.com",
+    projectId: "valutracker-391c6",
+    storageBucket: "valutracker-391c6.firebasestorage.app",
+    messagingSenderId: "268267434732",
+    appId: "1:268267434732:web:49e075d9a0b22df4c4abc9",
+    measurementId: "G-X8RX5C4WKS"
+    };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
+    // const boxContainer = new BoxContainer('box-container', auth, db);
+    window.boxContainer = new BoxContainer('box-container', auth, db) ;
+    boxContainer.generateBoxes(48);
+
+    window.auth = auth;
+    window.addDoc = addDoc;
+    window.collection =collection;
+    window.db = db;
+    window.ref = ref;
+    window.set = set;
+    window.remove = remove;
+    window.get = get;
+    window.update = update;
+    window.onAuthStateChanged = onAuthStateChanged;
+    window.onValue = onValue;
+        
         
     const urlParams = new URLSearchParams(window.location.search);
     
@@ -88,15 +173,17 @@
 
     if (user) {
         console.log("✅ User signed in:", user.displayName, user.email, user.uid);
+        window.userId = user.uid;
         
         let checkPhotoInterval = setInterval(() => {
             if (user.photoURL) {
-                console.log("🖼 Found Profile Pic:", user.photoURL);    
+                console.log("🖼 Found Profile Pic:", user.photoURL);
+            
                 profilePic.src = user.photoURL; 
                 clearInterval(checkPhotoInterval);
             } else {
                 console.warn("⚠ No photoURL found, using default.");
-                profilePic.src = "images/default.jpg"; 
+                profilePic.src = "public/images/default.jpg"; 
             }
         }, 100); 
     } else {
@@ -106,4 +193,11 @@
 
 
 </script>
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="public/scripts/Tag.js"></script>
+<script src="public/scripts/getday.js"></script>
+<script  src="public/scripts/Box.js"></script>
+<script src="public/scripts/BoxContainer.js"></script>
 </html>
