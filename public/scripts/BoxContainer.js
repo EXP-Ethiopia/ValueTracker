@@ -674,6 +674,118 @@ checkBoxes() {
     }
 }
 
+    async deletFunction () {
+                const user = auth.currentUser;
+                if (!user) {
+                    Swal.fire("Not Logged In", "You need to log in to delete tasks.", "error");
+                    return;
+                }
+    
+                let day = document.getElementById("dayComboBox").value;
+                let month = document.getElementById("monthComboBox").value;
+                let year = document.getElementById("yearComboBox").value;
+    
+                day = day.padStart(2, '0');
+                month = month.padStart(2, '0');
+                const givenDate = `${year}-${month}-${day}`;
+    
+                const userId = user.uid;
+                const taskPath = `userTasks/${userId}/${givenDate}`;
+                const userTasksRef = ref(db, taskPath);
+    
+                // Get the selected boxes
+                const selectedBoxes = boxContainer.boxes
+                    .filter(box => box.element.classList.contains('selected'))
+                    .map(box => box.id);
+    
+                console.log("Selected Boxes for Deletion:", selectedBoxes);
+    
+                if (selectedBoxes.length === 0) {
+                    Swal.fire("No Selection", "Please select at least one box before deleting.", "warning");
+                    return;
+                }
+    
+                try {
+                    const snapshot = await get(userTasksRef);
+                    if (!snapshot.exists()) {
+                        Swal.fire("No Task Found", "No task found for this date.", "info");
+                        return;
+                    }
+    
+                    const tasks = snapshot.val();
+    
+                    // Iterate over all tasks and remove selected boxes only
+                    for (const taskKey in tasks) {
+                        const task = tasks[taskKey];
+    
+                        // Get boxes that will remain after deletion
+                        const updatedBoxes = task.selectedBoxes.filter(boxId => !selectedBoxes.includes(boxId));
+                    
+                        if (updatedBoxes.length === 0) {
+                            // If no boxes are left, delete the task entry
+                            await remove(ref(db, `${taskPath}/${taskKey}`));
+                            console.log(`Deleted entire task: ${taskKey}`);
+                        } else {
+                            // Calculate reduced time **only for boxes that belong to THIS task**
+                            const reducedTime = task.selectedBoxes
+                                .filter(boxId => selectedBoxes.includes(boxId)) // Only consider removed boxes
+                                .reduce((total, boxId) => {
+                                    const box = boxContainer.boxes.find(b => b.id === boxId);
+                                    return total + (box && box.TimeValue ? box.TimeValue : 0);
+                                }, 0);
+                    
+                            const updatedTotalTime = Math.max(0, task.totalTime - reducedTime); // Ensure it doesn't go negative
+                    
+                            // Update only the selectedBoxes and totalTime fields
+                            await update(ref(db, `${taskPath}/${taskKey}`), {
+                                selectedBoxes: updatedBoxes,
+                                totalTime: updatedTotalTime
+                            });
+                    
+                            console.log(`Updated task: ${taskKey}, New Total Time: ${updatedTotalTime}`);
+                        }
+                    }
+    
+                    boxContainer.retrievedData();
+    
+                    Swal.fire("Deleted", "selected  have been removed.", "success");
+    
+                } catch (error) {
+                    console.error("Error deleting boxes:", error);
+                    Swal.fire("Error", "Could not delete the selected boxes. Try again later.", "error");
+                }
+    }
+
+    checkDeleteFunction() {
+        console.log("Checking Boxes");
+
+        let hasError = false; // Flag to track if an error occurs
+    
+        for (const box of this.boxes) {
+            const boxElement = box.element;
+            const style = window.getComputedStyle(boxElement);
+            const backgroundColor = style.backgroundColor;
+    
+            if (boxContainer.selectedBoxes.includes(box.id)) {
+                if (backgroundColor == 'rgb(173, 216, 230)') { // 'lightblue' in RGB format
+                    hasError = true; // Mark that we found an invalid box
+                    break; // Stop checking further boxes
+                }
+            }
+        }
+    
+        if (hasError) {
+            Swal.fire({
+                title: "Error",
+                text: "Some selected boxes already have a background!",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        } else {
+            boxContainer.deletFunction(); // Only runs if no error occurred
+        }
+    }
+
 
 
 
@@ -721,91 +833,9 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     const deleteBTN = document.getElementById('DeleteBoxes');
 
-    if (deleteBTN) {
-        deleteBTN.addEventListener('click', async () => {
-            const user = auth.currentUser;
-            if (!user) {
-                Swal.fire("Not Logged In", "You need to log in to delete tasks.", "error");
-                return;
-            }
-
-            let day = document.getElementById("dayComboBox").value;
-            let month = document.getElementById("monthComboBox").value;
-            let year = document.getElementById("yearComboBox").value;
-
-            day = day.padStart(2, '0');
-            month = month.padStart(2, '0');
-            const givenDate = `${year}-${month}-${day}`;
-
-            const userId = user.uid;
-            const taskPath = `userTasks/${userId}/${givenDate}`;
-            const userTasksRef = ref(db, taskPath);
-
-            // Get the selected boxes
-            const selectedBoxes = boxContainer.boxes
-                .filter(box => box.element.classList.contains('selected'))
-                .map(box => box.id);
-
-            console.log("Selected Boxes for Deletion:", selectedBoxes);
-
-            if (selectedBoxes.length === 0) {
-                Swal.fire("No Selection", "Please select at least one box before deleting.", "warning");
-                return;
-            }
-
-            try {
-                const snapshot = await get(userTasksRef);
-                if (!snapshot.exists()) {
-                    Swal.fire("No Task Found", "No task found for this date.", "info");
-                    return;
-                }
-
-                const tasks = snapshot.val();
-
-                // Iterate over all tasks and remove selected boxes only
-                for (const taskKey in tasks) {
-                    const task = tasks[taskKey];
-
-                    // Get boxes that will remain after deletion
-                    const updatedBoxes = task.selectedBoxes.filter(boxId => !selectedBoxes.includes(boxId));
-                
-                    if (updatedBoxes.length === 0) {
-                        // If no boxes are left, delete the task entry
-                        await remove(ref(db, `${taskPath}/${taskKey}`));
-                        console.log(`Deleted entire task: ${taskKey}`);
-                    } else {
-                        // Calculate reduced time **only for boxes that belong to THIS task**
-                        const reducedTime = task.selectedBoxes
-                            .filter(boxId => selectedBoxes.includes(boxId)) // Only consider removed boxes
-                            .reduce((total, boxId) => {
-                                const box = boxContainer.boxes.find(b => b.id === boxId);
-                                return total + (box && box.TimeValue ? box.TimeValue : 0);
-                            }, 0);
-                
-                        const updatedTotalTime = Math.max(0, task.totalTime - reducedTime); // Ensure it doesn't go negative
-                
-                        // Update only the selectedBoxes and totalTime fields
-                        await update(ref(db, `${taskPath}/${taskKey}`), {
-                            selectedBoxes: updatedBoxes,
-                            totalTime: updatedTotalTime
-                        });
-                
-                        console.log(`Updated task: ${taskKey}, New Total Time: ${updatedTotalTime}`);
-                    }
-                }
-
-                boxContainer.retrievedData();
-
-                Swal.fire("Deleted", "selected  have been removed.", "success");
-
-            } catch (error) {
-                console.error("Error deleting boxes:", error);
-                Swal.fire("Error", "Could not delete the selected boxes. Try again later.", "error");
-            }
-        });
-    } else {
-        console.error('Button with ID "DeleteBoxes" not found!');
-    }
+   deleteBTN.addEventListener('click', () => {
+        boxContainer.checkDeleteFunction();
+    }); 
 });
 
 document.addEventListener('DOMContentLoaded', () => {
