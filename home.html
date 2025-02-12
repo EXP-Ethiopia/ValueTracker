@@ -71,15 +71,15 @@
     <div class="container">
         <div class="firstText">
             <div>
-                <select id="dayComboBox">
+                <select class="dates" id="dayComboBox">
                     <option value="">Day</option>
                 </select>
                 
-                <select id="monthComboBox">
+                <select class="dates" id="monthComboBox">
                     <option value="">Month</option>
                 </select>
                 
-                <select id="yearComboBox">
+                <select class="dates" id="yearComboBox">
                     <option value="">Year</option>
                 </select>
                 
@@ -111,7 +111,7 @@
     import { getAuth,signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
     // import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
     import { getFirestore, doc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-    import { remove, ref, onValue , set,getDatabase,get,update } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+    import { remove, ref,push, onValue , set,getDatabase,get,update } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
     
 
     // Firebase Configuration
@@ -146,6 +146,7 @@
     window.update = update;
     window.onAuthStateChanged = onAuthStateChanged;
     window.onValue = onValue;
+    window.push = push;
         
         
     const urlParams = new URLSearchParams(window.location.search);

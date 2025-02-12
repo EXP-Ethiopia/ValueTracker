@@ -68,6 +68,45 @@ class BoxContainer {
         });
     }
 
+    async showAddTagPopup() {
+        console.log("Showing Add Tag Popup");
+
+        const tagName = prompt("Enter the name of the new tag:");
+        const tagColor = prompt("Enter the color: ");
+
+        if (tagName && tagColor !== "") {
+
+            const UserTag = ref(this.db, 'userTasks/' + userId + "/tags");
+
+            // Generate a unique ID for each tag
+            const newTagRef = push(UserTag);
+            
+            set(newTagRef, {
+                tagName: tagName,
+                color: tagColor
+            }).then(() => {
+                console.log("Tag successfully added!");
+            
+                // Fetch the updated tag list
+                return get(UserTag);
+            }).then(snapshot => {
+                if (snapshot.exists()) {
+                    console.log("Tags found:");
+                    console.log(snapshot.val());
+            
+                    Object.values(snapshot.val()).forEach(tag => {
+                        this.addTag(tag.tagName, tag.color);
+                    });
+                } else {
+                    console.log("No tags found.");
+                }
+            }).catch(error => {
+                console.error("Error adding tag:", error);
+            });
+        }            
+
+    }
+
     async showCustomPopup() {
         // Refill selectedBoxes with currently selected boxes
         this.selectedBoxes = this.boxes
@@ -234,6 +273,14 @@ class BoxContainer {
         
             document.body.removeChild(overlay);
         });
+
+        //AddTag button
+        const addTagButton = document.createElement('button');
+        addTagButton.classList.add('submitBTN');
+        addTagButton.textContent = 'Add Tag';
+        addTagButton.addEventListener('click', () => {
+            this.showAddTagPopup();
+        });
         
     
         // Close Button
@@ -244,7 +291,7 @@ class BoxContainer {
             document.body.removeChild(overlay);
         });
     
-        modal.append(title, inputField, this.comboBox, submitButton, closeButton);
+        modal.append(title, inputField, this.comboBox, submitButton, closeButton,addTagButton);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }
