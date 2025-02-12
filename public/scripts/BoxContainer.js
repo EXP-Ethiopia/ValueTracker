@@ -174,7 +174,6 @@ class BoxContainer {
                 else {
                     
                     let userId = user.uid;
-                    let allowed = true;
 
                     var selectedColor = colorField.value; //f3f3f3
             
@@ -185,33 +184,20 @@ class BoxContainer {
 
                     const savedLocal = JSON.parse(localStorage.getItem(`user_${userId}_tags`));
 
-                    savedLocal.forEach((task) => {
-
-                        // console.log( `User's color range ==> ${TotalRGBValue} ==> All the colors we have  ==> ${this.sumRGB(task.color)}` );
-
-                        if(allowed) {
-
-                            if(Math.abs(TotalRGBValue - (this.sumRGB(task.color))) > 100   ) {
-
-                                alert("allowed please change color")
-                                console.log("still going");
-                                
-                            } else {
-                                alert(" Not allowed  please change color")
-                                console.log("Stopped no further")
-                                allowed = false
-                            }
-
-                        }
-                        // this.hexToRgb(task.color);
-                        // console.log( "Tasks colors all==> "+ task.color);
+                    
+                    // console.log( `User's color range ==> ${TotalRGBValue} ==> All the colors we have  ==> ${this.sumRGB(task.color)}` );
 
 
+                    let isAllowed = savedLocal.every(task => {
+                        return Math.abs(TotalRGBValue - this.hexToRgb(task.color)) > 100;
+                    });
+                    
+                    if (isAllowed) {
+                        alert("fine to go")
+                        console.log("✅ Data is ready to go");
+                        // console.log(TotalRGBValue + "==>(-)" + this.hexToRgb(task.color) )
 
-
-                    })
-
-                    const tagSelect = document.getElementById('tagSelect');
+                        const tagSelect = document.getElementById('tagSelect');
 
 
 
@@ -243,6 +229,13 @@ class BoxContainer {
                                 tagSelect.innerHTML = ''; // Clear the existing options
                                 this.saveTagsToLocalStorage(inputField.value, selectedColor, userId);
                                 this.addTag(inputField.value, selectedColor);
+
+                                Swal.fire({
+                                    title: "Saved!",
+                                    text: "Your New tag has been saved successfully.",
+                                    icon: "success",
+                                    confirmButtonText: "OK"
+                                });
             
                             } else {
                                 console.log("No tags found.");
@@ -250,6 +243,18 @@ class BoxContainer {
                         }).catch(error => {
                             console.error("Error adding tag:", error);
                         });
+                    } else {
+                        alert("❌ Not allowed, please change color");
+                        console.log("⛔ Stopped: Color too close");
+                        Swal.fire({
+                            title: "Error",
+                            text: "There is Similar Color to Yours Please Change !",
+                            icon: "error",
+                            confirmButtonText: "OK"
+                        });
+                        // console.log(TotalRGBValue + "==>(-)" + this.hexToRgb(task.color) )
+                    }
+                    
                     
                         }
                     })
@@ -1035,11 +1040,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Predefined tags
             const predefinedTags = [
-                { name: "Work", color: "rgb(255,0,0)" },
-                { name: "Personal Dev", color: "rgb(165, 42, 42)" },  // Brown
-                { name: "School", color: "rgb(0, 128, 0)" },         // Green
-                { name: "FunTime", color: "rgb(0, 0, 255)" },       // Blue
-                { name: "Team Time", color: "rgb(128, 0, 128)" } 
+                { name: "Work", color: "#ff0000" },
+                { name: "Personal Dev", color: "#a52a2a" },
+                { name: "School", color: "#008000" },
+                { name: "FunTime", color: "#0000ff" },
+                { name: "Team Time", color: "#800080" }
             ];
 
             // Merge predefined and stored tags, avoiding duplicates
