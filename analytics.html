@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="public/styles/config.css">
     <link rel="stylesheet" href="public/styles/analytics.css">
-    <script type="module" src="./toggleMode.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js -->
+    <link rel="stylesheet" href="public/styles/home.css">
+    <script src="public/scripts/getday.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script> <!-- Include Chart.js -->
     <title>Analytics Page</title>
     
     <script defer>
@@ -71,6 +72,23 @@
         </div>
         <div class="rightNav">
             <ul class="UnorderedList">
+                <div>
+                    <select class="dates" id="dayComboBox">
+                        <option value="">Day</option>
+                    </select>
+                    
+                    <select class="dates" id="monthComboBox">
+                        <option value="">Month</option>
+                    </select>
+                    
+                    <select class="dates" id="yearComboBox">
+                        <option value="">Year</option>
+                    </select>
+                    
+                    <button id="getDayButton">
+                        Search 
+                    </button>
+                </div>
                 <li><button id="analyticsBtn">Hide Analytics</button></li>
                 <li><button id="logoutBtn">LogOut</button></li>
             </ul>
@@ -175,96 +193,127 @@
                     }
                 }, 100); 
 
-                // Fetch tasks
-                fetchTasks(user.uid);
+                // Populate date dropdowns
+                populateDateDropdowns();
+
+                // Fetch tasks for the current date by default
+                const currentDate = new Date();
+                fetchTasks(user.uid, currentDate);
             } else {
                 console.warn("❌ No user is signed in.");
                 window.location.href = 'index.html';
             }
         });
 
-        // Function to fetch and display tasks for the current day
-        function fetchTasks(userId) {
-    const userTasksRef = ref(db, `userTasks/${userId}`);
+        // Function to populate date dropdowns
+        function populateDateDropdowns() {
+            const dayComboBox = document.getElementById("dayComboBox");
+            const monthComboBox = document.getElementById("monthComboBox");
+            const yearComboBox = document.getElementById("yearComboBox");
 
-    onValue(userTasksRef, (snapshot) => {
-        console.log("Fetching tasks for user:", userId);
-        console.log("📌 Snapshot Data:", snapshot.val());
+            // Populate days (1-31)
+            for (let day = 1; day <= 31; day++) {
+                const option = document.createElement("option");
+                option.value = day;
+                option.textContent = day;
+                dayComboBox.appendChild(option);
+            }
 
-        const tableBody = document.querySelector("#taskTable tbody");
-        tableBody.innerHTML = "";
+            // Populate months (1-12)
+            for (let month = 1; month <= 12; month++) {
+                const option = document.createElement("option");
+                option.value = month;
+                option.textContent = new Date(2023, month - 1, 1).toLocaleString('default', { month: 'long' });
+                monthComboBox.appendChild(option);
+            }
 
-        const tagTimeMap = {};
-        const tagCountMap = {};
-        const tagColorMap = {};
-        const selectedBoxesMap = {}; // Map to store selected boxes for heatmap
+            // Populate years (2023-2030)
+            for (let year = 2023; year <= 2030; year++) {
+                const option = document.createElement("option");
+                option.value = year;
+                option.textContent = year;
+                yearComboBox.appendChild(option);
+            }
+        }
 
-        if (snapshot.exists()) {
-            const tasks = snapshot.val();
-            const currentDate = new Date().toDateString(); // Get current date
+        // Function to fetch and display tasks for the selected date
+        function fetchTasks(userId, selectedDate) {
+            const formattedDate = selectedDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+            const userTasksRef = ref(db, `userTasks/${userId}/${formattedDate}`);
 
-            Object.values(tasks).forEach((taskId) => {
-                const task = tasks[taskId];
-                if (task.timestamp === undefined || task.timestamp === null) {
-                    console.error('Timestamp is missing or invalid for task:', taskId);
-                    return; // Skip tasks with missing or invalid timestamps
-                }
+            onValue(userTasksRef, (snapshot) => {
+                console.log("Fetching tasks for user:", userId);
+                console.log("📌 Snapshot Data:", snapshot.val());
 
-                const taskDate = new Date(task.timestamp); // Parse timestamp to Date object
+                const tableBody = document.querySelector("#taskTable tbody");
+                tableBody.innerHTML = ""; // Clear the table
 
-                // Check if the timestamp is valid
-                if (isNaN(taskDate)) {
-                    console.error('Invalid date format for task:', taskId, task.timestamp);
-                    return; // Skip tasks with invalid timestamps
-                }
+                const tagTimeMap = {};
+                const tagCountMap = {};
+                const tagColorMap = {};
+                const selectedBoxesMap = {}; // Map to store selected boxes for heatmap
 
-                console.log("Task Date:", taskDate.toDateString());
+                if (snapshot.exists()) {
+                    const tasks = snapshot.val();
 
-                // Only process tasks for the current day by comparing the date part
-                if (taskDate.toDateString() === currentDate) {
-                    const taskText = task.task || "No task name";
-                    const tag = task.tag || "No tag";
-                    const color = task.color || "#CCCCCC";
+                    // Iterate through each task for the selected date
+                    Object.keys(tasks).forEach((taskId) => {
+                        const task = tasks[taskId];
 
-                    tagColorMap[tag] = color;
+                        if (task.timestamp === undefined || task.timestamp === null) {
+                            console.error('Timestamp is missing or invalid for task:', taskId);
+                            return; // Skip tasks with missing or invalid timestamps
+                        }
 
-                    const selectedBoxes = Array.isArray(task.selectedBoxes) ? task.selectedBoxes : [];
-                    const totalTime = task.totalTime || 0; // Total time is in hours
-                    const timestamp = task.timestamp ? new Date(task.timestamp).toLocaleString() : "N/A";
+                        const taskText = task.task || "No task name";
+                        const tag = task.tag || "No tag";
+                        const color = task.color || "#CCCCCC";
 
-                    // Populate table
+                        tagColorMap[tag] = color;
+
+                        const selectedBoxes = Array.isArray(task.selectedBoxes) ? task.selectedBoxes : [];
+                        const totalTime = task.totalTime || 0; // Total time is in hours
+                        const timestamp = task.timestamp ? new Date(task.timestamp).toLocaleString() : "N/A";
+
+                        // Populate table
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${taskText}</td>
+                            <td>${tag}</td>
+                            <td style="background-color: ${color};"></td>
+                            <td>${selectedBoxes.join(", ")}</td>
+                            <td>${totalTime}</td>
+                            <td>${timestamp}</td>
+                        `;
+                        tableBody.appendChild(row);
+
+                        // Aggregate data for charts
+                        tagTimeMap[tag] = (tagTimeMap[tag] || 0) + totalTime; // Total time is in hours
+                        tagCountMap[tag] = (tagCountMap[tag] || 0) + 1;
+
+                        // Map selected boxes to their colors and tags
+                        selectedBoxes.forEach(boxId => {
+                            selectedBoxesMap[boxId] = { color, tag };
+                        });
+                    });
+
+                    // Update charts and heatmap
+                    updateCharts(tagTimeMap, tagCountMap, tagColorMap);
+                    updateHeatmap(selectedBoxesMap);
+                } else {
+                    // No tasks found for the selected date
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                        <td>${taskText}</td>
-                        <td>${tag}</td>
-                        <td style="background-color: ${color};"></td>
-                        <td>${selectedBoxes.join(", ")}</td>
-                        <td>${totalTime}</td>
-                        <td>${timestamp}</td>
+                        <td colspan="6" style="text-align: center; color: gray;">No tasks found for this date.</td>
                     `;
                     tableBody.appendChild(row);
 
-                    // Aggregate data for charts
-                    tagTimeMap[tag] = (tagTimeMap[tag] || 0) + totalTime; // Total time is in hours
-                    tagCountMap[tag] = (tagCountMap[tag] || 0) + 1;
-
-                    // Map selected boxes to their colors and tags
-                    selectedBoxes.forEach(boxId => {
-                        selectedBoxesMap[boxId] = { color, tag };
-                    });
+                    // Clear charts and heatmap
+                    clearCharts();
+                    clearHeatmap();
                 }
             });
-
-            // Update charts and heatmap
-            updateCharts(tagTimeMap, tagCountMap, tagColorMap);
-            updateHeatmap(selectedBoxesMap);
-        } else {
-            console.warn("⚠ No tasks found for this user.");
         }
-    });
-}
-
-
 
         // Function to update charts dynamically with colors from Firebase data
         function updateCharts(tagTimeMap, tagCountMap, tagColorMap) {
@@ -276,20 +325,15 @@
             const taskCountData = Object.values(tagCountMap);
             const tagColors = tags.map(tag => tagColorMap[tag] || "#CCCCCC");
 
-            // Calculate the maximum time value for the y-axis
-            const maxTime = Math.max(...totalTimeData, 0); // Total time is in hours
-            const maxHours = Math.ceil(maxTime); // Maximum hours
-
-            // Generate y-axis ticks dynamically
-            const yAxisTicks = [];
-            for (let i = 0; i <= maxHours; i += 0.5) { // Increment by 0.5 hours (30 minutes)
-                yAxisTicks.push(i);
-            }
-
-            // Bar Chart - Total Time per Tag
+            // Destroy existing chart instances
             if (window.barChartInstance) {
                 window.barChartInstance.destroy();
             }
+            if (window.pieChartInstance) {
+                window.pieChartInstance.destroy();
+            }
+
+            // Bar Chart - Total Time per Tag
             window.barChartInstance = new Chart(barCtx, {
                 type: "bar",
                 data: {
@@ -318,7 +362,6 @@
                                     const minutes = (value % 1) * 60;
                                     return `${hours}h ${minutes}m`;
                                 },
-                                max: maxHours, // Set the maximum value for the y-axis
                             },
                         },
                     },
@@ -339,9 +382,6 @@
             });
 
             // Pie Chart - Task Count per Tag
-            if (window.pieChartInstance) {
-                window.pieChartInstance.destroy();
-            }
             window.pieChartInstance = new Chart(pieCtx, {
                 type: "pie",
                 data: {
@@ -401,6 +441,51 @@
 
             heatmapContainer.appendChild(heatmapGrid);
         }
+
+        // Function to clear charts
+        function clearCharts() {
+            if (window.barChartInstance) {
+                window.barChartInstance.destroy();
+                window.barChartInstance = null;
+            }
+            if (window.pieChartInstance) {
+                window.pieChartInstance.destroy();
+                window.pieChartInstance = null;
+            }
+
+            // Reset chart canvases
+            const barCtx = document.getElementById("barChart").getContext("2d");
+            const pieCtx = document.getElementById("pieChart").getContext("2d");
+            barCtx.clearRect(0, 0, barCtx.canvas.width, barCtx.canvas.height);
+            pieCtx.clearRect(0, 0, pieCtx.canvas.width, pieCtx.canvas.height);
+        }
+
+        // Function to clear heatmap
+        function clearHeatmap() {
+            const heatmapContainer = document.getElementById("heatmap");
+            heatmapContainer.innerHTML = ""; // Clear the heatmap
+
+            // Optionally, you can add a message or placeholder for the heatmap
+            const placeholder = document.createElement("div");
+            placeholder.textContent = "No heatmap data available.";
+            placeholder.style.textAlign = "center";
+            placeholder.style.color = "gray";
+            heatmapContainer.appendChild(placeholder);
+        }
+
+        // Event listener for the search button
+        document.getElementById("getDayButton").addEventListener("click", () => {
+            const day = document.getElementById("dayComboBox").value;
+            const month = document.getElementById("monthComboBox").value;
+            const year = document.getElementById("yearComboBox").value;
+
+            if (day && month && year) {
+                const selectedDate = new Date(year, month - 1, day);
+                fetchTasks(window.userId, selectedDate);
+            } else {
+                alert("Please select a valid date.");
+            }
+        });
     </script>
 </body>
 </html>
