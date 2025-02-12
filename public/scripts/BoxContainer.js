@@ -68,11 +68,17 @@ class BoxContainer {
         });
     }
 
+   
+    
+
     async showAddTagPopup() {
         console.log("Showing Add Tag Popup");
 
         const tagName = prompt("Enter the name of the new tag:");
         const tagColor = prompt("Enter the color: ");
+        const tagSelect = document.getElementById('tagSelect');
+
+        
 
         if (tagName && tagColor !== "") {
 
@@ -93,17 +99,23 @@ class BoxContainer {
                 if (snapshot.exists()) {
                     console.log("Tags found:");
                     console.log(snapshot.val());
+
+                   
             
                     Object.values(snapshot.val()).forEach(tag => {
-                        this.addTag(tag.tagName, tag.color);
+                        console.log("Tag Name:", tag.tagName + ", Color:", tag.color);
                     });
+                    tagSelect.innerHTML = ''; // Clear the existing options
+                    this.saveTagsToLocalStorage(tagName, tagColor,userId);
+                    this.addTag(tagName, tagColor);
+
                 } else {
                     console.log("No tags found.");
                 }
             }).catch(error => {
                 console.error("Error adding tag:", error);
             });
-        }            
+        }           
 
     }
 
@@ -298,10 +310,17 @@ class BoxContainer {
     
     
 
-    saveTagsToLocalStorage(name, color) {
-        let storedTags = JSON.parse(localStorage.getItem('tags')) || [];
+    saveTagsToLocalStorage(name, color,userId) {
+        const userTagsKey = `user_${userId}_tags`;
+
+        let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
+
+        
         storedTags.push({ name, color });
-        localStorage.setItem('tags', JSON.stringify(storedTags));
+
+        localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
+
+        console.log(`Tag "${name}" saved for user ${userId}`);
 
     }
     
@@ -520,24 +539,6 @@ class BoxContainer {
         });
     }
     
-    
-
-    async ShowData(Day, Month, Year) {
-        let UserTask =  ref(this.db, 'userTasks/' + userId);
-        let snapshot = await get(UserTask);
-
-        if(snapshot.exists() ){
-            console.log("Task is found");
-            console.log(snapshot.val());
-        } else {
-            console.log("Task is not found");
-        }
-    }
-    
-    
-    
-    
-    
 
     // Function to show the update task popup
     showUpdateTaskPopup() {
@@ -658,7 +659,7 @@ class BoxContainer {
     modal.append(title, inputField, this.comboBox, submitButton, closeButton);
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
-}
+    }
 
     checkUpdateValitading() {
         console.log("Checking Boxes");
@@ -691,35 +692,35 @@ class BoxContainer {
         
     }
 
-checkBoxes() {
-    console.log("Checking Boxes");
+    checkBoxes() {
+        console.log("Checking Boxes");
 
-    let hasError = false; // Flag to track if an error occurs
+        let hasError = false; // Flag to track if an error occurs
 
-    for (const box of this.boxes) {
-        const boxElement = box.element;
-        const style = window.getComputedStyle(boxElement);
-        const backgroundColor = style.backgroundColor;
+        for (const box of this.boxes) {
+            const boxElement = box.element;
+            const style = window.getComputedStyle(boxElement);
+            const backgroundColor = style.backgroundColor;
 
-        if (boxContainer.selectedBoxes.includes(box.id)) {
-            if (backgroundColor !== 'rgb(173, 216, 230)') { // 'lightblue' in RGB format
-                hasError = true; // Mark that we found an invalid box
-                break; // Stop checking further boxes
+            if (boxContainer.selectedBoxes.includes(box.id)) {
+                if (backgroundColor !== 'rgb(173, 216, 230)') { // 'lightblue' in RGB format
+                    hasError = true; // Mark that we found an invalid box
+                    break; // Stop checking further boxes
+                }
             }
         }
-    }
 
-    if (hasError) {
-        Swal.fire({
-            title: "Error",
-            text: "Some selected boxes already have a background!",
-            icon: "error",
-            confirmButtonText: "OK"
-        });
-    } else {
-        boxContainer.showCustomPopup(); // Only runs if no error occurred
+        if (hasError) {
+            Swal.fire({
+                title: "Error",
+                text: "Some selected boxes already have a background!",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        } else {
+            boxContainer.showCustomPopup(); // Only runs if no error occurred
+        }
     }
-}
 
     async deletFunction () {
                 const user = auth.currentUser;
@@ -839,29 +840,56 @@ checkBoxes() {
 }
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const submitBTN = document.getElementById('saveBoxes');
+
+    if (!boxContainer || typeof boxContainer.addTag !== 'function') {
+        console.error("boxContainer or addTag function is not defined!");
+        return;
+    }
+
+    // Load tags from localStorage
+    async function initializeTags() {
+        // Wait until the user is authenticated
+        onAuthStateChanged(boxContainer.auth, (user) => {
+            if (!user) {
+                console.error("User not authenticated");
+                return;
+            }
     
-
-    const initializeTags = () => {
-        let storedTags = JSON.parse(localStorage.getItem('tags'));
-
-        if (!storedTags || storedTags.length === 0) {
-            storedTags = [
+            const userTagsKey = `user_${user.uid}_tags`;
+            let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
+    
+            // Predefined tags
+            const predefinedTags = [
                 { name: "Work", color: "red" },
                 { name: "Personal Dev", color: "brown" },
                 { name: "School", color: "green" },
-                { name: "FunTime", color: "Blue" },
+                { name: "FunTime", color: "blue" },
                 { name: "Team Time", color: "purple" }
             ];
-            localStorage.setItem('tags', JSON.stringify(storedTags)); // Save default tags if none exist
-        } 
     
-        storedTags.forEach(tag => boxContainer.addTag(tag.name, tag.color)); 
-    };
+            // Merge predefined and stored tags, avoiding duplicates
+            predefinedTags.forEach(preTag => {
+                if (!storedTags.some(tag => tag.name === preTag.name)) {
+                    storedTags.push(preTag);
+                }
+            });
+    
+            // Save updated tags back to localStorage
+            localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
+    
+            // Add all tags to the UI
+            storedTags.forEach(tag => boxContainer.addTag(tag.name, tag.color));
+        });
+    }
+    
+    // Then, initialize tags from localStorage & predefined tags
     initializeTags();
     
+    
 
+    // Button click event
     if (submitBTN) {
         submitBTN.addEventListener('click', () => {
             boxContainer.checkBoxes();
@@ -869,9 +897,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Button with ID "saveBoxes" not found!');
     }
-
-
-
 });
 
 
@@ -887,6 +912,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     boxContainer.retrievedData();
+    
 });
 
 
