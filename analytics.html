@@ -246,7 +246,7 @@
                 console.log("📌 Snapshot Data:", snapshot.val());
 
                 const tableBody = document.querySelector("#taskTable tbody");
-                tableBody.innerHTML = "";
+                tableBody.innerHTML = ""; // Clear the table
 
                 const tagTimeMap = {};
                 const tagCountMap = {};
@@ -301,7 +301,16 @@
                     updateCharts(tagTimeMap, tagCountMap, tagColorMap);
                     updateHeatmap(selectedBoxesMap);
                 } else {
-                    console.warn("⚠ No tasks found for this user on the selected date.");
+                    // No tasks found for the selected date
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td colspan="6" style="text-align: center; color: gray;">No tasks found for this date.</td>
+                    `;
+                    tableBody.appendChild(row);
+
+                    // Clear charts and heatmap
+                    clearCharts();
+                    clearHeatmap();
                 }
             });
         }
@@ -316,20 +325,15 @@
             const taskCountData = Object.values(tagCountMap);
             const tagColors = tags.map(tag => tagColorMap[tag] || "#CCCCCC");
 
-            // Calculate the maximum time value for the y-axis
-            const maxTime = Math.max(...totalTimeData, 0); // Total time is in hours
-            const maxHours = Math.ceil(maxTime); // Maximum hours
-
-            // Generate y-axis ticks dynamically
-            const yAxisTicks = [];
-            for (let i = 0; i <= maxHours; i += 0.5) { // Increment by 0.5 hours (30 minutes)
-                yAxisTicks.push(i);
-            }
-
-            // Bar Chart - Total Time per Tag
+            // Destroy existing chart instances
             if (window.barChartInstance) {
                 window.barChartInstance.destroy();
             }
+            if (window.pieChartInstance) {
+                window.pieChartInstance.destroy();
+            }
+
+            // Bar Chart - Total Time per Tag
             window.barChartInstance = new Chart(barCtx, {
                 type: "bar",
                 data: {
@@ -358,7 +362,6 @@
                                     const minutes = (value % 1) * 60;
                                     return `${hours}h ${minutes}m`;
                                 },
-                                max: maxHours, // Set the maximum value for the y-axis
                             },
                         },
                     },
@@ -379,9 +382,6 @@
             });
 
             // Pie Chart - Task Count per Tag
-            if (window.pieChartInstance) {
-                window.pieChartInstance.destroy();
-            }
             window.pieChartInstance = new Chart(pieCtx, {
                 type: "pie",
                 data: {
@@ -440,6 +440,37 @@
             }
 
             heatmapContainer.appendChild(heatmapGrid);
+        }
+
+        // Function to clear charts
+        function clearCharts() {
+            if (window.barChartInstance) {
+                window.barChartInstance.destroy();
+                window.barChartInstance = null;
+            }
+            if (window.pieChartInstance) {
+                window.pieChartInstance.destroy();
+                window.pieChartInstance = null;
+            }
+
+            // Reset chart canvases
+            const barCtx = document.getElementById("barChart").getContext("2d");
+            const pieCtx = document.getElementById("pieChart").getContext("2d");
+            barCtx.clearRect(0, 0, barCtx.canvas.width, barCtx.canvas.height);
+            pieCtx.clearRect(0, 0, pieCtx.canvas.width, pieCtx.canvas.height);
+        }
+
+        // Function to clear heatmap
+        function clearHeatmap() {
+            const heatmapContainer = document.getElementById("heatmap");
+            heatmapContainer.innerHTML = ""; // Clear the heatmap
+
+            // Optionally, you can add a message or placeholder for the heatmap
+            const placeholder = document.createElement("div");
+            placeholder.textContent = "No heatmap data available.";
+            placeholder.style.textAlign = "center";
+            placeholder.style.color = "gray";
+            heatmapContainer.appendChild(placeholder);
         }
 
         // Event listener for the search button
