@@ -193,9 +193,6 @@
                     }
                 }, 100); 
 
-                // Populate date dropdowns
-                populateDateDropdowns();
-
                 // Fetch tasks for the current date by default
                 const currentDate = new Date();
                 fetchTasks(user.uid, currentDate);
@@ -204,37 +201,6 @@
                 window.location.href = 'index.html';
             }
         });
-
-        // Function to populate date dropdowns
-        function populateDateDropdowns() {
-            const dayComboBox = document.getElementById("dayComboBox");
-            const monthComboBox = document.getElementById("monthComboBox");
-            const yearComboBox = document.getElementById("yearComboBox");
-
-            // Populate days (1-31)
-            for (let day = 1; day <= 31; day++) {
-                const option = document.createElement("option");
-                option.value = day;
-                option.textContent = day;
-                dayComboBox.appendChild(option);
-            }
-
-            // Populate months (1-12)
-            for (let month = 1; month <= 12; month++) {
-                const option = document.createElement("option");
-                option.value = month;
-                option.textContent = new Date(2023, month - 1, 1).toLocaleString('default', { month: 'long' });
-                monthComboBox.appendChild(option);
-            }
-
-            // Populate years (2023-2030)
-            for (let year = 2023; year <= 2030; year++) {
-                const option = document.createElement("option");
-                option.value = year;
-                option.textContent = year;
-                yearComboBox.appendChild(option);
-            }
-        }
 
         // Function to fetch and display tasks for the selected date
         function fetchTasks(userId, selectedDate) {
