@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="public/styles/config.css">
     <link rel="stylesheet" href="public/styles/analytics.css">
-    <link rel="stylesheet" href="public/styles/home.css">
     <script src="public/scripts/getday.js" defer></script>
+    <script src="public/scripts/Tag.js" defer></script>
+    <script src="public/scripts/BoxContainer.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script> <!-- Include Chart.js -->
     <title>Analytics Page</title>
     
@@ -84,7 +85,75 @@
                     <select class="dates" id="yearComboBox">
                         <option value="">Year</option>
                     </select>
+
+                    <select class="dates" id="tagComboBox">
+                        <option value="">All</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
                     
+     <!-- // ----------------------------------------------- -->
+                    <script>
+        const boxContainer = new BoxContainer();
+
+        function populateComboBox() {
+            this.comboBox.innerHTML = '';
+            this.tags.forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag.tagName;
+                option.textContent = tag.tagName;
+                option.style.color = tag.color;
+                this.comboBox.appendChild(option);
+            });
+        }
+
+    function addTag(tagName, color) {
+            if (!this.tags.some(tag => tag.tagName === tagName)) {
+                this.tags.push(new Tag(tagName, color));
+                this.populateComboBox();
+            }
+        }
+
+                            // Load tags from localStorage
+    async function initializeTags() {
+        // Wait until the user is authenticated
+        onAuthStateChanged(boxContainer.auth, (user) => {
+            if (!user) {
+                console.error("User not authenticated");
+                return;
+            }
+
+            const userTagsKey = `user_${user.uid}_tags`;
+            let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
+
+            // Predefined tags
+            const predefinedTags = [
+                { name: "Work", color: "#ff0000" },
+                { name: "Personal Dev", color: "#a52a2a" },
+                { name: "School", color: "#008000" },
+                { name: "FunTime", color: "#0000ff" },
+                { name: "Team Time", color: "#800080" }
+            ];
+
+            // Merge predefined and stored tags, avoiding duplicates
+            predefinedTags.forEach(preTag => {
+                if (!storedTags.some(tag => tag.name === preTag.name)) {
+                    storedTags.push(preTag);
+                }
+            });
+
+            // Save updated tags back to localStorage
+            localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
+
+            // Add all tags to the UI
+            const tagDropdown = document.querySelector('#tagComboBox option');
+            storedTags.forEach(tag => tagDropdown.addTag(tag.name, tag.color));
+        });
+    }
+</script>
+
+    <!-- // ----------------------------------------------- -->
+
+
                     <button id="getDayButton">
                         Search 
                     </button>
@@ -196,14 +265,57 @@
                 // Fetch tasks for the current date by default
                 const currentDate = new Date();
                 fetchTasks(user.uid, currentDate);
+
+                // Fetch tasks for current date by tag
+                // the logic is as follows:
+                const userTagsKey = `user_${user.uid}_tags`;
+                let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
+
+                // Predefined tags
+                const predefinedTags = [
+                    { name: "Work", color: "#ff0000" },
+                    { name: "Personal Dev", color: "#a52a2a" },
+                    { name: "School", color: "#008000" },
+                    { name: "FunTime", color: "#0000ff" },
+                    { name: "Team Time", color: "#800080" }
+                ];
+
+                // Merge predefined and stored tags, avoiding duplicates
+                predefinedTags.forEach(preTag => {
+                    if (!storedTags.some(tag => tag.name === preTag.name)) {
+                        storedTags.push(preTag);
+                    }
+                });
+
+                // Save updated tags back to localStorage
+                localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
+
+                // Add all tags to the UI
+                const tagDropdown = document.querySelector('#tagComboBox');
+                tagDropdown.innerHTML = '<option value="">All</option>'; // Reset dropdown
+                storedTags.forEach(tag => {
+                    const option = document.createElement('option');
+                    option.value = tag.name;
+                    option.textContent = tag.name;
+                    option.style.color = tag.color;
+                    tagDropdown.appendChild(option);
+                });
+
             } else {
                 console.warn("❌ No user is signed in.");
                 window.location.href = 'index.html';
             }
         });
 
+        // Initialize tags when the page loads
+        document.addEventListener("DOMContentLoaded", () => {
+            initializeTags(auth);
+        });
+
+
+
         // Function to fetch and display tasks for the selected date
-        function fetchTasks(userId, selectedDate) {
+        function fetchTasks(userId, selectedDate, selectedTag = "") {
             const formattedDate = selectedDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
             const userTasksRef = ref(db, `userTasks/${userId}/${formattedDate}`);
 
@@ -234,6 +346,11 @@
                         const taskText = task.task || "No task name";
                         const tag = task.tag || "No tag";
                         const color = task.color || "#CCCCCC";
+
+                        // Skip tasks that don't match the selected tag
+                        if (selectedTag && tag !== selectedTag) {
+                            return;
+                        }
 
                         tagColorMap[tag] = color;
 
@@ -444,10 +561,11 @@
             const day = document.getElementById("dayComboBox").value;
             const month = document.getElementById("monthComboBox").value;
             const year = document.getElementById("yearComboBox").value;
+            const tag = document.getElementById("tagComboBox").value;
 
             if (day && month && year) {
                 const selectedDate = new Date(year, month - 1, day);
-                fetchTasks(window.userId, selectedDate);
+                fetchTasks(window.userId, selectedDate, tag);
             } else {
                 alert("Please select a valid date.");
             }

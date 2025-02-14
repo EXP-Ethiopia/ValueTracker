@@ -57,6 +57,78 @@ body {
     cursor: pointer;
 }
 
+/* The dates and tag dropdown styles */
+.firstText {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding: .4rem .9rem;
+    border-radius: 53px;
+    /* border: 3px solid green; */
+    background-color: hsl(0, 0%, 93%);
+}
+
+.firstText h1 {
+    font-size: 21px;
+    color: #3e3e4c;
+}
+
+
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.selected {
+    background-color: lightblue;
+    box-shadow: 3px 2px .6rem hsl(195, 53%, 79%);
+    border-radius: 3px;
+    /* color: #fff; */
+    width: 112px;
+    height: 112px;
+    margin: 10px;
+    border-radius: 6px;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    padding: 3px;
+    justify-content: center;
+    align-items: center;
+    /* border: 5px solid transparent; */
+    border: 5px solid #000;
+}
+
+/* Sets the width of all the dropdowns */
+.dates {
+    width: 99px;
+}
+
+/* Search-btn-header */
+#getDayButton {
+    border: none;
+    outline: none;
+    background-color: #6c5ce7;
+    padding: 10px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    border-radius: 5px;
+    transition: all ease 0.1s;
+    box-shadow: 0px 5px 0px 0px #a29bfe;
+    cursor: pointer;
+}
+
+#getDayButton:active {
+    transform: translateY(5px);
+    box-shadow: 0px 0px 0px 0px #a29bfe;
+}
+
 #logoutBtn,
 #analyticsBtn {
     padding: 0.35rem 0.7rem;
