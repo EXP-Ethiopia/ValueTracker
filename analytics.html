@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,7 @@
     <script src="public/scripts/BoxContainer.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script> <!-- Include Chart.js -->
     <title>Analytics Page</title>
-    
+
     <script defer>
         document.addEventListener("DOMContentLoaded", () => {
             // Initialize the state from localStorage, defaulting to false (home page)
@@ -24,7 +25,7 @@
 
             function triggerSwitch() {
                 const toggleBtn = document.querySelector("#analyticsBtn");
-            
+
                 if (toggleBtn) {
                     console.log("✅ Toggle button exists/found");
 
@@ -65,6 +66,7 @@
         });
     </script>
 </head>
+
 <body>
     <header class="home-header">
         <div class="leftNav">
@@ -77,11 +79,11 @@
                     <select class="dates" id="dayComboBox">
                         <option value="">Day</option>
                     </select>
-                    
+
                     <select class="dates" id="monthComboBox">
                         <option value="">Month</option>
                     </select>
-                    
+
                     <select class="dates" id="yearComboBox">
                         <option value="">Year</option>
                     </select>
@@ -90,72 +92,72 @@
                         <option value="">All</option>
                         <!-- Options will be populated dynamically -->
                     </select>
-                    
-     <!-- // ----------------------------------------------- -->
+
+                    <!-- // ----------------------------------------------- -->
                     <script>
-        const boxContainer = new BoxContainer();
+                        const boxContainer = new BoxContainer();
 
-        function populateComboBox() {
-            this.comboBox.innerHTML = '';
-            this.tags.forEach(tag => {
-                const option = document.createElement('option');
-                option.value = tag.tagName;
-                option.textContent = tag.tagName;
-                option.style.color = tag.color;
-                this.comboBox.appendChild(option);
-            });
-        }
+                        function populateComboBox() {
+                            this.comboBox.innerHTML = '';
+                            this.tags.forEach(tag => {
+                                const option = document.createElement('option');
+                                option.value = tag.tagName;
+                                option.textContent = tag.tagName;
+                                option.style.color = tag.color;
+                                this.comboBox.appendChild(option);
+                            });
+                        }
 
-    function addTag(tagName, color) {
-            if (!this.tags.some(tag => tag.tagName === tagName)) {
-                this.tags.push(new Tag(tagName, color));
-                this.populateComboBox();
-            }
-        }
+                        function addTag(tagName, color) {
+                            if (!this.tags.some(tag => tag.tagName === tagName)) {
+                                this.tags.push(new Tag(tagName, color));
+                                this.populateComboBox();
+                            }
+                        }
 
-                            // Load tags from localStorage
-    async function initializeTags() {
-        // Wait until the user is authenticated
-        onAuthStateChanged(boxContainer.auth, (user) => {
-            if (!user) {
-                console.error("User not authenticated");
-                return;
-            }
+                        // Load tags from localStorage
+                        async function initializeTags() {
+                            // Wait until the user is authenticated
+                            onAuthStateChanged(boxContainer.auth, (user) => {
+                                if (!user) {
+                                    console.error("User not authenticated");
+                                    return;
+                                }
 
-            const userTagsKey = `user_${user.uid}_tags`;
-            let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
+                                const userTagsKey = `user_${user.uid}_tags`;
+                                let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
 
-            // Predefined tags
-            const predefinedTags = [
-                { name: "Work", color: "#ff0000" },
-                { name: "Personal Dev", color: "#a52a2a" },
-                { name: "School", color: "#008000" },
-                { name: "FunTime", color: "#0000ff" },
-                { name: "Team Time", color: "#800080" }
-            ];
+                                // Predefined tags
+                                const predefinedTags = [
+                                    { name: "Work", color: "#ff0000" },
+                                    { name: "Personal Dev", color: "#a52a2a" },
+                                    { name: "School", color: "#008000" },
+                                    { name: "FunTime", color: "#0000ff" },
+                                    { name: "Team Time", color: "#800080" }
+                                ];
 
-            // Merge predefined and stored tags, avoiding duplicates
-            predefinedTags.forEach(preTag => {
-                if (!storedTags.some(tag => tag.name === preTag.name)) {
-                    storedTags.push(preTag);
-                }
-            });
+                                // Merge predefined and stored tags, avoiding duplicates
+                                predefinedTags.forEach(preTag => {
+                                    if (!storedTags.some(tag => tag.name === preTag.name)) {
+                                        storedTags.push(preTag);
+                                    }
+                                });
 
-            // Save updated tags back to localStorage
-            localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
+                                // Save updated tags back to localStorage
+                                localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
 
-            // Add all tags to the UI
-            const tagDropdown = document.querySelector('#tagComboBox option');
-            storedTags.forEach(tag => tagDropdown.addTag(tag.name, tag.color));
-        });
-    }
-</script>
+                                // Add all tags to the UI
+                                const tagDropdown = document.querySelector('#tagComboBox option');
+                                storedTags.forEach(tag => tagDropdown.addTag(tag.name, tag.color));
+                            });
+                        }
+                    </script>
 
-    <!-- // ----------------------------------------------- -->
+                    <!-- // ----------------------------------------------- -->
 
 
                     <button id="getDayButton">
-                        Search 
+                        Search
                     </button>
                 </div>
                 <li><button id="analyticsBtn">Hide Analytics</button></li>
@@ -183,7 +185,7 @@
                 </tbody>
             </table>
         </div>
-    
+
         <!-- Charts for Analytics -->
         <div class="analytics">
             <h2>Analytics</h2>
@@ -232,7 +234,7 @@
         document.getElementById('username').textContent = username;
 
         const logoutBtn = document.getElementById('logoutBtn');
-        logoutBtn.addEventListener('click', () => {    
+        logoutBtn.addEventListener('click', () => {
             auth.signOut()
                 .then(() => {
                     console.log('User signed out');
@@ -260,11 +262,45 @@
                         console.warn("⚠ No photoURL found, using default.");
                         profilePic.src = "public/images/default.jpg";
                     }
-                }, 100); 
+                }, 100);
 
                 // Fetch tasks for the current date by default
                 const currentDate = new Date();
-                fetchTasks(user.uid, currentDate);
+
+                let day = document.getElementById("dayComboBox").value;
+                let month = document.getElementById("monthComboBox").value;
+                const year = document.getElementById("yearComboBox").value;
+
+                if (day && month && year) {
+
+                    console.log(day, month, year)
+
+                    if (month < 10) {
+
+
+                        month = `0${month}`;
+                    }
+
+                    if (day < 10) {
+
+
+                        day = `0${day}`;
+                    }
+
+                    const selectedDate = `${year}-${month}-${day}`
+                    // const selectedDate = new Date(year, month - 1, day);
+
+
+                    fetchTasks(window.userId, selectedDate);
+
+                }
+
+
+
+
+
+
+
 
                 // Fetch tasks for current date by tag
                 // the logic is as follows:
@@ -316,12 +352,14 @@
 
         // Function to fetch and display tasks for the selected date
         function fetchTasks(userId, selectedDate, selectedTag = "") {
-            const formattedDate = selectedDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
-            const userTasksRef = ref(db, `userTasks/${userId}/${formattedDate}`);
+            console.log("before doing anything ==> " + selectedDate);
+            // const formattedDate = selectedDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD// Format date as YYYY-MM-DD
+            console.log(selectedDate);
+            const userTasksRef = ref(db, `userTasks/${userId}/${selectedDate}`);
 
             onValue(userTasksRef, (snapshot) => {
                 console.log("Fetching tasks for user:", userId);
-                console.log("📌 Snapshot Data:", snapshot.val());
+                console.log("📌 Snapshot Data:", snapshot.val()); //null
 
                 const tableBody = document.querySelector("#taskTable tbody");
                 tableBody.innerHTML = ""; // Clear the table
@@ -558,18 +596,39 @@
 
         // Event listener for the search button
         document.getElementById("getDayButton").addEventListener("click", () => {
-            const day = document.getElementById("dayComboBox").value;
-            const month = document.getElementById("monthComboBox").value;
+            let day = document.getElementById("dayComboBox").value;
+            let month = document.getElementById("monthComboBox").value;
             const year = document.getElementById("yearComboBox").value;
             const tag = document.getElementById("tagComboBox").value;
 
             if (day && month && year) {
-                const selectedDate = new Date(year, month - 1, day);
+
+                console.log(day, month, year)
+
+                if (month < 10) {
+
+
+                    month = `0${month}`;
+                }
+
+                if (day < 10) {
+
+
+                    day = `0${day}`;
+                }
+
+                const selectedDate = `${year}-${month}-${day}`
+                // const selectedDate = new Date(year, month - 1, day);
+
+
+                console.log(selectedDate);
                 fetchTasks(window.userId, selectedDate, tag);
+                console.log(fetchTasks(window.userId, selectedDate, tag));
             } else {
                 alert("Please select a valid date.");
             }
         });
     </script>
 </body>
+
 </html>
