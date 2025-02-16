@@ -1,67 +1,55 @@
-/* Header */
-.home-header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background-color: white;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 2.6rem;
-    height: 68px;
+body {
+  background-color: #f4f4f9;
+  /* border: 3px solid black; */
+  padding: 5.6rem 0 5.8rem;
 }
 
-body {
-    background-color: #f4f4f9;
-    /* border: 3px solid black; */
-    padding: 5.6rem 0 5.8rem;
+/* Header */
+.home-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: white;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 1.6rem;
+  height: 68px;
 }
 
 /* Header left */
 .leftNav {
-    display: flex;
-    align-items: center;
-    /* border: 3px solid red; */
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
-.leftNav img {
-    width: 34px;
-    height: 34px;
-    border: 2px solid rgb(48, 127, 231);
-    border-radius: 50%;
-    margin-right: 8px;
+.leftNav .logo {
+  font-size: 32px;
+  font-weight:900;
+  font-style:oblique
 }
 
-/* Header right */
-.rightNav {
-    margin-left: 27px;
+.leftNav .logo span {
+  color: blue;
 }
 
-.rightNav .UnorderedList{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2px;
-    list-style: none;
-    font-size: 12px;
-    border-radius: 5px;
-}
-
-.UnorderedList li {
-    margin: 3px;
-    cursor: pointer;
+.leftNav .logo-txt {
+  font-weight: 550;
+  font-size: 25px;
 }
 
 #logoutBtn,
 #analyticsBtn {
-    padding: 0.35rem 0.7rem;
-    border: none;
-    outline: none;
-    font-weight: 500;
-    border-radius: 7px;
-    color: #08080B;
-    cursor: pointer;
+  width: 112px;
+  height: 32px;
+  padding: 0.3rem 0.4rem;
+  border: none;
+  outline: none;
+  font-weight: 500;
+  border-radius: 7px;
+  cursor: pointer;
 }
 
 #logoutBtn {
@@ -70,14 +58,40 @@ body {
     margin-left: 12px;
 }
 
-.welcome{
-    text-align: center;
-    color: #08080B;
-    /* font-size: 18px; */
-    margin: 10px 0;
-    font-size: 20px;
+#analyticsBtn {
+  background-color: black;
+  color: white;
 }
 
+/* Header right */
+.rightNav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  /* border: 3px solid green; */
+}
+
+.rightNav-user {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  /* border: 3px solid black; */
+}
+
+.rightNav-user .welcome {
+  color: #08080B;
+  margin-top: 16px;
+  font-size: 15px;
+}
+
+.rightNav-user #profile-pic {
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgb(48, 127, 231);
+  border-radius: 50%;
+}
+
+/* The main box secct area */
 .box {
     width: 112px;
     height: 112px;

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="test.css">
+    <title>Document</title>
+</head>
+<body>
+
+    <div class="pfpUpdate-container">
+        <div class="intro">
+            <img src="public/images/user74.jpg" alt="" class="userProfile">
+            <div class="sub-intro">
+                <p class="username">James Adrino</p>
+                <p class="email">jamesadrino929@gmail.com</p>
+            </div>
+        </div>
+
+        <div class="content content-1">
+            <div class="content-left">
+                <img src="public/images/profile.png" alt="">
+                <p>Edit Profile</p>
+            </div>
+            <img src="public/images/greater-than-symbol.png">
+        </div>
+
+        <div class="content content-2">
+            <div class="content-left">
+                <img src="public/images/setting.png" alt="">
+                <p>Settings & Privacy</p>
+            </div>
+            <img src="public/images/greater-than-symbol.png">
+        </div>
+
+        <div class="content content-3">
+            <div class="content-left">
+                <img src="public/images/help.png" alt="">
+                <p>Help & Support</p>
+            </div>
+            <img src="public/images/greater-than-symbol.png">
+        </div>
+
+        <div class="content content-4">
+            <div class="content-left">
+                <img src="public/images/" alt="">
+                <p>Display & Accessibility</p>
+            </div>
+            <img src="public/images/greater-than-symbol.png">
+        </div>
+
+        <div class="content content-5">
+            <div class="content-left">
+                <img src="public/images/icons8-logout.gif" alt="">
+                <p>Logout</p>
+            </div>
+            <img src="public/images/greater-than-symbol.png">
+        </div>
+    </div>
+    
+    <img src="public/images/default.jpg" alt="" id="toggleProfile"
+    style="
+        margin-top: 28px;
+    "
+    >
+
+    <script>
+        const profileUpdateContainer = document.querySelector('.pfpUpdate-container');
+        const toggler = document.querySelector('#toggleProfile');
+        console.log(toggler);
+        toggler.addEventListener('click', () => {
+            console.log('button clicked for toggling!!!');
+            profileUpdateContainer.classList.toggle('show-card');
+        })
+        // One more thing to add, when it pops up, have the bckg blurred, and
+        // Exit this event 1, when the same profile image is clicked, 2, when any place outside of the homepage is clicked.
+    </script>
+
+
+    <!-- Edit page -->
+
+    <!-- Settings page -->
+
+    <!-- Help&support page -->
+
+    <!-- Display&Accessibilty page -->
+
+    <!-- Logout btn -->
+     <!-- Don't need a page or react style hide/pop-up displaying, just logout if you need to -->
+</body>
+</html>

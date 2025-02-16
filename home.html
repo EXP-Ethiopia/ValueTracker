@@ -58,27 +58,32 @@
 <body>
 
     <header class="home-header">
+        
         <div class="leftNav">
-            <img src="" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
-            <h1 class="welcome">Welcome <span id="username"></span> </h1>
+            <p class="logo">V<span>T</span></p>
+            <p class="logo-txt">ValueTracker</p>
+            <button id="logoutBtn">LogOut</button></div>
         </div>
-
 
         <!-- Add the profile option. -->
 
         <!-- End of the profile pop up -->
 
-
         <div class="rightNav">
-            <ul class="UnorderedList">
-                <li><button id="analyticsBtn">View Analytics</button></li>
-                <li><button id="logoutBtn">LogOut</button></li>
-            </ul>
+            <button id="analyticsBtn">View Analytics</button>
+
+            <div class="rightNav-user">
+                <p class="welcome">Atnatewos<span id="username"></span> </p>
+                <img src="public/images/user74.jpg" id="profile-pic" alt="">
+            </div>
         </div>
+
     </header>
 
     <div class="container">
         <div class="firstText">
+         
+            <!-- Date-month-year + search button -->
             <div>
                 <select class="dates" id="dayComboBox">
                     <option value="">Day</option>
@@ -96,6 +101,8 @@
                     Search
                 </button>
             </div>
+            <!-- end of the d-m-y + b form -->
+
             <div class="buttonStyle">
                 <button class="saveBtn" id="saveBoxes">Save</button>
                 <button class="saveBtn" id="UpdateTask">Update</button>
