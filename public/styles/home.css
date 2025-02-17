@@ -2,7 +2,7 @@
 body {
   background-color: #f4f4f9;
   margin: 0;
-  padding: 6.2rem 0 5.8rem;
+  padding: 6.4rem 0 5.8rem;
   font-family: Arial, sans-serif;
   height: 100dvh;
 }
@@ -45,7 +45,6 @@ body {
   font-size: 25px;
 }
 
-#logoutBtn,
 #analyticsBtn {
   width: 112px;
   height: 32px;
@@ -55,12 +54,6 @@ body {
   font-weight: 500;
   border-radius: 7px;
   cursor: pointer;
-}
-
-#logoutBtn {
-  background-color: #f00;
-  color: #fff;
-  margin-left: 12px;
 }
 
 #analyticsBtn {
@@ -87,7 +80,7 @@ body {
   font-size: 15px;
 }
 
-.rightNav-user #profile-pic {
+.rightNav-user #profileToggle {
   width: 42px;
   height: 42px;
   border: 2px solid rgb(48, 127, 231);
@@ -150,8 +143,8 @@ body {
 /* Buttons container */
 .firstText {
   position: absolute;
-  top: 19px;
-  right: 10px;
+  top: 35%;
+  right: -12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
