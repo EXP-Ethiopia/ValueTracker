@@ -105,6 +105,20 @@
             transition: var(--transition);
         }
 
+        /* Add this to remove transitions for profile info */
+        .profile-info,
+        .profile-info .username,
+        .profile-info .email {
+            transition: none !important;
+        }
+
+        /* Update dark mode overrides to ensure no transitions */
+        body.dark-mode .profile-info,
+        body.dark-mode .profile-info .username,
+        body.dark-mode .profile-info .email {
+            transition: none !important;
+        }
+
         /* Add/update */
         .edit-overlay {
             position: absolute;
@@ -139,6 +153,11 @@
             transition: var(--transition);
         }
 
+        /* Add hover effects */
+        .menu-item:hover {
+            background-color: #f5f5f5;
+        }
+
         .menu-item:last-child {
             border-bottom: none;
         }
@@ -148,6 +167,10 @@
             align-items: center;
             gap: 15px;
             flex-grow: 1;
+        }
+
+        .menu-item-content span {
+            transition: none !important;
         }
 
         .menu-item-icon {
@@ -162,6 +185,29 @@
         body.dark-mode .menu-item-icon {
             color: #ccc; /* Adjusted for dark mode */
         }
+
+        body.dark-mode .menu-item:hover {
+            background-color: #333;
+        }
+
+       /* Add these dark mode overrides */
+        body.dark-mode {
+            color: #fff;
+        }
+
+        body.dark-mode .profile-menu {
+            background: #2d2d2d;
+            border-color: #444;
+        }
+
+        body.dark-mode .menu-item {
+            border-color: #444;
+        }
+
+        body.dark-mode .save-button {
+            background: rgba(45, 45, 45, 0.9);
+            color: #fff;
+        } 
 
         .save-button {
             position: absolute;
@@ -190,6 +236,30 @@
             75% { transform: translateX(5px); }
         }
 
+        /* Add these styles */
+        .hidden {
+            display: none;
+        }
+
+        .saved-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 3000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
         .construction-alert {
             position: fixed;
             bottom: 20px;
@@ -214,6 +284,12 @@
             width: 44px;
             height: 24px;
             margin-left: auto;
+        }
+
+        .theme-toggle,
+        .theme-toggle .theme-slider,
+        .theme-toggle .theme-slider:before {
+            transition: none !important;
         }
 
         .theme-slider {
@@ -268,84 +344,138 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: #fff;
-            border-radius: 8px;
+            border-radius: 12px;
             width: 90%;
             max-width: 500px;
-            max-height: 80vh;
+            max-height: 90vh;
             overflow-y: auto;
             z-index: var(--modal-zindex);
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 40px 24px 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.1);
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
-        .username[contenteditable="true"] {
-            border-bottom: 2px solid var(--primary-color);
-            outline: none;
+        .modal-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
             transition: var(--transition);
+            color: #666;
         }
 
-        @keyframes slideIn {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-
-        body.dark-mode .profile-menu {
-            background: #2d2d2d;
-            border-color: #444;
-        }
-
-        body.dark-mode .menu-item {
-            border-color: #444;
+        .modal-close:hover {
+            background: rgba(0,0,0,0.05);
+            color: #333;
         }
 
         body.dark-mode .modal-container {
             background: #2d2d2d;
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        body.dark-mode .modal-close {
+            color: #ccc;
+        }
+
+        body.dark-mode .modal-close:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+
+        /* Improved Modal Content Styling */
+        .help-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .hero-section h1 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .faq-section h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        body.dark-mode .faq-section h2 {
             border-color: #444;
         }
 
-        .contact-form {
-            display: none;
-            margin-top: 20px;
-            animation: fadeIn 0.3s ease-out;
+        .faq-item {
+            margin-bottom: 20px;
+            padding: 12px;
+            background: rgba(0,0,0,0.02);
+            border-radius: 8px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        body.dark-mode .faq-item {
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Contact form styling */
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #666;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.5rem;
+        .contact-form input,
+        .contact-form textarea {
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
+            font-family: inherit;
+            background: var(--light-bg);
+        }
+
+        body.dark-mode .contact-form input,
+        body.dark-mode .contact-form textarea {
+            background: #333;
+            border-color: #555;
+            color: #fff;
+        }
+
+        .contact-form button[type="submit"] {
+            align-self: flex-start;
+        }
+
+        .contact-form button[type="submit"] {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
             transition: var(--transition);
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Enhanced profile image styling */
-        .profile-image-wrapper:hover .edit-overlay {
-            opacity: 1;
+        .contact-form button[type="submit"]:hover {
+            opacity: 0.9;
         }
     </style>
 </head>
@@ -417,7 +547,6 @@
     <div class="modal-backdrop" id="modalBackdrop"></div>
     <div class="modal-container" id="helpModal">
         <div class="modal-header">
-            <h2>Help & Support</h2>
             <span class="modal-close">&times;</span>
         </div>
         <div class="help-content">
@@ -479,11 +608,6 @@
                 
                 this.loadSavedData();
                 this.initializeEventListeners();
-
-                // Add contact form toggle
-                this.contactToggle = document.getElementById('contactToggle');
-                this.contactForm = document.getElementById('contactForm');
-                this.initializeContactForm();
             }
 
             loadSavedData() {
@@ -544,13 +668,6 @@
                 });
             }
 
-            initializeContactForm() {
-                this.contactToggle.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.contactForm.style.display = 'block';
-                });
-            }
-
             enterEditMode() {
                 this.isEditing = true;
                 this.profileMenu.classList.add('editing');
@@ -601,10 +718,14 @@
 
             showNotification(message) {
                 const notification = document.createElement('div');
-                notification.className = 'success-badge';
-                notification.textContent = message;
+                notification.className = 'saved-message';
+                notification.innerHTML = `<i class="fas fa-check"></i> ${message}`;
                 document.body.appendChild(notification);
-                setTimeout(() => notification.remove(), 2000);
+                notification.style.display = 'flex';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                    notification.remove();
+                }, 2000);
             }
 
             showConstructionAlert() {
@@ -619,6 +740,7 @@
             constructor() {
                 this.modal = document.getElementById('helpModal');
                 this.backdrop = document.getElementById('modalBackdrop');
+                this.closeButton = this.modal.querySelector('.modal-close');
                 this.initializeEventListeners();
             }
 
@@ -629,10 +751,10 @@
                 });
 
                 this.backdrop.addEventListener('click', (e) => {
-                    e.target === this.backdrop && this.closeModal();
+                    if (e.target === this.backdrop) this.closeModal();
                 });
 
-                document.querySelector('.modal-close').addEventListener('click', () => {
+                this.closeButton.addEventListener('click', () => {
                     this.closeModal();
                 });
             }
@@ -640,6 +762,7 @@
             openModal() {
                 this.modal.style.display = 'block';
                 this.backdrop.style.display = 'block';
+                this.modal.style.animation = 'fadeIn 0.3s ease-out';
             }
 
             closeModal() {
@@ -657,10 +780,14 @@
             initialize() {
                 this.themeToggle.addEventListener('change', () => this.toggleTheme());
                 this.loadSavedTheme();
+                // Remove transition from body to prevent flickering
+                document.body.style.transition = 'none';
             }
 
             toggleTheme() {
                 document.body.classList.toggle('dark-mode');
+                // Force redraw for smooth transition
+                void document.body.offsetHeight;
                 localStorage.setItem('theme', 
                     document.body.classList.contains('dark-mode') ? 'dark' : 'light'
                 );
