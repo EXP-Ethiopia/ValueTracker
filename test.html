@@ -3,89 +3,683 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="test.css">
-    <title>Document</title>
+    <title>Profile Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --dark-bg: #1a1a1a;
+            --light-bg: #f9f9f9;
+            --modal-zindex: 2000;
+            --overlay-zindex: 1999;
+            --profile-zindex: 1000;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: #fff;
+        }
+
+        .profile-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--primary-color);
+            z-index: var(--profile-zindex);
+            transition: var(--transition);
+        }
+
+        .profile-menu {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            width: 320px;
+            z-index: var(--profile-zindex);
+            list-style: none;
+            padding: 15px 0;
+            margin: 0;
+            border: 1px solid #eee;
+            opacity: 0;
+            transform: translateY(-10px);
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .profile-menu.show-menu {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        .profile-menu.editing .menu-item:not(.profile-header) {
+            filter: blur(2px);
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .profile-image-wrapper {
+            position: relative;
+            width: 56px;
+            height: 56px;
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #eee;
+            transition: var(--transition);
+        }
+
+        /* Add/update */
+        .edit-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .edit-overlay i {
+            color: #fff;
+            font-size: 1.2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            min-height: 48px;
+            transition: var(--transition);
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+        }
+
+        .menu-item-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666; /* Adjusted for light mode */
+        }
+
+        body.dark-mode .menu-item-icon {
+            color: #ccc; /* Adjusted for dark mode */
+        }
+
+        .save-button {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: var(--success-color);
+            cursor: pointer;
+            animation: none;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px 12px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .save-button.shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(5px); }
+            50% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .construction-alert {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--warning-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 3000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .logout-item {
+            color: var(--danger-color) !important;
+        }
+
+        .theme-toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            margin-left: auto;
+        }
+
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .theme-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .theme-slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .theme-slider:before {
+            transform: translateX(20px);
+        }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: var(--overlay-zindex);
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: var(--modal-zindex);
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .username[contenteditable="true"] {
+            border-bottom: 2px solid var(--primary-color);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        body.dark-mode .profile-menu {
+            background: #2d2d2d;
+            border-color: #444;
+        }
+
+        body.dark-mode .menu-item {
+            border-color: #444;
+        }
+
+        body.dark-mode .modal-container {
+            background: #2d2d2d;
+            border-color: #444;
+        }
+
+        .contact-form {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Enhanced profile image styling */
+        .profile-image-wrapper:hover .edit-overlay {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
-
-    <ul class="pfpUpdate-container">
-        <li class="intro">
-            <img src="public/images/user74.jpg" alt="" class="userProfile">
-            <div class="sub-intro">
-                <p class="username">James Adrino</p>
-                <p class="email">jamesadrino929@gmail.com</p>
+    <img src="public/images/default.jpg" alt="Profile" class="profile-toggle" id="profileToggle">
+    
+    <ul class="profile-menu" id="profileMenu">
+        <li class="profile-header">
+            <div class="profile-image-wrapper">
+                <div class="edit-overlay">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <img src="public/images/user74.jpg" alt="Profile" class="profile-image">
+            </div>
+            <div class="save-button" id="saveButton">
+                <i class="fas fa-bookmark"></i>
+                <span>Save</span>
+            </div>
+            <div class="profile-info">
+                <div class="username">James Adrino</div>
+                <div class="email">jamesadrino929@gmail.com</div>
             </div>
         </li>
 
-        <li class="content content-1">
-            <div class="content-left">
-                <img src="public/images/profile.png" alt="">
-                <p>Edit Profile</p>
+        <li class="menu-item" id="editProfile">
+            <div class="menu-item-content">
+                <i class="fas fa-user-edit menu-item-icon"></i>
+                <span>Edit Profile</span>
             </div>
-            <img src="public/images/greater-than-symbol.png">
         </li>
 
-        <li class="content content-2">
-            <div class="content-left">
-                <img src="public/images/setting.png" alt="">
-                <p>Settings & Privacy</p>
+        <li class="menu-item" id="settingsPrivacy">
+            <div class="menu-item-content">
+                <i class="fas fa-cog menu-item-icon"></i>
+                <span>Settings & Privacy</span>
             </div>
-            <img src="public/images/greater-than-symbol.png">
         </li>
 
-        <li class="content content-3">
-            <div class="content-left">
-                <img src="public/images/help.png" alt="">
-                <p>Help & Support</p>
+        <li class="menu-item" id="helpSupport">
+            <div class="menu-item-content">
+                <i class="fas fa-life-ring menu-item-icon"></i>
+                <span>Help & Support</span>
             </div>
-            <img src="public/images/greater-than-symbol.png">
         </li>
 
-        <li class="content content-4">
-            <div class="content-left">
-                <img src="public/images/moon-icon-5.jpg" alt="">
-                <p>Display & Accessibility</p>
+        <li class="menu-item">
+            <div class="menu-item-content">
+                <i class="fas fa-moon menu-item-icon"></i>
+                <span>Dark Mode</span>
             </div>
-            <img src="public/images/greater-than-symbol.png">
+            <label class="theme-toggle">
+                <input type="checkbox">
+                <span class="theme-slider"></span>
+            </label>
         </li>
 
-        <li class="content content-5">
-            <div class="content-left">
-                <img src="public/images/icons8-logout.gif" alt="">
-                <p>Logout</p>
+        <li class="menu-item logout-item">
+            <div class="menu-item-content">
+                <i class="fas fa-sign-out-alt menu-item-icon"></i>
+                <span>Logout</span>
             </div>
-            <img src="public/images/greater-than-symbol.png">
         </li>
     </ul>
-    
-    <img src="public/images/default.jpg" alt="" id="toggleProfile"
-    style="
-        margin-top: 28px;
-    "
-    >
+
+    <div class="construction-alert" id="constructionAlert">
+        <i class="fas fa-tools"></i> Feature under construction
+    </div>
+
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-container" id="helpModal">
+        <div class="modal-header">
+            <h2>Help & Support</h2>
+            <span class="modal-close">&times;</span>
+        </div>
+        <div class="help-content">
+            <div class="hero-section">
+                <h1>Help & Support</h1>
+                <p>Get assistance with ValueTracker, your go-to tool for tracking and managing values efficiently.</p>
+            </div>
+
+            <div class="faq-section">
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-item">
+                    <p><strong>1. What is ValueTracker?</strong></p>
+                    <p>ValueTracker is a powerful tool developed by EXP-Ethiopia to help users track, manage, and analyze values efficiently.</p>
+                </div>
+                <div class="faq-item">
+                    <p><strong>2. How do I get started?</strong></p>
+                    <p>Simply sign up on our platform and follow the onboarding guide to set up your account.</p>
+                </div>
+                <div class="faq-item">
+                    <p><strong>3. Is ValueTracker free to use?</strong></p>
+                    <p>Yes, we offer a free tier with basic features and premium plans for advanced functionality.</p>
+                </div>
+            </div>
+
+            <div class="contact-form">
+                <h2>Contact Us</h2>
+                <form action="https://formspree.io/f/yourformid" method="POST">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const profileUpdateContainer = document.querySelector('.pfpUpdate-container');
-        const toggler = document.querySelector('#toggleProfile');
-        console.log(toggler);
-        toggler.addEventListener('click', () => {
-            console.log('button clicked for toggling!!!');
-            profileUpdateContainer.classList.toggle('show-card');
-        })
-        // One more thing to add, when it pops up, have the bckg blurred, and
-        // Exit this event 1, when the same profile image is clicked, 2, when any place outside of the homepage is clicked.
+        class ProfileManager {
+            constructor() {
+                this.profileMenu = document.getElementById('profileMenu');
+                this.profileToggle = document.getElementById('profileToggle');
+                this.editOverlay = document.querySelector('.edit-overlay');
+                this.username = document.querySelector('.username');
+                this.userImage = document.querySelector('.profile-image');
+                this.fileInput = this.createFileInput();
+                this.editButton = document.getElementById('editProfile');
+                this.saveButton = document.getElementById('saveButton');
+                this.constructionAlert = document.getElementById('constructionAlert');
+                this.isEditing = false;
+                
+                this.loadSavedData();
+                this.initializeEventListeners();
+
+                // Add contact form toggle
+                this.contactToggle = document.getElementById('contactToggle');
+                this.contactForm = document.getElementById('contactForm');
+                this.initializeContactForm();
+            }
+
+            loadSavedData() {
+                const savedName = localStorage.getItem('profileUsername');
+                const savedImage = localStorage.getItem('profileImage');
+                if (savedName) this.username.textContent = savedName;
+                if (savedImage) this.userImage.src = savedImage;
+            }
+
+            createFileInput() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.className = 'hidden';
+                document.body.appendChild(input);
+                return input;
+            }
+
+            initializeEventListeners() {
+                this.profileToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.profileMenu.classList.toggle('show-menu');
+                    this.cancelEdit();
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!this.profileMenu.contains(e.target) && 
+                       !this.profileToggle.contains(e.target)) {
+                        if (this.isEditing) {
+                            this.saveButton.classList.add('shake');
+                            setTimeout(() => this.saveButton.classList.remove('shake'), 500);
+                        } else {
+                            this.profileMenu.classList.remove('show-menu');
+                        }
+                    }
+                });
+
+                this.editButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!this.isEditing) this.enterEditMode();
+                });
+
+                this.saveButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.saveChanges();
+                });
+
+                this.editOverlay.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.isEditing) this.fileInput.click();
+                });
+
+                this.fileInput.addEventListener('change', (e) => this.handleImageUpload(e));
+                
+                document.getElementById('settingsPrivacy').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.showConstructionAlert();
+                });
+            }
+
+            initializeContactForm() {
+                this.contactToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.contactForm.style.display = 'block';
+                });
+            }
+
+            enterEditMode() {
+                this.isEditing = true;
+                this.profileMenu.classList.add('editing');
+                this.saveButton.style.display = 'flex';
+                this.editOverlay.style.opacity = '1';
+                this.username.contentEditable = 'true';
+                this.username.focus();
+                
+                const range = document.createRange();
+                range.selectNodeContents(this.username);
+                window.getSelection().addRange(range);
+            }
+
+            cancelEdit() {
+                if (!this.isEditing) return;
+                
+                this.isEditing = false;
+                this.profileMenu.classList.remove('editing');
+                this.saveButton.style.display = 'none';
+                this.editOverlay.style.opacity = '0';
+                this.username.contentEditable = 'false';
+                window.getSelection().removeAllRanges();
+            }
+
+            saveChanges() {
+                this.isEditing = false;
+                this.profileMenu.classList.remove('editing');
+                this.saveButton.style.display = 'none';
+                this.editOverlay.style.opacity = '0';
+                this.username.contentEditable = 'false';
+                
+                localStorage.setItem('profileUsername', this.username.textContent.trim());
+                this.showNotification('Changes saved successfully!');
+                window.getSelection().removeAllRanges();
+            }
+
+            handleImageUpload(e) {
+                const file = e.target.files[0];
+                if (file?.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        this.userImage.src = event.target.result;
+                        localStorage.setItem('profileImage', event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            showNotification(message) {
+                const notification = document.createElement('div');
+                notification.className = 'success-badge';
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 2000);
+            }
+
+            showConstructionAlert() {
+                this.constructionAlert.style.display = 'block';
+                setTimeout(() => {
+                    this.constructionAlert.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        class ModalManager {
+            constructor() {
+                this.modal = document.getElementById('helpModal');
+                this.backdrop = document.getElementById('modalBackdrop');
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                document.getElementById('helpSupport').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.openModal();
+                });
+
+                this.backdrop.addEventListener('click', (e) => {
+                    e.target === this.backdrop && this.closeModal();
+                });
+
+                document.querySelector('.modal-close').addEventListener('click', () => {
+                    this.closeModal();
+                });
+            }
+
+            openModal() {
+                this.modal.style.display = 'block';
+                this.backdrop.style.display = 'block';
+            }
+
+            closeModal() {
+                this.modal.style.display = 'none';
+                this.backdrop.style.display = 'none';
+            }
+        }
+
+        class ThemeManager {
+            constructor() {
+                this.themeToggle = document.querySelector('.theme-toggle input');
+                this.initialize();
+            }
+
+            initialize() {
+                this.themeToggle.addEventListener('change', () => this.toggleTheme());
+                this.loadSavedTheme();
+            }
+
+            toggleTheme() {
+                document.body.classList.toggle('dark-mode');
+                localStorage.setItem('theme', 
+                    document.body.classList.contains('dark-mode') ? 'dark' : 'light'
+                );
+            }
+
+            loadSavedTheme() {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    this.themeToggle.checked = true;
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new ProfileManager();
+            new ModalManager();
+            new ThemeManager();
+        });
     </script>
-
-
-    <!-- Edit page -->
-
-    <!-- Settings page -->
-
-    <!-- Help&support page -->
-
-    <!-- Display&Accessibilty page -->
-
-    <!-- Logout btn -->
-     <!-- Don't need a page or react style hide/pop-up displaying, just logout if you need to -->
 </body>
 </html>
