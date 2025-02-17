@@ -1,13 +1,17 @@
+/* General body styling */
 body {
   background-color: #f4f4f9;
-  /* border: 3px solid black; */
-  padding: 5.6rem 0 5.8rem;
+  margin: 0;
+  padding: 6.2rem 0 5.8rem;
+  font-family: Arial, sans-serif;
+  height: 100dvh;
 }
 
 /* Header */
 .home-header {
   position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
   background-color: white;
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
@@ -16,9 +20,10 @@ body {
   align-items: center;
   padding: 16px 1.6rem;
   height: 68px;
+  z-index: 1000;
 }
 
-/* Header left */
+/* Header left section */
 .leftNav {
   display: flex;
   align-items: center;
@@ -27,8 +32,8 @@ body {
 
 .leftNav .logo {
   font-size: 32px;
-  font-weight:900;
-  font-style:oblique
+  font-weight: 900;
+  font-style: oblique;
 }
 
 .leftNav .logo span {
@@ -53,9 +58,9 @@ body {
 }
 
 #logoutBtn {
-    background-color: #f00;
-    color: #fff;
-    margin-left: 12px;
+  background-color: #f00;
+  color: #fff;
+  margin-left: 12px;
 }
 
 #analyticsBtn {
@@ -63,23 +68,21 @@ body {
   color: white;
 }
 
-/* Header right */
+/* Header right section */
 .rightNav {
   display: flex;
   align-items: center;
   gap: 16px;
-  /* border: 3px solid green; */
 }
 
 .rightNav-user {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  /* border: 3px solid black; */
 }
 
 .rightNav-user .welcome {
-  color: #08080B;
+  color: #08080b;
   margin-top: 8px;
   font-size: 15px;
 }
@@ -91,67 +94,80 @@ body {
   border-radius: 50%;
 }
 
-/* The main box secct area */
+/* Main container */
+.container {
+  position: relative;
+  max-width: 1291px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Box container */
+#box-container {
+  width: 100%;
+  max-width: 1200px;
+  height: 532px;
+  overflow-y: scroll;
+  border: 2px solid white;
+  box-shadow: 0 4px 0.3rem white;
+  background-color: white;
+  border-radius: 27px;
+  padding: 0.2rem 0.4rem;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  border: 1.2px solid blue;
+}
+
+/* Individual boxes */
 .box {
-    width: 112px;
-    height: 112px;
-    margin: 10px;
-    background-color: lightblue;
-    border-radius: 6px;
-    display: inline-block;
-    text-align: center;
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    padding: 3px;
-    justify-content: center;
-    align-items: center;
-    border: 5px solid transparent;
+  width: 100px;
+  height: 100px;
+  margin: 10px;
+  background-color: lightblue;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  font-size: 12px;
+  border: 5px solid transparent;
+  transition: border 0.3s ease;
 }
 
+.box.selected {
+  border: 5px solid black;
+  background-color: lightblue;
+  box-shadow: 3px 2px 0.6rem hsl(195, 53%, 79%);
+}
+
+/* Buttons container */
 .firstText {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
-    padding: .4rem .9rem;
-    border-radius: 53px;
-    border: 3px solid green;
-    background-color: hsl(0, 0%, 93%);
+  position: absolute;
+  top: 19px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 53px;
+  background-color: hsl(0, 0%, 93%);
+  z-index: 10;
 }
 
-.firstText h1 {
-    font-size: 21px;
-    color: #3e3e4c;
-    border: 3px solid red;
+.buttonStyle {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.container{
-    border: 3px solid red;
-    /* margin-top: 62px; */
-    /* padding-top: 9.9rem; */
-    max-width: 1234px;
-    margin-inline: auto;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-}
-
-/* .saveBtn{ */
-    /* border: none; */
-    /* background-color: navy; */
-    /* color: #fff; */
-    /* padding: 7px 9px; */
-    /* border-radius: 10px; */
-    /* width: 150px; */
-    /* height: 50px; */
-    /* font-size: 14px; */
-    /* cursor: pointer; */
-/* } */
-
-/* Side-btn's ANimation */
-/* Save/Bookmark-btn */
+/* Save/Bookmark button */
 #checkboxInput {
   display: none;
 }
@@ -190,7 +206,7 @@ body {
   }
 }
 
-/* Update/Edit-btn */
+/* Edit button */
 .editBtn {
   width: 30px;
   height: 30px;
@@ -206,6 +222,7 @@ body {
   overflow: hidden;
   transition: all 0.3s;
 }
+
 .editBtn::before {
   content: "";
   width: 200%;
@@ -218,9 +235,11 @@ body {
   border-radius: 50%;
   filter: blur(10px);
 }
+
 .editBtn:hover::before {
   transform: scale(1);
 }
+
 .editBtn:hover {
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.336);
 }
@@ -232,9 +251,11 @@ body {
   transition: all 0.2s;
   transform-origin: bottom;
 }
+
 .editBtn:hover svg {
   transform: rotate(-15deg) translateX(5px);
 }
+
 .editBtn::after {
   content: "";
   width: 20px;
@@ -249,13 +270,14 @@ body {
   transform-origin: left;
   transition: transform 0.5s ease-out;
 }
+
 .editBtn:hover::after {
   transform: scaleX(1);
   left: 0px;
   transform-origin: right;
 }
 
-/* Delete-btn */
+/* Delete button */
 .deleteBtn {
   width: 30px;
   height: 30px;
@@ -298,26 +320,9 @@ body {
   transition-duration: 0.5s;
   transform: rotate(160deg);
 }
-/* End of side-btns ANimation */
-
-/* Inside the separate boxes */
-#box-container {
-  width: 97%;
-  height: 442px;
-  margin: 0 auto;
-  overflow-y: scroll;
-  border: 2px solid white;
-  box-shadow: 0 4px 0.3rem white;
-  background-color: white;
-  border-radius: 27px;
-  padding: 0.2rem 0.4rem;
-  display: flex;
-  gap: 10px;
-  justify-content: left;
-  flex-wrap: wrap;
-}
 
 
+/* Modals */
 .overlay {
   position: fixed;
   top: 0;
@@ -329,172 +334,71 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  }
-  
-  
-  .modal {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    min-width: 300px;
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
-  }
-  
+}
 
-  input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  min-width: 300px;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
 
-  select {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
 
-  .submitBTN {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 5px;
-  }
-  
-  .submitBTN:hover {
-    background-color: #0056b3;
-  }
+select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
 
-  .selected {
-    background-color: lightblue;
-    box-shadow: 3px 2px .6rem hsl(195, 53%, 79%);
-    border-radius: 3px;
-    /* color: #fff; */
-    width: 112px;
-    height: 112px;
-    margin: 10px;
-    border-radius: 6px;
-    display: inline-block;
-    text-align: center;
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    padding: 3px;
-    justify-content: center;
-    align-items: center;
-    /* border: 5px solid transparent; */
-    border: 5px solid #000;
+.submitBTN {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+}
 
-  }
+.submitBTN:hover {
+  background-color: #0056b3;
+}
 
-  /* #DeleteBoxes{
-    background-color: green;
+/* Dropdown and Search button */
+.dates {
+  width: 99px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
 
-  }
+#getDayButton {
+  border: none;
+  outline: none;
+  background-color: #6c5ce7;
+  padding: 10px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 5px;
+  transition: all ease 0.1s;
+  box-shadow: 0px 5px 0px 0px #a29bfe;
+  cursor: pointer;
+}
 
-  #DeleteBoxes{
-    background-color: red;    
-  } */
-  
-  .dates {
-    width: 99px;
-  }
-
-  #getDayButton {
-    border: none;
-    outline: none;
-    background-color: #6c5ce7;
-    padding: 10px 20px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #fff;
-    border-radius: 5px;
-    transition: all ease 0.1s;
-    box-shadow: 0px 5px 0px 0px #a29bfe;
-    cursor: pointer;
-  }
-  
-  #getDayButton:active {
-    transform: translateY(5px);
-    box-shadow: 0px 0px 0px 0px #a29bfe;
-  }
-
-  /* #DeleteBoxes { */
-    /* margin: 10px; */
-    /* width: 150px; */
-    /* height: 50px; */
-    /* cursor: pointer;
-    display: flex;
-    align-items: center; */
-    /* background: red; */
-    /* border: none;
-    border-radius: 5px;
-    box-shadow: 1px 1px 3px rgba(0,0,0,0.15); */
-    /* background: #e62222; */
-   /* } */
-   
-   /* #DeleteBoxes, #DeleteBoxes span {
-    transition: 200ms;
-   }
-   
-   #DeleteBoxes .text {
-    transform: translateX(35px);
-    color: white;
-    font-weight: bold;
-   }
-   
-   #DeleteBoxes .icon {
-    position: absolute;
-    border-left: 1px solid #c41b1b;
-    transform: translateX(110px);
-    height: 40px;
-    width: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-   }
-   
-   #DeleteBoxes svg {
-    width: 15px;
-    fill: #eee;
-   }
-   
-   #DeleteBoxes:hover {
-    background: #ff3636;
-   }
-   
-   #DeleteBoxes:hover .text {
-   color: transparent;
-   }
-   
-   #DeleteBoxes:hover .icon {
-    width: 150px;
-    border-left: none;
-    transform: translateX(0);
-   }
-   
-   #DeleteBoxes:focus {
-    outline: none;
-   }
-   
-   #DeleteBoxes:active .icon svg {
-    transform: scale(0.8);
-   } */
-
-   .buttonStyle {
-    width: 500px;
-    display: flex;
-    padding: 10px;
-    align-items: center;
-    gap: 7px;
-   }
+#getDayButton:active {
+  transform: translateY(5px);
+  box-shadow: 0px 0px 0px 0px #a29bfe;
+}

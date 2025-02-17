@@ -70,6 +70,7 @@ img {
 .content:hover {
     background-color: hsl(0, 3%, 88%);
     padding: 0.2rem;
+    /* margin-bottom: 0.2rem */
     border-radius: 17px;
 }
 
