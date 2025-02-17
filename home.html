@@ -89,8 +89,8 @@
             <button id="analyticsBtn">View Analytics</button>
 
             <div class="rightNav-user">
-                <p class="welcome"><span id="username"></span> </p>
-                <img src="public/images/user74.jpg" alt="profile" class="profile-toggle" id="profileToggle">
+                <!-- <p class="welcome"><span id="username"></span> </p> -->
+                <img alt="profile" class="profile-toggle" id="profileToggle">
 
                 <!-- Add the profile option. -->
                 <ul class="profile-menu" id="profileMenu">
@@ -99,7 +99,7 @@
                             <div class="edit-overlay">
                                 <i class="fas fa-camera"></i>
                             </div>
-                            <img src="public/images/user74.jpg" alt="Profile" class="profile-image">
+                            <img alt="Profile" id="profileToggle1" class="profile-image">
                         </div>
                         <div class="save-button" id="saveButton">
                             <i class="fas fa-bookmark"></i>
@@ -107,8 +107,8 @@
                         </div>
                         <div class="profile-info">
                             <!-- Get the current logged in users username and email dynamically. -->
-                            <div class="username">James Adrino</div> 
-                            <div class="email">jamesadrino929@gmail.com</div>
+                            <div class="username" id="userName"></div> 
+                            <div class="email" id="userEmail"></div>
                         </div>
                     </li>
             
@@ -341,13 +341,7 @@
     window.push = push;
 
 
-    const urlParams = new URLSearchParams(window.location.search);
 
-    // Retrieve the 'username' parameter
-    const username = urlParams.get('username');
-
-    // Display the username on the page
-    document.getElementById('username').textContent = username;
 
     const logoutBtn = document.getElementById('logoutBtn');
 
@@ -373,6 +367,15 @@
         if (user) {
             console.log("✅ User signed in:", user.displayName, user.email, user.uid);
             window.userId = user.uid;
+
+            const username = document.getElementById('userName');
+            username.textContent = user.displayName;
+            const userEmail = document.getElementById('userEmail');
+            userEmail.textContent = user.email;
+            const profilePic = document.getElementById('profileToggle1');
+            profilePic.src = user.photoURL;
+            const profilePic1 = document.getElementById('profileToggle');
+            profilePic1.src = user.photoURL;
 
             let checkPhotoInterval = setInterval(() => {
                 if (user.photoURL) {
