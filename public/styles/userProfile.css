@@ -28,6 +28,74 @@ body.dark-mode {
     color: #fff;
 }
 
+/* Dark mode styles */
+body.dark-mode .profile-menu {
+    background-color: #2d2d2d;
+    border-color: #444;
+  }
+  
+  body.dark-mode .profile-header {
+    border-bottom-color: #444;
+  }
+  
+  body.dark-mode .profile-image {
+    border-color: #444;
+  }
+  
+  body.dark-mode .menu-item {
+    border-bottom-color: #444;
+  }
+  
+  body.dark-mode .menu-item:hover {
+    background-color: #333;
+  }
+  
+  body.dark-mode .menu-item-icon {
+    color: #ccc;
+  }
+  
+  body.dark-mode .save-button {
+    background-color: rgba(45, 45, 45, 0.9);
+    color: #ffffff;
+  }
+  
+  body.dark-mode .modal-container {
+    background-color: #2d2d2d;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  body.dark-mode .modal-close {
+    color: #ccc;
+  }
+  
+  body.dark-mode .modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+  }
+  
+  body.dark-mode .faq-section h2 {
+    border-bottom-color: #444;
+  }
+  
+  body.dark-mode .faq-item {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  body.dark-mode .contact-form input,
+  body.dark-mode .contact-form textarea {
+    background-color: #333;
+    border-color: #555;
+    color: #ffffff;
+  }
+  
+  body.dark-mode .contact-form button[type="submit"] {
+    background-color: #6c5ce7;
+  }
+  
+  body.dark-mode .contact-form button[type="submit"]:hover {
+    opacity: 0.9;
+  }
+
 .profile-toggle {
     position: relative;
     top: auto;
