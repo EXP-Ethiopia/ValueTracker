@@ -871,23 +871,27 @@ class BoxContainer {
     }
 
     checkBoxes() {
-        console.log("Checking Boxes");
-
+        console.log("Checking Boxes121");
+        console.trace();
+    
         let hasError = false; // Flag to track if an error occurs
-
+    
         for (const box of this.boxes) {
             const boxElement = box.element;
             const style = window.getComputedStyle(boxElement);
             const backgroundColor = style.backgroundColor;
-
+    
+            // Possible background colors in both light and dark mode
+            const validColors = ['rgb(173, 216, 230)', 'rgb(61, 61, 61)']; // Light blue & Dark gray (#3d3d3d)
+    
             if (boxContainer.selectedBoxes.includes(box.id)) {
-                if (backgroundColor !== 'rgb(173, 216, 230)') { // 'lightblue' in RGB format
+                if (!validColors.includes(backgroundColor)) {
                     hasError = true; // Mark that we found an invalid box
                     break; // Stop checking further boxes
                 }
             }
         }
-
+    
         if (hasError) {
             Swal.fire({
                 title: "Error",
@@ -899,6 +903,7 @@ class BoxContainer {
             boxContainer.showCustomPopup(); // Only runs if no error occurred
         }
     }
+    
 
     async deletFunction() {
         const user = auth.currentUser;
@@ -1026,9 +1031,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Load tags from localStorage
     async function initializeTags() {
-        // Wait until the user is authenticated
         onAuthStateChanged(boxContainer.auth, (user) => {
             if (!user) {
                 console.error("User not authenticated");
@@ -1038,7 +1041,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const userTagsKey = `user_${user.uid}_tags`;
             let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
 
-            // Predefined tags
             const predefinedTags = [
                 { name: "Work", color: "#ff0000" },
                 { name: "Personal Dev", color: "#a52a2a" },
@@ -1047,36 +1049,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 { name: "Team Time", color: "#800080" }
             ];
 
-            // Merge predefined and stored tags, avoiding duplicates
             predefinedTags.forEach(preTag => {
                 if (!storedTags.some(tag => tag.name === preTag.name)) {
                     storedTags.push(preTag);
                 }
             });
 
-            // Save updated tags back to localStorage
             localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
 
-            // Add all tags to the UI
             storedTags.forEach(tag => boxContainer.addTag(tag.name, tag.color));
         });
     }
 
-    // Then, initialize tags from localStorage & predefined tags
     initializeTags();
 
-
-
-    // Button click event
-    if (submitBTN) {
-        submitBTN.addEventListener('click', () => {
-            boxContainer.checkBoxes();
-        });
-    } else {
-        console.error('Button with ID "saveBoxes" not found!');
-    }
+    // Ensure no duplicate event listeners
+    submitBTN?.removeEventListener('click', handleSaveBoxes);
+    submitBTN?.addEventListener('click', handleSaveBoxes);
 });
 
+function handleSaveBoxes(event) {
+    event.preventDefault(); // Prevent any accidental form submission
+    console.log("Calling checkBoxes() at", new Date().toISOString());
+    boxContainer.checkBoxes();
+}
 
 
 
