@@ -45,11 +45,6 @@ body.dark-mode .container {
   background-color: #1a1a1a;
 }
 
-body.dark-mode #box-container {
-  background-color: #2d2d2d;
-  border: 1.2px solid #6c5ce7;
-}
-
 body.dark-mode .box {
   background-color: #3d3d3d;
   color: #ffffff;
@@ -116,6 +111,11 @@ body.dark-mode #getDayButton:active {
   left: 0; /* Show sidebar when active */
 }
 
+body.dark-mode #sidebar {
+  background-color: #2d2d2d;
+  color: #ffffff;
+}
+
 .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -128,11 +128,19 @@ body.dark-mode #getDayButton:active {
   text-align: center;
 }
 
+body.dark-mode .sidebar-header h2 {
+  color: #6c5ce7;
+}
+
 .add-icon {
   font-size: 1.2rem;
   color: #6c5ce7;
   cursor: pointer;
   transition: color 0.3s ease;
+}
+
+body.dark-mode .add-icon {
+  color: #a29bfe;
 }
 
 .add-icon:hover {
@@ -159,6 +167,10 @@ body.dark-mode #getDayButton:active {
   transform: scale(1.05);
 }
 
+body.dark-mode .menu-item:hover, body.dark-mode .category-item:hover {
+  background-color: #4a4a4a;
+}
+
 .icon {
   font-size: 1.2rem;
 }
@@ -168,6 +180,10 @@ body.dark-mode #getDayButton:active {
 .category-item.team-time { color: #2563eb; }
 .category-item.friends { color: #a21caf; }
 
+body.dark-mode .category-item.work { color: #ff6b6b; }
+body.dark-mode .category-item.school { color: #69db7c; }
+body.dark-mode .category-item.team-time { color: #74c0fc; }
+body.dark-mode .category-item.friends { color: #e599f7; }
 
 /* Main Content */
 .main-content {
@@ -223,21 +239,28 @@ body.dark-mode #getDayButton:active {
   gap: 0.3rem;
 }
 
-.leftNav .logo {
+/* .leftNav .logo {
   font-size: 32px;
   font-weight: 900;
   font-style: oblique;
-}
+} */
 
 .leftNav .logo span {
   color: blue;
 }
 
-.leftNav .logo-txt {
+/* .leftNav .logo-txt {
   font-weight: 550;
   font-size: 18px;
-  display: none; /* Hide on mobile */
-}
+  display: none; 
+  /* Hide on mobile */
+/* } */
+
+/* .dates-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+} */
 
 #analyticsBtn {
   width: 112px;
@@ -310,6 +333,12 @@ body.dark-mode #getDayButton:active {
   border: 3px solid black;
   background-color: lightblue;
   box-shadow: 3px 2px 0.6rem hsl(195, 53%, 79%);
+}
+
+.saved-message {
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 
 /* Buttons container */
