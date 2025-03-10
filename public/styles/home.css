@@ -1,10 +1,12 @@
 /* General body styling */
 body {
+  display: flex;
   background-color: #f4f4f9;
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
   height: 100dvh;
+  overflow: hidden;
 }
 
 /* Dark mode styles */
@@ -94,11 +96,31 @@ body.dark-mode #getDayButton:active {
   box-shadow: 0px 0px 0px 0px #a29bfe;
 }
 
+/* Content of the page */
+/* Sidebar */
+#sidebar {
+  background-color: lightblue;
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  transition: left 0.3s ease;
+  z-index: 1000;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 250px; /* Match sidebar width */
+  width: calc(100% - 250px);
+  height: 100vh;
+  overflow-y: auto;
+  transition: margin-left 0.3s ease;
+}
+
 /* Header */
 .home-header {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
   width: 100%;
   background-color: white;
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
@@ -107,7 +129,24 @@ body.dark-mode #getDayButton:active {
   align-items: center;
   padding: 10px 1.6rem;
   height: 60px;
-  z-index: 1000;
+  z-index: 999;
+}
+
+/* Hamburger Icon */
+#hamburgerIcon {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Close Icon */
+#closeIcon {
+  display: none; /* Hidden by default */
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
 }
 
 /* Header left section */
@@ -175,36 +214,18 @@ body.dark-mode #getDayButton:active {
 
 /* Main container */
 .container {
-  position: relative;
-  width: 96%;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  margin-top: 62px; /* Adjusted to account for fixed header */
-  margin: 68px auto 0;
+  padding: 20px;
 }
 
-/* Box container */
+/* Box Container */
 #box-container {
-  width: 100%;
-  height: calc(100vh - 60px); 
-  /* Adjusted to take up remaining space */
-  overflow-y: scroll;
-  background-color: white;
-  padding: 10px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(127px, 1fr)); /* Bigger boxes */
-  gap: 10px;
-  /* border: 1.2px solid blue; */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Larger boxes */
+  gap: 15px; /* Increased gap for better spacing */
 }
 
-/* Individual boxes */
+/* Box */
 .box {
-  width: 100%;
-  height: 120px; /* Bigger boxes */
   background-color: lightblue;
   border-radius: 8px;
   display: flex;
@@ -212,9 +233,10 @@ body.dark-mode #getDayButton:active {
   align-items: center;
   text-align: center;
   cursor: pointer;
-  font-size: 14px; /* Adjusted text size */
+  font-size: 14px;
   border: 3px solid transparent;
   transition: border 0.3s ease;
+  height: 120px; /* Increased height for better UX */
 }
 
 .box.selected {
@@ -512,17 +534,41 @@ select {
 
 /* Responsive Styles */
 @media (max-width: 768px) {
+  #sidebar {
+    left: -250px;
+  }
+
+  #sidebar.active {
+    left: 0;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  #hamburgerIcon {
+    display: block;
+  }
+
+  #closeIcon {
+    display: block;
+  }
+
+  .leftNav .logo-txt {
+    display: none;
+  }
+
   .home-header {
     padding: 10px;
-    height: 60px;
   }
 
   .leftNav .logo {
     font-size: 24px;
+    margin-left: 10px;
   }
 
-  .leftNav .logo-txt {
-    font-size: 18px;
+  .rightNav-user .welcome {
     display: none;
   }
 
@@ -542,51 +588,24 @@ select {
     height: 36px;
   }
 
-  .rightNav-user .welcome {
-    display: none;
-  }
-
-  .leftNav,
-  .rightNav {
-    gap: 8px;
-  }
-
   #box-container {
-    height: calc(100vh - 120px); /* Adjusted to take up remaining space */
-    max-height: none;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Adjusted for mobile */
+    gap: 10px;
     padding: 10px;
-    border-radius: 15px;
   }
 
   .box {
-    width: 100%;
-    height: 80px;
-    margin: 5px 0;
+    height: 100px; /* Adjusted for mobile */
     font-size: 14px;
-    border-radius: 8px;
-  }
-
-  .box.selected {
-    border: 3px solid black;
-    box-shadow: 2px 2px 0.4rem hsl(195, 53%, 79%);
   }
 
   .firstText {
-    position: fixed;
     bottom: 10px;
     right: 10px;
-    top: auto;
-    flex-direction: row;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 20px;
     padding: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
 
   .buttonStyle {
-    flex-direction: row;
     gap: 8px;
   }
 
@@ -625,15 +644,13 @@ select {
   }
 
   #box-container {
-    height: calc(100vh - 100px); /* Adjusted to take up remaining space */
-    max-height: none;
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Smaller boxes for mobile */
     gap: 5px;
     padding: 5px;
   }
 
   .box {
-    height: 60px;
+    height: 80px; /* Smaller boxes for mobile */
     font-size: 12px;
   }
 
