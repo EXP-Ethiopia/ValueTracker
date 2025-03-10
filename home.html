@@ -60,16 +60,35 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
+            <h2>Value Tracker</h2>
+            <i class="fas fa-plus add-icon" id="addIcon"></i> <!-- Add icon at the top -->
             <i class="fas fa-times close-icon" id="closeIcon"></i> <!-- Close button -->
-            <p class="logo">V<span>T</span></p>
-            <p class="logo-txt">ValueTracker</p>
         </div>
+
         <ul class="sidebar-menu">
-            <li><a href="#">Dashboard</a></li>
-            <li><a href="#">Analytics</a></li>
-            <li><a href="#">Settings</a></li>
-            <li><a href="#">Profile</a></li>
+            <li class="menu-item">
+                <span class="icon">💎</span> Core Rock
+                <i class="fas fa-plus add-icon"></i> <!-- Add icon next to Core Rock -->
+            </li>
+            <li class="menu-item">
+                <span class="icon">🎯</span> Target
+                <i class="fas fa-plus add-icon"></i> <!-- Add icon next to Target -->
+            </li>
+            <li class="menu-item">
+                <span class="icon">⚡</span> Action
+                <i class="fas fa-plus add-icon"></i> <!-- Add icon next to Action -->
+            </li>
         </ul>
+
+        <div class="sidebar-categories">
+            <h3>Categories</h3>
+            <ul>
+                <li class="category-item work">🔴 Work</li>
+                <li class="category-item school">🟢 School</li>
+                <li class="category-item team-time">🔵 Team Time</li>
+                <li class="category-item friends">🟣 Friends</li>
+            </ul>
+        </div>
     </div>
 
     <div class="main-content">

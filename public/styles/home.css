@@ -96,22 +96,83 @@ body.dark-mode #getDayButton:active {
   box-shadow: 0px 0px 0px 0px #a29bfe;
 }
 
-/* Content of the page */
-/* Sidebar */
+
+/* Sidebar CSS */
 #sidebar {
-  background-color: lightblue;
-  width: 250px;
+  background: #f7f9fc;
+  width: 260px;
   height: 100vh;
   position: fixed;
   left: 0;
-  transition: left 0.3s ease;
-  z-index: 1000;
+  padding: 20px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 1001; /* Higher z-index than header */
 }
+
+#sidebar.active {
+  left: 0; /* Show sidebar when active */
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-header h2 {
+  font-size: 1.5rem;
+  color: #1e3a8a;
+  text-align: center;
+}
+
+.add-icon {
+  font-size: 1.2rem;
+  color: #6c5ce7;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.add-icon:hover {
+  color: #4a3f9e;
+}
+
+.sidebar-menu, .sidebar-categories ul {
+  list-style: none;
+  padding: 0;
+}
+
+.menu-item, .category-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  transition: backgroundColor 0.3s ease, transform 0.2s ease;
+}
+
+.menu-item:hover, .category-item:hover {
+  background-color: #e0f2fe;
+  transform: scale(1.05);
+}
+
+.icon {
+  font-size: 1.2rem;
+}
+
+.category-item.work { color: #dc2626; }
+.category-item.school { color: #16a34a; }
+.category-item.team-time { color: #2563eb; }
+.category-item.friends { color: #a21caf; }
+
 
 /* Main Content */
 .main-content {
-  margin-left: 250px; /* Match sidebar width */
-  width: calc(100% - 250px);
+  margin-left: 260px; /* Match sidebar width */
+  width: calc(100% - 260px);
   height: 100vh;
   overflow-y: auto;
   transition: margin-left 0.3s ease;
@@ -129,7 +190,7 @@ body.dark-mode #getDayButton:active {
   align-items: center;
   padding: 10px 1.6rem;
   height: 60px;
-  z-index: 999;
+  z-index: 1000;
 }
 
 /* Hamburger Icon */
@@ -142,11 +203,17 @@ body.dark-mode #getDayButton:active {
 /* Close Icon */
 #closeIcon {
   display: none; /* Hidden by default */
-  position: absolute;
-  top: 10px;
-  right: 10px;
   font-size: 24px;
   cursor: pointer;
+  color: #6c5ce7;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  transition: color 0.3s ease;
+}
+
+#closeIcon:hover {
+  color: #4a3f9e;
 }
 
 /* Header left section */
@@ -535,7 +602,7 @@ select {
 /* Responsive Styles */
 @media (max-width: 768px) {
   #sidebar {
-    left: -250px;
+    left: -260px;
   }
 
   #sidebar.active {
@@ -553,6 +620,9 @@ select {
 
   #closeIcon {
     display: block;
+    top: 1.2px;
+    right: 1.2px;
+
   }
 
   .leftNav .logo-txt {
