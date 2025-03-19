@@ -358,3 +358,196 @@ body.dark-mode .heatmap-container {
 body.dark-mode .heatmap-box {
     background-color: #3d3d3d;
 }
+
+/* General Responsive Styles */
+@media (max-width: 768px) {
+    /* Header adjustments */
+    .home-header {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+    }
+
+    .leftNav {
+        margin-bottom: 10px;
+    }
+
+    .rightNav .UnorderedList {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .rightNav .UnorderedList li {
+        margin: 5px 0;
+    }
+
+    /* Dropdowns and search button */
+    .dates {
+        width: 80px; /* Smaller dropdowns for mobile */
+    }
+
+    #getDayButton {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    /* Main section adjustments */
+    .main {
+        padding: 6rem 1rem 1rem; /* Reduce padding for smaller screens */
+    }
+
+    /* Table adjustments */
+    .table-container {
+        overflow-x: auto; /* Allow horizontal scrolling for tables */
+    }
+
+    table {
+        font-size: 14px; /* Smaller font size for tables */
+    }
+
+    th, td {
+        padding: 6px 8px; /* Reduce padding for table cells */
+    }
+
+    /* Chart adjustments */
+    .chart-container {
+        flex-direction: column; /* Stack charts vertically on small screens */
+    }
+
+    .chart {
+        width: 100%; /* Full width for charts */
+        height: auto; /* Auto height for charts */
+        margin-bottom: 20px; /* Add spacing between stacked charts */
+    }
+
+    /* Heatmap adjustments */
+    .heatmap-grid {
+        grid-template-columns: repeat(12, 1fr); /* Fewer columns for smaller screens */
+        gap: 5px; /* Smaller gap between heatmap boxes */
+    }
+
+    .heatmap-box {
+        width: 20px; /* Smaller heatmap boxes */
+        height: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Further adjustments for very small screens */
+    .home-header {
+        padding: 5px;
+    }
+
+    .leftNav img {
+        width: 24px;
+        height: 24px;
+    }
+
+    .welcome {
+        font-size: 16px; /* Smaller welcome message */
+    }
+
+    .dates {
+        width: 60px; /* Even smaller dropdowns */
+    }
+
+    #getDayButton {
+        padding: 8px 16px; /* Smaller button */
+        font-size: 10px;
+    }
+
+    #logoutBtn,
+    #analyticsBtn {
+        padding: 0.25rem 0.5rem; /* Smaller buttons */
+        font-size: 10px;
+    }
+
+    .main {
+        padding: 5rem 0.5rem 0.5rem; /* Further reduce padding */
+    }
+
+    table {
+        font-size: 12px; /* Even smaller font size for tables */
+    }
+
+    th, td {
+        padding: 4px 6px; /* Further reduce padding for table cells */
+    }
+
+    .heatmap-grid {
+        grid-template-columns: repeat(8, 1fr); /* Fewer columns for very small screens */
+    }
+
+    .heatmap-box {
+        width: 15px; /* Even smaller heatmap boxes */
+        height: 15px;
+    }
+}
+
+/* Dark mode adjustments for mobile */
+@media (max-width: 768px) {
+    body.dark-mode .home-header {
+        background-color: #2d2d2d;
+    }
+
+    body.dark-mode .rightNav .UnorderedList {
+        background-color: #2d2d2d;
+    }
+
+    body.dark-mode .firstText {
+        background-color: #2d2d2d;
+    }
+
+    body.dark-mode .dates {
+        background-color: #2d2d2d;
+        color: #ffffff;
+    }
+
+    body.dark-mode #getDayButton {
+        background-color: #6c5ce7;
+    }
+
+    body.dark-mode #logoutBtn {
+        background-color: #ff4757;
+    }
+
+    body.dark-mode #analyticsBtn {
+        background-color: #6c5ce7;
+    }
+
+    body.dark-mode .main {
+        background-color: #1a1a1a;
+    }
+
+    body.dark-mode .table-container {
+        background-color: #2d2d2d;
+    }
+
+    body.dark-mode table {
+        background-color: #2d2d2d;
+    }
+
+    body.dark-mode th {
+        background-color: #6c5ce7;
+    }
+
+    body.dark-mode td {
+        color: #ffffff;
+    }
+
+    body.dark-mode tr:hover {
+        background-color: #3d3d3d;
+    }
+
+    body.dark-mode .chart {
+        background-color: #2d2d2d;
+    }
+
+    body.dark-mode .heatmap-container {
+        background-color: #2d2d2d;
+    }
+
+    body.dark-mode .heatmap-box {
+        background-color: #3d3d3d;
+    }
+}
