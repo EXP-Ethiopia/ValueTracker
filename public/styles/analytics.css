@@ -359,13 +359,62 @@ body.dark-mode .heatmap-box {
     background-color: #3d3d3d;
 }
 
+/* Hamburger Menu Icon */
+.menu-toggle {
+    display: none; /* Hide by default */
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #08080B;
+}
+
 /* General Responsive Styles */
 @media (max-width: 768px) {
     /* Header adjustments */
     .home-header {
-        flex-direction: column;
-        height: auto;
+        flex-direction: row;
+        align-items: center;
         padding: 10px;
+    }
+
+    .menu-toggle {
+        display: block; /* Show hamburger menu */
+    }
+
+    .rightNav {
+        display: none; /* Hide the desktop nav */
+        position: absolute;
+        top: 68px; /* Align below the header */
+        left: 0;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .rightNav.active {
+        display: flex; /* Show when active */
+    }
+
+    .rightNav .UnorderedList {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .dates {
+        width: 100%; /* Full width for dropdowns on mobile */
+    }
+
+    #getDayButton {
+        width: 100%; /* Full width for search button */
+    }
+
+    #logoutBtn,
+    #analyticsBtn {
+        width: 100%; /* Full width for buttons */
     }
 
     .leftNav {
@@ -448,7 +497,7 @@ body.dark-mode .heatmap-box {
     }
 
     .dates {
-        width: 60px; /* Even smaller dropdowns */
+        font-size: 12px;
     }
 
     #getDayButton {
@@ -456,10 +505,11 @@ body.dark-mode .heatmap-box {
         font-size: 10px;
     }
 
+    #getDayButton,
     #logoutBtn,
     #analyticsBtn {
-        padding: 0.25rem 0.5rem; /* Smaller buttons */
-        font-size: 10px;
+        font-size: 12px;
+        padding: 6px 12px;
     }
 
     .main {

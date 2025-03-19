@@ -73,6 +73,12 @@
             <img src="./images/default.jpg" id="profile-pic" style="border-radius: 50%;" alt="" width="50" height="50">
             <h1 class="welcome">Welcome <span id="username"></span> </h1>
         </div>
+
+        <!-- Hamburger Menu Icon -->
+        <button id="menuToggle" class="menu-toggle">
+            <i class="fas fa-bars"></i> <!-- Font Awesome icon for hamburger menu -->
+        </button>
+
         <div class="rightNav">
             <ul class="UnorderedList">
                 <div>
@@ -600,20 +606,15 @@
                 console.log(day, month, year)
 
                 if (month < 10) {
-
-
                     month = `0${month}`;
                 }
 
                 if (day < 10) {
-
-
                     day = `0${day}`;
                 }
 
                 const selectedDate = `${year}-${month}-${day}`
                 // const selectedDate = new Date(year, month - 1, day);
-
 
                 console.log(selectedDate);
                 fetchTasks(window.userId, selectedDate, tag);
@@ -640,6 +641,15 @@
                 localStorage.setItem('theme', themeToggle.checked ? 'dark' : 'light');
             });
         }
+
+        // Hamburger mode for responsive mode
+        const menuToggle = document.getElementById("menuToggle");
+        const mobileNav = document.getElementById("mobileNav");
+
+        menuToggle.addEventListener("click", () => {
+            mobileNav.classList.toggle("active");
+        });
+        
     });
 
     </script>
