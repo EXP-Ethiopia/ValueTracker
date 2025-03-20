@@ -19,13 +19,23 @@ body {
     align-items: center;
     padding: 16px 2.6rem;
     height: 68px;
+    z-index: 1000;
 }
 
-/* Header left */
+/* Hamburger Menu Icon */
+.menu-toggle {
+    display: none; /* Hidden on desktop */
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #08080B;
+}
+
+/* Profile Picture */
 .leftNav {
     display: flex;
     align-items: center;
-    /* border: 3px solid red; */
 }
 
 .leftNav img {
@@ -36,143 +46,72 @@ body {
     margin-right: 8px;
 }
 
-/* Header right */
-/* .rightNav {
-    border: 3px solid black;
-    margin-left: 27px;
-} */
-
-.rightNav .UnorderedList{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2px;
-    list-style: none;
-    font-size: 12px;
+/* Hide Analytics Button (Always Visible) */
+.analytics-btn {
+    padding: 8px 16px;
+    border: none;
     border-radius: 5px;
-}
-
-.UnorderedList li {
-    margin: 3px;
+    font-size: 14px;
     cursor: pointer;
+    background-color: #6c5ce7;
+    color: white;
 }
 
-/* The dates and tag dropdown styles */
-.firstText {
+/* Right Navigation (Desktop) */
+.rightNav {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
-    padding: .4rem .9rem;
-    border-radius: 53px;
-    /* border: 3px solid green; */
-    background-color: hsl(0, 0%, 93%);
 }
 
-.firstText h1 {
-    font-size: 21px;
-    color: #3e3e4c;
+.rightNav .UnorderedList {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
+.rightNav .UnorderedList li {
+    margin: 0;
+}
 
-select {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
+/* Dropdowns and Buttons */
+.dates {
+    width: 100px;
+    padding: 8px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    font-size: 14px;
 }
 
-.selected {
-    background-color: lightblue;
-    box-shadow: 3px 2px .6rem hsl(195, 53%, 79%);
-    border-radius: 3px;
-    /* color: #fff; */
-    width: 112px;
-    height: 112px;
-    margin: 10px;
-    border-radius: 6px;
-    display: inline-block;
-    text-align: center;
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    padding: 3px;
-    justify-content: center;
-    align-items: center;
-    /* border: 5px solid transparent; */
-    border: 5px solid #000;
-}
-
-/* Sets the width of all the dropdowns */
-.dates {
-    width: 99px;
-}
-
-/* Search-btn-header */
-#getDayButton {
+#getDayButton,
+#logoutBtn {
+    padding: 8px 16px;
     border: none;
-    outline: none;
-    background-color: #6c5ce7;
-    padding: 10px 20px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #fff;
     border-radius: 5px;
-    transition: all ease 0.1s;
-    box-shadow: 0px 5px 0px 0px #a29bfe;
+    font-size: 14px;
     cursor: pointer;
 }
 
-#getDayButton:active {
-    transform: translateY(5px);
-    box-shadow: 0px 0px 0px 0px #a29bfe;
-}
-
-#logoutBtn,
-#analyticsBtn {
-    padding: 0.35rem 0.7rem;
-    border: none;
-    outline: none;
-    font-weight: 500;
-    border-radius: 7px;
-    color: #08080B;
-    cursor: pointer;
+#getDayButton {
+    background-color: #6c5ce7;
+    color: white;
 }
 
 #logoutBtn {
-    background-color: #f00;
-    color: #fff;
-    margin-left: 12px;
+    background-color: #ff4757;
+    color: white;
 }
 
-.welcome{
-    text-align: center;
-    color: #08080B;
-    margin: 10px 0;
-    font-size: 18px;
-}
-
-/* Main section */
+/* Main Section */
 .main {
-    /* border: 3px solid gray; */
-    padding: 6.3rem 4rem 4rem;
-}
-
-/* Welcome Message */
-.welcome {
-    text-align: center;
-    /* margin: 10px 0; */
-    font-size: 20px;
-    color: black;
+    padding: 6.3rem 2rem 4rem;
 }
 
 /* Table Styles */
 .table-container {
-    margin: 10px;
-    max-width: 1234px;
-    margin: 0 auto;
-    overflow-x: auto;
+    margin-bottom: 20px;
 }
 
 table {
@@ -183,13 +122,13 @@ table {
 }
 
 th, td {
-    padding: 8px 12px;
+    padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
 
 th {
-    background-color: rgb(134, 134, 134);
+    background-color: #6c5ce7;
     color: white;
 }
 
@@ -200,49 +139,26 @@ tr:hover {
 /* Chart Container */
 .analytics {
     padding: 10px;
-    max-width: 1234px;
-    margin: 0 auto;
-}
-
-.analytics h2 {
-    margin: 2.1rem 0 12px;
 }
 
 .chart-container {
     display: flex;
-    flex-wrap: wrap;
-    /* border: 3px solid black; */
-    gap: 10px;
+    gap: 20px;
     margin-bottom: 20px;
 }
 
 .chart {
     flex: 1;
     background-color: #ffffff;
-    padding: 12px;
+    padding: 20px;
     border-radius: 8px;
-    /* border: 3px solid blue; */
-    width: 500px;
-    height: 356px;
-    padding-bottom: 3.4rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.heatmap-grid {
-    padding-bottom: 0.9rem;
-}
-
-.chart h3,
-.heatmap-container h3 {
-    margin-top: 4px;
-    margin-bottom: 14px;
 }
 
 /* Heatmap Container */
 .heatmap-container {
     background-color: #ffffff;
-    padding: 12px;
-    /* margin-top: 32px; */
+    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -250,153 +166,40 @@ tr:hover {
 .heatmap-grid {
     display: grid;
     grid-template-columns: repeat(30, 1fr);
-    gap: .82rem;
-    /* margin-top: 2px; */
-    /* border: 3px solid red; */
+    gap: 5px;
 }
 
 .heatmap-box {
-    width: 27px;
-    height: 27px;
+    width: 20px;
+    height: 20px;
     background-color: #ebedf0;
     border-radius: 2px;
-}
-
-/* Dark mode styles */
-body.dark-mode {
-    background-color: #1a1a1a;
-    color: #ffffff;
-}
-
-body.dark-mode .home-header {
-    background-color: #2d2d2d;
-    box-shadow: 4px 4px 10px rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode .leftNav img {
-    border-color: #6c5ce7;
-}
-
-body.dark-mode .welcome {
-    color: #ffffff;
-}
-
-body.dark-mode .rightNav .UnorderedList {
-    background-color: #2d2d2d;
-}
-
-body.dark-mode .rightNav .UnorderedList li {
-    color: #ffffff;
-}
-
-body.dark-mode .firstText {
-    background-color: #2d2d2d;
-    color: #ffffff;
-}
-
-body.dark-mode .dates {
-    background-color: #2d2d2d;
-    color: #ffffff;
-    border-color: #6c5ce7;
-}
-
-body.dark-mode #getDayButton {
-    background-color: #6c5ce7;
-    box-shadow: 0px 5px 0px 0px #a29bfe;
-}
-
-body.dark-mode #getDayButton:active {
-    box-shadow: 0px 0px 0px 0px #a29bfe;
-}
-
-body.dark-mode #logoutBtn {
-    background-color: #ff4757;
-    color: #ffffff;
-}
-
-body.dark-mode #analyticsBtn {
-    background-color: #6c5ce7;
-    color: #ffffff;
-}
-
-body.dark-mode .main {
-    background-color: #1a1a1a;
-}
-
-body.dark-mode .table-container {
-    background-color: #2d2d2d;
-}
-
-body.dark-mode table {
-    background-color: #2d2d2d;
-    color: #ffffff;
-}
-
-body.dark-mode th {
-    background-color: #6c5ce7;
-    color: #ffffff;
-}
-
-body.dark-mode td {
-    color: #ffffff;
-}
-
-body.dark-mode tr:hover {
-    background-color: #3d3d3d;
-}
-
-body.dark-mode .chart {
-    background-color: #2d2d2d;
-    color: #ffffff;
-}
-
-body.dark-mode .heatmap-container {
-    background-color: #2d2d2d;
-    color: #ffffff;
-}
-
-body.dark-mode .heatmap-box {
-    background-color: #3d3d3d;
-}
-
-/* Hamburger Menu Icon */
-.menu-toggle {
-    display: none; /* Hide by default */
-    background: none;
-    border: none;
-    font-size: 24px;
     cursor: pointer;
-    color: #08080B;
 }
 
-/* General Responsive Styles */
-@media (max-width: 768px) {
-    /* Header adjustments */
-    .home-header {
-        flex-direction: row;
-        align-items: center;
-        padding: 10px;
-    }
+.heatmap-box:hover {
+    opacity: 0.8;
+}
 
+/* Responsive Styles (Mobile Only) */
+@media (max-width: 768px) {
     .menu-toggle {
-        display: block; /* Show hamburger menu */
+        display: block; /* Show hamburger menu on mobile */
     }
 
     .rightNav {
-        display: none; /* Hide the desktop nav */
+        display: none; /* Hide navigation by default on mobile */
         position: absolute;
-        top: 68px; /* Align below the header */
+        top: 68px;
         left: 0;
         width: 100%;
         background-color: white;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        padding: 10px;
-        flex-direction: column;
-        gap: 10px;
+        padding: 16px;
     }
 
     .rightNav.active {
-        display: flex; /* Show when active */
+        display: block; /* Show navigation when hamburger is clicked */
     }
 
     .rightNav .UnorderedList {
@@ -405,199 +208,24 @@ body.dark-mode .heatmap-box {
     }
 
     .dates {
-        width: 100%; /* Full width for dropdowns on mobile */
-    }
-
-    #getDayButton {
-        width: 100%; /* Full width for search button */
-    }
-
-    #logoutBtn,
-    #analyticsBtn {
-        width: 100%; /* Full width for buttons */
-    }
-
-    .leftNav {
-        margin-bottom: 10px;
-    }
-
-    .rightNav .UnorderedList {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .rightNav .UnorderedList li {
-        margin: 5px 0;
-    }
-
-    /* Dropdowns and search button */
-    .dates {
-        width: 80px; /* Smaller dropdowns for mobile */
-    }
-
-    #getDayButton {
         width: 100%;
-        margin-top: 10px;
     }
 
-    /* Main section adjustments */
-    .main {
-        padding: 6rem 1rem 1rem; /* Reduce padding for smaller screens */
-    }
-
-    /* Table adjustments */
-    .table-container {
-        overflow-x: auto; /* Allow horizontal scrolling for tables */
-    }
-
-    table {
-        font-size: 14px; /* Smaller font size for tables */
-    }
-
-    th, td {
-        padding: 6px 8px; /* Reduce padding for table cells */
-    }
-
-    /* Chart adjustments */
-    .chart-container {
-        flex-direction: column; /* Stack charts vertically on small screens */
-    }
-
-    .chart {
-        width: 100%; /* Full width for charts */
-        height: auto; /* Auto height for charts */
-        margin-bottom: 20px; /* Add spacing between stacked charts */
-    }
-
-    /* Heatmap adjustments */
     .heatmap-grid {
-        grid-template-columns: repeat(12, 1fr); /* Fewer columns for smaller screens */
-        gap: 5px; /* Smaller gap between heatmap boxes */
-    }
-
-    .heatmap-box {
-        width: 20px; /* Smaller heatmap boxes */
-        height: 20px;
+        grid-template-columns: repeat(15, 1fr); /* Adjust heatmap for mobile */
     }
 }
 
 @media (max-width: 480px) {
-    /* Further adjustments for very small screens */
     .home-header {
-        padding: 5px;
-    }
-
-    .leftNav img {
-        width: 24px;
-        height: 24px;
-    }
-
-    .welcome {
-        font-size: 16px; /* Smaller welcome message */
-    }
-
-    .dates {
-        font-size: 12px;
-    }
-
-    #getDayButton {
-        padding: 8px 16px; /* Smaller button */
-        font-size: 10px;
-    }
-
-    #getDayButton,
-    #logoutBtn,
-    #analyticsBtn {
-        font-size: 12px;
-        padding: 6px 12px;
+        padding: 16px;
     }
 
     .main {
-        padding: 5rem 0.5rem 0.5rem; /* Further reduce padding */
-    }
-
-    table {
-        font-size: 12px; /* Even smaller font size for tables */
-    }
-
-    th, td {
-        padding: 4px 6px; /* Further reduce padding for table cells */
+        padding: 6.3rem 1rem 4rem;
     }
 
     .heatmap-grid {
-        grid-template-columns: repeat(8, 1fr); /* Fewer columns for very small screens */
-    }
-
-    .heatmap-box {
-        width: 15px; /* Even smaller heatmap boxes */
-        height: 15px;
-    }
-}
-
-/* Dark mode adjustments for mobile */
-@media (max-width: 768px) {
-    body.dark-mode .home-header {
-        background-color: #2d2d2d;
-    }
-
-    body.dark-mode .rightNav .UnorderedList {
-        background-color: #2d2d2d;
-    }
-
-    body.dark-mode .firstText {
-        background-color: #2d2d2d;
-    }
-
-    body.dark-mode .dates {
-        background-color: #2d2d2d;
-        color: #ffffff;
-    }
-
-    body.dark-mode #getDayButton {
-        background-color: #6c5ce7;
-    }
-
-    body.dark-mode #logoutBtn {
-        background-color: #ff4757;
-    }
-
-    body.dark-mode #analyticsBtn {
-        background-color: #6c5ce7;
-    }
-
-    body.dark-mode .main {
-        background-color: #1a1a1a;
-    }
-
-    body.dark-mode .table-container {
-        background-color: #2d2d2d;
-    }
-
-    body.dark-mode table {
-        background-color: #2d2d2d;
-    }
-
-    body.dark-mode th {
-        background-color: #6c5ce7;
-    }
-
-    body.dark-mode td {
-        color: #ffffff;
-    }
-
-    body.dark-mode tr:hover {
-        background-color: #3d3d3d;
-    }
-
-    body.dark-mode .chart {
-        background-color: #2d2d2d;
-    }
-
-    body.dark-mode .heatmap-container {
-        background-color: #2d2d2d;
-    }
-
-    body.dark-mode .heatmap-box {
-        background-color: #3d3d3d;
+        grid-template-columns: repeat(10, 1fr); /* Further adjust heatmap for small screens */
     }
 }
