@@ -32,6 +32,23 @@ body {
     color: #08080B;
 }
 
+/* Mobile Navigation */
+.rightNav {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 68px;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    z-index: 1000;
+}
+
+.rightNav.active {
+    display: block; /* Show when active */
+}
+
 /* Date Dropdowns (Desktop Only) */
 .date-dropdowns {
     display: flex;
@@ -57,7 +74,7 @@ body {
     color: white;
 }
 
-/* Hide Analytics Button (Icon) */
+/* Hide Analytics Button (Icon with Tooltip) */
 .analytics-btn {
     background: none;
     border: none;
@@ -65,6 +82,29 @@ body {
     cursor: pointer;
     color: #6c5ce7;
     margin-left: auto; /* Push to the left of the profile */
+    position: relative;
+}
+
+.analytics-btn::after {
+    content: "Toggle Analytics";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.analytics-btn:hover::after {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Profile Picture */

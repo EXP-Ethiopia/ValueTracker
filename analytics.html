@@ -18,7 +18,7 @@
         <button id="menuToggle" class="menu-toggle">
             <i class="fas fa-bars"></i>
         </button>
-
+    
         <!-- Date Dropdowns (Desktop Only) -->
         <div class="date-dropdowns">
             <select class="dates" id="dayComboBox">
@@ -35,19 +35,19 @@
             </select>
             <button id="getDayButton">Search</button>
         </div>
-
-        <!-- Hide Analytics Button (Icon) -->
-        <button id="analyticsBtn" class="analytics-btn">
-            <i class="fas fa-chart-line"></i> <!-- Replace with your preferred icon -->
+    
+        <!-- Hide Analytics Button (Icon with Tooltip) -->
+        <button id="analyticsBtn" class="analytics-btn" title="Toggle Analytics">
+            <i class="fas fa-chart-line"></i>
         </button>
-
+    
         <!-- Profile Picture -->
         <div class="profile">
             <img src="./images/default.jpg" id="profile-pic" alt="" width="50" height="50">
         </div>
-
+    
         <!-- Mobile Navigation (Hidden by Default) -->
-        <div id="mobileNav" class="rightNav" style="display: none;">
+        <div id="mobileNav" class="rightNav">
             <ul class="UnorderedList">
                 <li><button id="logoutBtn">LogOut</button></li>
             </ul>
@@ -135,14 +135,14 @@
                 });
         });
 
-        const profilePic = document.getElementById("profile-pic");
-
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 console.log("✅ User signed in:", user.displayName, user.email, user.uid);
                 window.userId = user.uid;
 
                 // Set profile picture
+                const profilePic = document.getElementById("profile-pic");
+                
                 let checkPhotoInterval = setInterval(() => {
                     if (user.photoURL) {
                         console.log("🖼 Found Profile Pic:", user.photoURL);
@@ -531,117 +531,127 @@
     });
     </script>
 
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        // Initialize the state from localStorage, defaulting to false (home page)
-        let toggled = localStorage.getItem('toggled') === 'true';
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Hamburger Menu Toggle
+            const menuToggle = document.getElementById("menuToggle");
+            const mobileNav = document.getElementById("mobileNav");
 
-        // Update the button icon based on the initial state
-        updateButtonIcon(toggled);
-
-        // Trigger the button switch
-        triggerSwitch();
-
-        function triggerSwitch() {
-            const toggleBtn = document.querySelector("#analyticsBtn");
-
-            if (toggleBtn) {
-                console.log("✅ Toggle button exists/found");
-
-                toggleBtn.addEventListener("click", () => {
-                    console.log("🔥 Toggle button clicked");
-                    toggleState();
+            if (menuToggle && mobileNav) {
+                menuToggle.addEventListener("click", () => {
+                    mobileNav.classList.toggle("active");
                 });
-            } else {
-                console.warn("❌ Toggle Button not found. Check ID or ensure the button exists.");
             }
-        }
 
-        function toggleState() {
-            // Toggle the state
-            toggled = !toggled;
+            // Initialize the state from localStorage, defaulting to false (home page)
+            let toggled = localStorage.getItem('toggled') === 'true';
 
-            // Save the new state to localStorage
-            localStorage.setItem('toggled', toggled);
-            console.log(`Current state of the browser's page is: ${localStorage.getItem('toggled')}`);
-
-            // Update the button icon
+            // Update the button icon based on the initial state
             updateButtonIcon(toggled);
 
-            // Navigate to the appropriate page
-            if (toggled) {
-                window.location.href = 'analytics.html';
-            } else {
-                window.location.href = 'home.html';
-            }
-        }
+            // Trigger the button switch
+            triggerSwitch();
 
-        function updateButtonIcon(toggled) {
-            const toggleBtn = document.querySelector("#analyticsBtn");
-            if (toggleBtn) {
-                // Change the icon based on the state
-                toggleBtn.innerHTML = toggled ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
-            }
-        }
+            function triggerSwitch() {
+                const toggleBtn = document.querySelector("#analyticsBtn");
 
-        // Second Logic
-        const boxContainer = new BoxContainer();
+                if (toggleBtn) {
+                    console.log("✅ Toggle button exists/found");
 
-        function populateComboBox() {
-            this.comboBox.innerHTML = '';
-            this.tags.forEach(tag => {
-                const option = document.createElement('option');
-                option.value = tag.tagName;
-                option.textContent = tag.tagName;
-                option.style.color = tag.color;
-                this.comboBox.appendChild(option);
-            });
-        }
-
-        function addTag(tagName, color) {
-            if (!this.tags.some(tag => tag.tagName === tagName)) {
-                this.tags.push(new Tag(tagName, color));
-                this.populateComboBox();
-            }
-        }
-
-        // Load tags from localStorage
-        async function initializeTags() {
-            // Wait until the user is authenticated
-            onAuthStateChanged(boxContainer.auth, (user) => {
-                if (!user) {
-                    console.error("User not authenticated");
-                    return;
+                    toggleBtn.addEventListener("click", () => {
+                        console.log("🔥 Toggle button clicked");
+                        toggleState();
+                    });
+                } else {
+                    console.warn("❌ Toggle Button not found. Check ID or ensure the button exists.");
                 }
+            }
 
-                const userTagsKey = `user_${user.uid}_tags`;
-                let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
+            function toggleState() {
+                // Toggle the state
+                toggled = !toggled;
 
-                // Predefined tags
-                const predefinedTags = [
-                    { name: "Work", color: "#ff0000" },
-                    { name: "Personal Dev", color: "#a52a2a" },
-                    { name: "School", color: "#008000" },
-                    { name: "FunTime", color: "#0000ff" },
-                    { name: "Team Time", color: "#800080" }
-                ];
+                // Save the new state to localStorage
+                localStorage.setItem('toggled', toggled);
+                console.log(`Current state of the browser's page is: ${localStorage.getItem('toggled')}`);
 
-                // Merge predefined and stored tags, avoiding duplicates
-                predefinedTags.forEach(preTag => {
-                    if (!storedTags.some(tag => tag.name === preTag.name)) {
-                        storedTags.push(preTag);
-                    }
+                // Update the button icon
+                updateButtonIcon(toggled);
+
+                // Navigate to the appropriate page
+                if (toggled) {
+                    window.location.href = 'analytics.html';
+                } else {
+                    window.location.href = 'home.html';
+                }
+            }
+
+            function updateButtonIcon(toggled) {
+                const toggleBtn = document.querySelector("#analyticsBtn");
+                if (toggleBtn) {
+                    // Change the tooltip text based on the state
+                    toggleBtn.setAttribute("title", toggled ? "Hide Analytics" : "View Analytics");
+                }
+            }
+
+            // Second Logic (Tag Management)
+            const boxContainer = new BoxContainer();
+
+            function populateComboBox() {
+                this.comboBox.innerHTML = '';
+                this.tags.forEach(tag => {
+                    const option = document.createElement('option');
+                    option.value = tag.tagName;
+                    option.textContent = tag.tagName;
+                    option.style.color = tag.color;
+                    this.comboBox.appendChild(option);
                 });
+            }
 
-                // Save updated tags back to localStorage
-                localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
+            function addTag(tagName, color) {
+                if (!this.tags.some(tag => tag.tagName === tagName)) {
+                    this.tags.push(new Tag(tagName, color));
+                    this.populateComboBox();
+                }
+            }
 
-                // Add all tags to the UI
-                const tagDropdown = document.querySelector('#tagComboBox option');
-                storedTags.forEach(tag => tagDropdown.addTag(tag.name, tag.color));
-            });
-        }
-    });
-</script>
+            // Load tags from localStorage
+            async function initializeTags() {
+                // Wait until the user is authenticated
+                onAuthStateChanged(boxContainer.auth, (user) => {
+                    if (!user) {
+                        console.error("User not authenticated");
+                        return;
+                    }
+
+                    const userTagsKey = `user_${user.uid}_tags`;
+                    let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
+
+                    // Predefined tags
+                    const predefinedTags = [
+                        { name: "Work", color: "#ff0000" },
+                        { name: "Personal Dev", color: "#a52a2a" },
+                        { name: "School", color: "#008000" },
+                        { name: "FunTime", color: "#0000ff" },
+                        { name: "Team Time", color: "#800080" }
+                    ];
+
+                    // Merge predefined and stored tags, avoiding duplicates
+                    predefinedTags.forEach(preTag => {
+                        if (!storedTags.some(tag => tag.name === preTag.name)) {
+                            storedTags.push(preTag);
+                        }
+                    });
+
+                    // Save updated tags back to localStorage
+                    localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
+
+                    // Add all tags to the UI
+                    const tagDropdown = document.querySelector('#tagComboBox option');
+                    storedTags.forEach(tag => tagDropdown.addTag(tag.name, tag.color));
+                });
+            }
+        });
+    </script>
 </body>
 </html>
