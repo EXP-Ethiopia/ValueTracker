@@ -94,6 +94,7 @@
         </div>
     </section>
 
+
     <!-- Firebase and other modular scripts -->
     <script type="module">
         // Get the URL parameters
@@ -142,13 +143,16 @@
                 // Set profile picture
                 const profilePic = document.getElementById("profile-pic");
                 
-                if (user.photoURL) {
-                    console.log("🖼 Found Profile Pic:", user.photoURL);
-                    profilePic.src = user.photoURL;
-                } else {
-                    console.warn("⚠ No photoURL found, using default.");
-                    profilePic.src = "public/images/default.jpg";
-                }
+                let checkPhotoInterval = setInterval(() => {
+                    if (user.photoURL) {
+                        console.log("🖼 Found Profile Pic:", user.photoURL);
+                        profilePic.src = user.photoURL;
+                        clearInterval(checkPhotoInterval);
+                    } else {
+                        console.warn("⚠ No photoURL found, using default.");
+                        profilePic.src = "public/images/default.jpg";
+                    }
+                }, 100);
 
                 // Fetch tasks for the current date by default
                 const currentDate = new Date();
@@ -174,6 +178,7 @@
                     fetchTasks(window.userId, selectedDate);
 
                 }
+
 
                 // Fetch tasks for current date by tag
                 // the logic is as follows:
@@ -220,6 +225,8 @@
         document.addEventListener("DOMContentLoaded", () => {
             initializeTags(auth);
         });
+
+
 
         // Function to fetch and display tasks for the selected date
         function fetchTasks(userId, selectedDate, selectedTag = "") {
