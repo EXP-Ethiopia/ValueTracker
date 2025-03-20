@@ -47,7 +47,7 @@
         </div>
 
         <!-- Mobile Navigation (Hidden by Default) -->
-        <div id="mobileNav" class="rightNav">
+        <div id="mobileNav" class="rightNav" style="display: none;">
             <ul class="UnorderedList">
                 <li><button id="logoutBtn">LogOut</button></li>
             </ul>
@@ -531,117 +531,117 @@
     });
     </script>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Initialize the state from localStorage, defaulting to false (home page)
-            let toggled = localStorage.getItem('toggled') === 'true';
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Initialize the state from localStorage, defaulting to false (home page)
+        let toggled = localStorage.getItem('toggled') === 'true';
 
-            // Update the button text based on the initial state
-            updateButtonText(toggled);
+        // Update the button icon based on the initial state
+        updateButtonIcon(toggled);
 
-            // Trigger the button switch
-            triggerSwitch();
+        // Trigger the button switch
+        triggerSwitch();
 
-            function triggerSwitch() {
-                const toggleBtn = document.querySelector("#analyticsBtn");
+        function triggerSwitch() {
+            const toggleBtn = document.querySelector("#analyticsBtn");
 
-                if (toggleBtn) {
-                    console.log("✅ Toggle button exists/found");
+            if (toggleBtn) {
+                console.log("✅ Toggle button exists/found");
 
-                    toggleBtn.addEventListener("click", () => {
-                        console.log("🔥 Toggle button clicked");
-                        toggleState();
-                    });
-                } else {
-                    console.warn("❌ Toggle Button not found. Check ID or ensure the button exists.");
-                }
-            }
-
-            function toggleState() {
-                // Toggle the state
-                toggled = !toggled;
-
-                // Save the new state to localStorage
-                localStorage.setItem('toggled', toggled);
-                console.log(`Current state of the browser's page is: ${localStorage.getItem('toggled')}`);
-
-                // Update the button text
-                updateButtonText(toggled);
-
-                // Navigate to the appropriate page
-                if (toggled) {
-                    window.location.href = 'analytics.html';
-                } else {
-                    window.location.href = 'home.html';
-                }
-            }
-
-            function updateButtonText(toggled) {
-                const toggleBtn = document.querySelector("#analyticsBtn");
-                if (toggleBtn) {
-                    toggleBtn.textContent = toggled ? "Hide Analytics" : "View Analytics";
-                }
-            }
-
-
-            // Second Logic
-            const boxContainer = new BoxContainer();
-
-            function populateComboBox() {
-                this.comboBox.innerHTML = '';
-                this.tags.forEach(tag => {
-                    const option = document.createElement('option');
-                    option.value = tag.tagName;
-                    option.textContent = tag.tagName;
-                    option.style.color = tag.color;
-                    this.comboBox.appendChild(option);
+                toggleBtn.addEventListener("click", () => {
+                    console.log("🔥 Toggle button clicked");
+                    toggleState();
                 });
+            } else {
+                console.warn("❌ Toggle Button not found. Check ID or ensure the button exists.");
             }
+        }
 
-            function addTag(tagName, color) {
-                if (!this.tags.some(tag => tag.tagName === tagName)) {
-                    this.tags.push(new Tag(tagName, color));
-                    this.populateComboBox();
+        function toggleState() {
+            // Toggle the state
+            toggled = !toggled;
+
+            // Save the new state to localStorage
+            localStorage.setItem('toggled', toggled);
+            console.log(`Current state of the browser's page is: ${localStorage.getItem('toggled')}`);
+
+            // Update the button icon
+            updateButtonIcon(toggled);
+
+            // Navigate to the appropriate page
+            if (toggled) {
+                window.location.href = 'analytics.html';
+            } else {
+                window.location.href = 'home.html';
+            }
+        }
+
+        function updateButtonIcon(toggled) {
+            const toggleBtn = document.querySelector("#analyticsBtn");
+            if (toggleBtn) {
+                // Change the icon based on the state
+                toggleBtn.innerHTML = toggled ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+            }
+        }
+
+        // Second Logic
+        const boxContainer = new BoxContainer();
+
+        function populateComboBox() {
+            this.comboBox.innerHTML = '';
+            this.tags.forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag.tagName;
+                option.textContent = tag.tagName;
+                option.style.color = tag.color;
+                this.comboBox.appendChild(option);
+            });
+        }
+
+        function addTag(tagName, color) {
+            if (!this.tags.some(tag => tag.tagName === tagName)) {
+                this.tags.push(new Tag(tagName, color));
+                this.populateComboBox();
+            }
+        }
+
+        // Load tags from localStorage
+        async function initializeTags() {
+            // Wait until the user is authenticated
+            onAuthStateChanged(boxContainer.auth, (user) => {
+                if (!user) {
+                    console.error("User not authenticated");
+                    return;
                 }
-            }
 
-            // Load tags from localStorage
-            async function initializeTags() {
-                // Wait until the user is authenticated
-                onAuthStateChanged(boxContainer.auth, (user) => {
-                    if (!user) {
-                        console.error("User not authenticated");
-                        return;
+                const userTagsKey = `user_${user.uid}_tags`;
+                let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
+
+                // Predefined tags
+                const predefinedTags = [
+                    { name: "Work", color: "#ff0000" },
+                    { name: "Personal Dev", color: "#a52a2a" },
+                    { name: "School", color: "#008000" },
+                    { name: "FunTime", color: "#0000ff" },
+                    { name: "Team Time", color: "#800080" }
+                ];
+
+                // Merge predefined and stored tags, avoiding duplicates
+                predefinedTags.forEach(preTag => {
+                    if (!storedTags.some(tag => tag.name === preTag.name)) {
+                        storedTags.push(preTag);
                     }
-
-                    const userTagsKey = `user_${user.uid}_tags`;
-                    let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
-
-                    // Predefined tags
-                    const predefinedTags = [
-                        { name: "Work", color: "#ff0000" },
-                        { name: "Personal Dev", color: "#a52a2a" },
-                        { name: "School", color: "#008000" },
-                        { name: "FunTime", color: "#0000ff" },
-                        { name: "Team Time", color: "#800080" }
-                    ];
-
-                    // Merge predefined and stored tags, avoiding duplicates
-                    predefinedTags.forEach(preTag => {
-                        if (!storedTags.some(tag => tag.name === preTag.name)) {
-                            storedTags.push(preTag);
-                        }
-                    });
-
-                    // Save updated tags back to localStorage
-                    localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
-
-                    // Add all tags to the UI
-                    const tagDropdown = document.querySelector('#tagComboBox option');
-                    storedTags.forEach(tag => tagDropdown.addTag(tag.name, tag.color));
                 });
-            }
-        });
-    </script>
+
+                // Save updated tags back to localStorage
+                localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
+
+                // Add all tags to the UI
+                const tagDropdown = document.querySelector('#tagComboBox option');
+                storedTags.forEach(tag => tagDropdown.addTag(tag.name, tag.color));
+            });
+        }
+    });
+</script>
 </body>
 </html>
