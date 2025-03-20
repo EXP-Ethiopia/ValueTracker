@@ -14,42 +14,38 @@
 </head>
 <body>
     <header class="home-header">
-        <!-- Hamburger Menu Icon (Mobile Only) -->
+        <!-- Hamburger Menu Icon -->
         <button id="menuToggle" class="menu-toggle">
             <i class="fas fa-bars"></i>
         </button>
 
-        <!-- Date Dropdowns (Desktop Only) -->
-        <div class="date-dropdowns">
-            <select class="dates" id="dayComboBox">
-                <option value="">Day</option>
-            </select>
-            <select class="dates" id="monthComboBox">
-                <option value="">Month</option>
-            </select>
-            <select class="dates" id="yearComboBox">
-                <option value="">Year</option>
-            </select>
-            <select class="dates" id="tagComboBox">
-                <option value="">All</option>
-            </select>
-            <button id="getDayButton">Search</button>
-        </div>
-
-        <!-- Hide Analytics Button (Icon) -->
-        <button id="analyticsBtn" class="analytics-btn">
-            <i class="fas fa-chart-line"></i> <!-- Replace with your preferred icon -->
-        </button>
-
         <!-- Profile Picture -->
-        <div class="profile">
+        <div class="leftNav">
             <img src="./images/default.jpg" id="profile-pic" alt="" width="50" height="50">
             <h1 class="welcome">Welcome <span id="username"></span></h1>
         </div>
 
+        <!-- Hide Analytics Button (Always Visible) -->
+        <button id="analyticsBtn" class="analytics-btn">Hide Analytics</button>
+
         <!-- Mobile Navigation (Hidden by Default) -->
         <div id="mobileNav" class="rightNav">
             <ul class="UnorderedList">
+                <div>
+                    <select class="dates" id="dayComboBox">
+                        <option value="">Day</option>
+                    </select>
+                    <select class="dates" id="monthComboBox">
+                        <option value="">Month</option>
+                    </select>
+                    <select class="dates" id="yearComboBox">
+                        <option value="">Year</option>
+                    </select>
+                    <select class="dates" id="tagComboBox">
+                        <option value="">All</option>
+                    </select>
+                    <button id="getDayButton">Search</button>
+                </div>
                 <li><button id="logoutBtn">LogOut</button></li>
             </ul>
         </div>
@@ -95,7 +91,7 @@
         </div>
     </section>
 
-    
+
     <!-- Firebase and other modular scripts -->
     <script type="module">
         // Get the URL parameters
@@ -530,6 +526,8 @@
         });
         
     });
+
+
     </script>
 
     <script>
@@ -644,5 +642,6 @@
             }
         });
     </script>
+
 </body>
 </html>

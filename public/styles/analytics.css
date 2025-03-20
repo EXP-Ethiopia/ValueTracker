@@ -22,7 +22,7 @@ body {
     z-index: 1000;
 }
 
-/* Hamburger Menu Icon */
+/* Hamburger Menu Icon (Mobile Only) */
 .menu-toggle {
     display: none; /* Hidden on desktop */
     background: none;
@@ -32,51 +32,13 @@ body {
     color: #08080B;
 }
 
-/* Profile Picture */
-.leftNav {
-    display: flex;
-    align-items: center;
-}
-
-.leftNav img {
-    width: 34px;
-    height: 34px;
-    border: 2px solid rgb(48, 127, 231);
-    border-radius: 50%;
-    margin-right: 8px;
-}
-
-/* Hide Analytics Button (Always Visible) */
-.analytics-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    background-color: #6c5ce7;
-    color: white;
-}
-
-/* Right Navigation (Desktop) */
-.rightNav {
-    display: flex;
-    align-items: center;
-}
-
-.rightNav .UnorderedList {
+/* Date Dropdowns (Desktop Only) */
+.date-dropdowns {
     display: flex;
     align-items: center;
     gap: 10px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
 }
 
-.rightNav .UnorderedList li {
-    margin: 0;
-}
-
-/* Dropdowns and Buttons */
 .dates {
     width: 100px;
     padding: 8px;
@@ -85,23 +47,38 @@ body {
     font-size: 14px;
 }
 
-#getDayButton,
-#logoutBtn {
+#getDayButton {
     padding: 8px 16px;
     border: none;
     border-radius: 5px;
     font-size: 14px;
     cursor: pointer;
-}
-
-#getDayButton {
     background-color: #6c5ce7;
     color: white;
 }
 
-#logoutBtn {
-    background-color: #ff4757;
-    color: white;
+/* Hide Analytics Button (Icon) */
+.analytics-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #6c5ce7;
+    margin-left: auto; /* Push to the left of the profile */
+}
+
+/* Profile Picture */
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile img {
+    width: 34px;
+    height: 34px;
+    border: 2px solid rgb(48, 127, 231);
+    border-radius: 50%;
 }
 
 /* Main Section */
@@ -187,32 +164,37 @@ tr:hover {
         display: block; /* Show hamburger menu on mobile */
     }
 
-    .rightNav {
-        display: none; /* Hide navigation by default on mobile */
-        position: absolute;
-        top: 68px;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        padding: 16px;
+    .date-dropdowns {
+        display: none; /* Hide date dropdowns on mobile */
     }
 
-    .rightNav.active {
-        display: block; /* Show navigation when hamburger is clicked */
+    .analytics-btn {
+        margin-left: 0; /* Reset margin for mobile */
     }
 
-    .rightNav .UnorderedList {
-        flex-direction: column;
-        gap: 10px;
+    .profile {
+        margin-left: auto; /* Push profile to the right */
     }
 
-    .dates {
-        width: 100%;
+    .chart-container {
+        flex-direction: column; /* Stack charts vertically */
+        gap: 20px;
     }
 
-    .heatmap-grid {
-        grid-template-columns: repeat(15, 1fr); /* Adjust heatmap for mobile */
+    .chart {
+        width: 100%; /* Full width for charts */
+    }
+
+    .table-container {
+        overflow: hidden; /* Prevent horizontal scrolling */
+    }
+
+    table {
+        font-size: 14px; /* Smaller font size for table */
+    }
+
+    th, td {
+        padding: 8px; /* Smaller padding for table cells */
     }
 }
 
@@ -226,6 +208,6 @@ tr:hover {
     }
 
     .heatmap-grid {
-        grid-template-columns: repeat(10, 1fr); /* Further adjust heatmap for small screens */
+        grid-template-columns: repeat(15, 1fr); /* Adjust heatmap for mobile */
     }
 }
