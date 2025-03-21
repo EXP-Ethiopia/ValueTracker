@@ -1,142 +1,161 @@
-*{
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 
-
-.header {
-    background-color: #000;
-    width: 100%;
-    padding: 16px 21px;
-    height: 62px;
-    color: #fff;
+body {
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f8f8;
+  font-family: "Inter", sans-serif;
 }
 
-.header h1 {
-    font-size: 24px;
+/* Login Form */
+.form_container {
+  width: 90%;
+  max-width: 320px; /* Smaller form for mobile */
+  padding: 1.5rem;
+  background-color: #ffffff;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
 }
 
-.header h1 span {
-    /* color: rgb(60, 60, 253); */
+.logo_container {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(248, 248, 248, 0) 50%, #F8F8F888 100%);
+  border: 1px solid #F7F7F8;
+  border-radius: 50%;
+  filter: drop-shadow(0px 0.5px 0.5px #EFEFEF) drop-shadow(0px 1px 0.5px rgba(239, 239, 239, 0.5));
 }
-.form {
-    display: flex;
-        flex-direction: column;
-        gap: 10px;
-        background-color: #1f1f1f;
-        padding: 30px;
-        width: 450px;
-        border-radius: 20px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-        justify-content: center;
-        margin: 80px auto;
+
+.app_name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #115DFC;
+}
+
+.title_container {
+  text-align: center;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #212121;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #8B8E98;
+}
+
+.sign-in_ggl,
+.sign-in_apl {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 8px;
+  border: 1px solid #e5e5e5;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.sign-in_ggl {
+  background: #ffffff;
+  color: #242424;
+}
+
+.sign-in_ggl:hover {
+  background: #f1f1f1;
+}
+
+.sign-in_apl {
+  background: #212121;
+  color: #ffffff;
+}
+
+.sign-in_apl:hover {
+  background: #333333;
+}
+
+/* Responsive Adjustments for Mobile */
+@media (max-width: 480px) {
+  body {
+    padding: 1rem; /* Add margin around the form */
   }
-  
-  ::placeholder {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    color: #aaa;
+
+  .form_container {
+    padding: 1.25rem;
+    gap: 1rem;
   }
-  
-  .form button {
-    align-self: flex-end;
-  }
-  
-  .flex-column > label {
-    color: #f1f1f1;
-    font-weight: 600;
-  }
-  
-  .inputForm {
-    border: 1.5px solid #333;
-    border-radius: 10px;
+
+  .logo_container {
+    width: 50px;
     height: 50px;
-    display: flex;
-    align-items: center;
-    padding-left: 10px;
-    transition: 0.2s ease-in-out;
-    background-color: #2b2b2b;
   }
-  
-  .input {
-    margin-left: 10px;
-    border-radius: 10px;
-    border: none;
-    width: 100%;
-    height: 100%;
-    background-color: #2b2b2b;
-    color: #f1f1f1;
+
+  .app_name {
+    font-size: 1.25rem;
   }
-  
-  .input:focus {
-    outline: none;
+
+  .title {
+    font-size: 1rem; /* Smaller title */
+    margin-bottom: 0.25rem;
   }
-  
-  .inputForm:focus-within {
-    border: 1.5px solid #2d79f3;
+
+  .subtitle {
+    font-size: 0.75rem; /* Smaller subtitle */
   }
-  
-  .flex-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    justify-content: space-between;
+
+  .sign-in_ggl,
+  .sign-in_apl {
+    height: 36px; /* Smaller button height */
+    font-size: 0.8rem; /* Smaller button text */
+    gap: 8px; /* Reduce gap between icon and text */
   }
-  
-  .flex-row > div > label {
-    font-size: 14px;
-    color: #f1f1f1;
-    font-weight: 400;
+
+  .sign-in_ggl svg,
+  .sign-in_apl svg {
+    height: 14px; /* Smaller SVG icons */
+    width: 14px;
   }
-  
-  .span {
-    font-size: 14px;
-    margin-left: 5px;
-    color: #2d79f3;
-    font-weight: 500;
-    cursor: pointer;
+}
+
+/* Further Adjustments for Very Small Screens */
+@media (max-width: 360px) {
+  .title {
+    font-size: 0.9rem; /* Even smaller title */
   }
-  
-  .button-submit {
-    margin: 20px 0 10px 0;
-    background-color: #2d79f3;
-    border: none;
-    color: white;
-    font-size: 15px;
-    font-weight: 500;
-    border-radius: 10px;
-    height: 50px;
-    width: 100%;
-    cursor: pointer;
+
+  .subtitle {
+    font-size: 0.7rem; /* Even smaller subtitle */
   }
-  
-  .p {
-    text-align: center;
-    color: #f1f1f1;
-    font-size: 14px;
-    margin: 5px 0;
+
+  .sign-in_ggl,
+  .sign-in_apl {
+    height: 32px; /* Even smaller button height */
+    font-size: 0.75rem; /* Even smaller button text */
   }
-  
-  .btn {
-    margin-top: 10px;
-    width: 100%;
-    height: 50px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 500;
-    gap: 10px;
-    border: 1px solid #333;
-    background-color: #2b2b2b;
-    color: #f1f1f1;
-    cursor: pointer;
-    transition: 0.2s ease-in-out;
+
+  .sign-in_ggl svg,
+  .sign-in_apl svg {
+    height: 12px; /* Even smaller SVG icons */
+    width: 12px;
   }
-  
-  .btn:hover {
-    border: 1px solid #2d79f3;
-  }
-  
+}
