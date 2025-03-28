@@ -32,8 +32,8 @@
         }
 
         calculateTime(slotIndex) {
-            const baseHour = 5;
-            const baseMinute = 30;    
+            const baseHour = 0;
+            const baseMinute =0 ;    
             
             
             let totalMinutes = baseHour * 60 + baseMinute + (slotIndex - 1) * 30;
