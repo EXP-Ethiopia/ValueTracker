@@ -65,26 +65,44 @@
             <i class="fas fa-times close-icon" id="closeIcon"></i> <!-- Close button -->
         </div>
 
+
         <ul class="sidebar-menu">
-            <li class="menu-item">
+            <li class="menu-item" data-type="core-rock">
                 <div>
                     <span class="icon">💎</span> Core Rock
+                    <i class="fas fa-plus add-icon"></i>
                 </div>
-                <i class="fas fa-plus add-icon"></i> <!-- Add icon next to Core Rock -->
+
+                <div class="saved-text-container"></div>
             </li>
-            <li class="menu-item">
+            <li class="menu-item" data-type="target">
                 <div>
                     <span class="icon">🎯</span> Target
+                    <i class="fas fa-plus add-icon"></i>
                 </div>
-                <i class="fas fa-plus add-icon"></i> <!-- Add icon next to Target -->
+
+                <div class="saved-text-container"></div>
             </li>
-            <li class="menu-item">
+            <li class="menu-item" data-type="action">
                 <div>
                     <span class="icon">⚡</span> Action
+                    <i class="fas fa-plus add-icon"></i>
                 </div>
-                <i class="fas fa-plus add-icon"></i> <!-- Add icon next to Action -->
+
+                <div class="saved-text-container"></div>
             </li>
         </ul>
+
+        <div class="modalsidebar" id="textModal">
+            <div class="modal-content">
+                <h3>Add Text</h3>
+                <textarea id="textInput" rows="4" style="width: 100%;"></textarea>
+                <div class="modal-buttons">
+                    <button id="cancelBtn">Cancel</button>
+                    <button id="saveBtn">Save</button>
+                </div>
+            </div>
+        </div>
 
         <div class="sidebar-categories">
             <h3 style="margin-bottom: 10px;">You Tags</h3>
@@ -748,6 +766,88 @@
     onAuthStateChanged(auth, (user) => {
         if (user) {
             fetchCategoriesFromLocalStorage();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('textModal');
+        const textInput = document.getElementById('textInput');
+        const saveBtn = document.getElementById('saveBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const addIcons = document.querySelectorAll('.add-icon');
+
+        let currentType = '';
+
+        // Load saved texts when page loads
+        loadSavedTexts();
+
+        // Add click event to all plus icons
+        addIcons.forEach(icon => {
+            icon.addEventListener('click', function (e) {
+                e.stopPropagation();
+                currentType = this.closest('.menu-item').getAttribute('data-type');
+                modal.style.display = 'flex';
+                textInput.focus();
+            });
+        });
+
+        // Save button click
+        saveBtn.addEventListener('click', function () {
+            const text = textInput.value.trim();
+            if (text) {
+                saveText(currentType, text);
+                modal.style.display = 'none';
+                textInput.value = '';
+                displayText(currentType, text);
+            }
+        });
+
+        // Cancel button click
+        cancelBtn.addEventListener('click', function () {
+            modal.style.display = 'none';
+            textInput.value = '';
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                textInput.value = '';
+            }
+        });
+
+        function saveText(type, text) {
+            // Get existing texts or create new array
+            const savedTexts = JSON.parse(localStorage.getItem('savedTexts')) || {};
+
+            // Initialize array for this type if it doesn't exist
+            if (!savedTexts[type]) {
+                savedTexts[type] = [];
+            }
+
+            // Add new text
+            savedTexts[type].push(text);
+
+            // Save to localStorage
+            localStorage.setItem('savedTexts', JSON.stringify(savedTexts));
+        }
+
+        function loadSavedTexts() {
+            const savedTexts = JSON.parse(localStorage.getItem('savedTexts')) || {};
+
+            for (const type in savedTexts) {
+                savedTexts[type].forEach(text => {
+                    displayText(type, text);
+                });
+            }
+        }
+
+        function displayText(type, text) {
+            const container = document.querySelector(`.menu-item[data-type="${type}"] .saved-text-container`);
+            const textElement = document.createElement('div');
+            textElement.className = 'saved-text';
+            textElement.textContent = text;
+            container.appendChild(textElement);
         }
     });
 
