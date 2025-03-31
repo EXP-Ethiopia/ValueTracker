@@ -61,31 +61,30 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>Value Tracker</h2>
-            <i class="fas fa-plus add-icon" id="addIcon"></i> <!-- Add icon at the top -->
             <i class="fas fa-times close-icon" id="closeIcon"></i> <!-- Close button -->
         </div>
 
 
         <ul class="sidebar-menu">
             <li class="menu-item" data-type="core-rock">
-                <div>
-                    <span class="icon">💎</span> Core Rock
+                <div class="menu-item-content">
+                    <div> <span class="icon">💎 Core Rock</span> </div>
                     <i class="fas fa-plus add-icon"></i>
                 </div>
 
                 <div class="saved-text-container"></div>
             </li>
             <li class="menu-item" data-type="target">
-                <div>
-                    <span class="icon">🎯</span> Target
+                <div class="menu-item-content">
+                    <div><span class="icon">🎯Target</span></div>
                     <i class="fas fa-plus add-icon"></i>
                 </div>
 
                 <div class="saved-text-container"></div>
             </li>
             <li class="menu-item" data-type="action">
-                <div>
-                    <span class="icon">⚡</span> Action
+                <div class="menu-item-content">
+                    <div><span class="icon">⚡Action</span> </div>
                     <i class="fas fa-plus add-icon"></i>
                 </div>
 
@@ -95,7 +94,7 @@
 
         <div class="modalsidebar" id="textModal">
             <div class="modal-content">
-                <h3>Add Text</h3>
+                <h3>Expand Your Imagination</h3>
                 <textarea id="textInput" rows="4" style="width: 100%;"></textarea>
                 <div class="modal-buttons">
                     <button id="cancelBtn">Cancel</button>
@@ -844,11 +843,43 @@
 
         function displayText(type, text) {
             const container = document.querySelector(`.menu-item[data-type="${type}"] .saved-text-container`);
+
             const textElement = document.createElement('div');
             textElement.className = 'saved-text';
-            textElement.textContent = text;
+            textElement.style.display = "flex";
+            textElement.style.justifyContent = "space-between";
+            textElement.style.alignItems = "center";
+            textElement.style.padding = "5px";
+            textElement.style.background = "#f3f3f3";
+            textElement.style.marginBottom = "5px";
+
+            textElement.innerHTML = `
+        <span>${text}</span>
+        <button class="delete-text-btn" style="border: none; background: transparent; cursor: pointer;">❌</button>
+    `;
+
             container.appendChild(textElement);
+
+            // Delete button functionality
+            textElement.querySelector('.delete-text-btn').addEventListener('click', function () {
+                deleteSavedText(type, text);
+                textElement.remove();
+            });
         }
+
+        function deleteSavedText(type, text) {
+            const savedTexts = JSON.parse(localStorage.getItem('savedTexts')) || {};
+
+            if (!savedTexts[type]) return;
+
+            // Remove the specific text
+            savedTexts[type] = savedTexts[type].filter(item => item !== text);
+
+            // Update localStorage
+            localStorage.setItem('savedTexts', JSON.stringify(savedTexts));
+        }
+
+
     });
 
 </script>

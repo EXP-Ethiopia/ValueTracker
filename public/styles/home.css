@@ -893,3 +893,10 @@ button {
   border-radius: 4px;
   font-size: 14px;
 }
+
+.menu-item-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
