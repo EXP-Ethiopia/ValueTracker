@@ -3,24 +3,373 @@ class BoxContainer {
         this.container = document.getElementById(containerId);
         this.boxes = [];
         this.selectedBoxes = [];
-        this.tags = [];  // Store the tags dynamically
+        this.tags = [];
         this.comboBox = document.createElement('select');
         this.comboBox.id = 'tagSelect';
-
         this.auth = auth;
         this.db = db;
+        this.currentView = 'day';
+        this.currentDate = new Date();
+    }
+
+    handleDayBoxSelection(boxId) {
+        const box = this.boxes.find(b => b.id === boxId);
+        if (box) {
+            box.selectBox();
+            this.toggleInArray();
+        }
+    }
+
+    handleWeekBoxSelection(dayIndex, timeIndex) {
+        // Calculate the actual box ID based on day and time
+        const boxId = (dayIndex * 48) + parseInt(timeIndex) + 1;
+        
+        // Find the box in our boxes array
+        const box = this.boxes.find(b => b.id === boxId);
+        
+        if (box) {
+            box.selectBox();
+            this.toggleInArray();
+        }
+    }
+
+    handleMonthDaySelection(dayNumber) {
+        const selectedDate = new Date(viewManager.currentDate);
+        selectedDate.setDate(dayNumber);
+        viewManager.currentDate = selectedDate;
+        document.getElementById('viewSelector').value = 'day';
+        viewManager.updateView();
+    }
+
+    handleYearDaySelection(monthIndex, dayNumber) {
+        const selectedDate = new Date(viewManager.currentDate);
+        selectedDate.setMonth(monthIndex);
+        selectedDate.setDate(dayNumber);
+        viewManager.currentDate = selectedDate;
+        document.getElementById('viewSelector').value = 'day';
+        viewManager.updateView();
+    }
+
+
+     // Update the toggleInArray method to work with all views
+     toggleInArray() {
+        this.selectedBoxes = this.boxes
+            .filter(box => box.element.classList.contains('selected'))
+            .map(box => box.id);
+        
+        this.calculateTotalTime();
+        console.log("Selected boxes:", this.selectedBoxes);
+    }
+
+    // Update the showCustomPopup method to work with all views
+    async showCustomPopup() {
+        if (this.selectedBoxes.length === 0) {
+            Swal.fire({
+                title: "No Selection",
+                text: "Please select at least one time slot before proceeding.",
+                icon: "warning",
+                confirmButtonText: "OK",
+                showClass: { popup: "animate__animated animate__shakeX animate__faster" }
+            });
+            return;
+        }
+
+        const overlay = document.createElement('div');
+        overlay.classList.add('overlay');
+        
+        const modal = document.createElement('div');
+        modal.classList.add('modal');
+        
+        const title = document.createElement('h2');
+        title.textContent = `Selected Time Slots`;
+        
+        const timeSlotsList = document.createElement('div');
+        timeSlotsList.className = 'time-slots-list';
+        
+        this.selectedBoxes.forEach(boxId => {
+            const box = this.boxes.find(b => b.id === boxId);
+            if (box) {
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'time-slot-item';
+                timeSlot.textContent = box.getTimeSlot();
+                timeSlotsList.appendChild(timeSlot);
+            }
+        });
+
+        const inputField = document.createElement('input');
+        inputField.type = 'text';
+        inputField.placeholder = 'Enter task description...';
+        inputField.className = 'task-input';
+
+        this.populateComboBox();
+
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'modal-button-container';
+
+        const submitButton = document.createElement('button');
+        submitButton.className = 'modal-button save';
+        submitButton.textContent = 'Save';
+        submitButton.addEventListener('click', async () => {
+            await this.saveSelectedTimeSlots(inputField.value, this.comboBox.value);
+            document.body.removeChild(overlay);
+        });
+
+        const addTagButton = document.createElement('button');
+        addTagButton.className = 'modal-button add-tag';
+        addTagButton.textContent = 'Add New Tag';
+        addTagButton.addEventListener('click', () => {
+            this.showAddTagPopup();
+        });
+
+        const closeButton = document.createElement('button');
+        closeButton.className = 'modal-button cancel';
+        closeButton.textContent = 'Cancel';
+        closeButton.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+        });
+
+        buttonContainer.appendChild(submitButton);
+        buttonContainer.appendChild(addTagButton);
+        buttonContainer.appendChild(closeButton);
+
+        modal.appendChild(title);
+        modal.appendChild(timeSlotsList);
+        modal.appendChild(inputField);
+        modal.appendChild(this.comboBox);
+        modal.appendChild(buttonContainer);
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    }
+
+    // Update the save method to work with all views
+async saveSelectedTimeSlots(taskDescription, selectedTag) {
+        const userId = this.auth.currentUser?.uid;
+        if (!userId) {
+            Swal.fire("Error", "You need to be logged in to save tasks.", "error");
+            return;
+        }
+
+        const selectedTagObj = this.tags.find(tag => tag.tagName === selectedTag);
+        const tagColor = selectedTagObj ? selectedTagObj.color : "#ADD8E6";
+
+        // Format the current date as YYYY-MM-DD
+        const dateStr = `${viewManager.currentDate.getFullYear()}-${(viewManager.currentDate.getMonth() + 1).toString().padStart(2, '0')}-${viewManager.currentDate.getDate().toString().padStart(2, '0')}`;
+
+        const userTasksRef = ref(this.db, `userTasks/${userId}/${dateStr}`);
+        const newTaskRef = push(userTasksRef);
+
+        try {
+            await set(newTaskRef, {
+                task: taskDescription,
+                selectedBoxes: this.selectedBoxes,
+                totalTime: this.calculateTotalTime(),
+                tag: selectedTag,
+                color: tagColor,
+                date: dateStr,
+                timestamp: new Date().toISOString()
+            });
+
+            // Update the UI to show the saved time slots
+            this.selectedBoxes.forEach(boxId => {
+                const box = this.boxes.find(b => b.id === boxId);
+                if (box) {
+                    box.element.style.backgroundColor = tagColor;
+                    box.element.style.color = "#fff";
+                    box.element.classList.remove('selected');
+                }
+            });
+
+            this.selectedBoxes = [];
+
+            Swal.fire({
+                title: "Saved!",
+                text: "Your time slots have been saved successfully.",
+                icon: "success",
+                confirmButtonText: "OK"
+            });
+
+        } catch (error) {
+            console.error("Error saving time slots:", error);
+            Swal.fire({
+                title: "Error",
+                text: "Failed to save time slots. Please try again.",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        }
+    }
+
+    async deleteFunction() {
+        const user = this.auth.currentUser;
+        if (!user) {
+            Swal.fire("Not Logged In", "You need to log in to delete tasks.", "error");
+            return;
+        }
+
+        const currentDate = viewManager.currentDate;
+        const dateStr = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
+
+        const userId = user.uid;
+        const taskPath = `userTasks/${userId}/${dateStr}`;
+        const userTasksRef = ref(this.db, taskPath);
+
+        const selectedBoxes = this.boxes
+            .filter(box => box.element.classList.contains('selected'))
+            .map(box => box.id);
+
+        console.log("Selected Boxes for Deletion:", selectedBoxes);
+
+        if (selectedBoxes.length === 0) {
+            Swal.fire("No Selection", "Please select at least one box before deleting.", "warning");
+            return;
+        }
+
+        try {
+            const snapshot = await get(userTasksRef);
+            if (!snapshot.exists()) {
+                Swal.fire("No Task Found", "No task found for this date.", "info");
+                return;
+            }
+
+            const tasks = snapshot.val();
+            let updates = {};
+
+            for (const taskKey in tasks) {
+                const task = tasks[taskKey];
+                const updatedBoxes = task.selectedBoxes.filter(boxId => !selectedBoxes.includes(boxId));
+
+                if (updatedBoxes.length === 0) {
+                    // Remove entire task if no boxes left
+                    updates[`${taskPath}/${taskKey}`] = null;
+                } else {
+                    // Calculate reduced time
+                    const reducedTime = task.selectedBoxes
+                        .filter(boxId => selectedBoxes.includes(boxId))
+                        .reduce((total, boxId) => {
+                            const box = this.boxes.find(b => b.id === boxId);
+                            return total + (box ? box.TimeValue : 0);
+                        }, 0);
+
+                    const updatedTotalTime = Math.max(0, task.totalTime - reducedTime);
+
+                    // Update task with remaining boxes and new total time
+                    updates[`${taskPath}/${taskKey}/selectedBoxes`] = updatedBoxes;
+                    updates[`${taskPath}/${taskKey}/totalTime`] = updatedTotalTime;
+                }
+            }
+
+            // Perform all updates in a single transaction
+            await update(ref(this.db), updates);
+
+            // Reset UI
+            this.selectedBoxes.forEach(boxId => {
+                const box = this.boxes.find(b => b.id === boxId);
+                if (box) {
+                    box.element.style.backgroundColor = "";
+                    box.element.style.color = "";
+                    box.element.classList.remove('selected');
+                }
+            });
+
+            this.selectedBoxes = [];
+            this.retrievedData();
+
+            Swal.fire("Deleted", "Selected time slots have been removed.", "success");
+
+        } catch (error) {
+            console.error("Error deleting boxes:", error);
+            Swal.fire("Error", "Could not delete the selected boxes. Try again later.", "error");
+        }
+    }
+
+    // Update the checkBoxes method to work with all views
+    checkBoxes() {
+        let hasError = false;
+    
+        for (const boxId of this.selectedBoxes) {
+            const box = this.boxes.find(b => b.id === boxId);
+            if (box) {
+                const style = window.getComputedStyle(box.element);
+                const backgroundColor = style.backgroundColor;
+                const validColors = ['rgb(173, 216, 230)', 'rgb(61, 61, 61)'];
+                
+                if (!validColors.includes(backgroundColor)) {
+                    hasError = true;
+                    break;
+                }
+            }
+        }
+    
+        if (hasError) {
+            Swal.fire({
+                title: "Error",
+                text: "Some selected time slots already have tasks assigned!",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        } else {
+            this.showCustomPopup();
+        }
+    }
+
+    // Add this method to retrieve data for the current date
+    async retrievedData() {
+        const userId = this.auth.currentUser?.uid;
+        if (!userId) return;
+
+        const dateStr = `${viewManager.currentDate.getFullYear()}-${(viewManager.currentDate.getMonth() + 1).toString().padStart(2, '0')}-${viewManager.currentDate.getDate().toString().padStart(2, '0')}`;
+        const userTasksRef = ref(this.db, `userTasks/${userId}/${dateStr}`);
+
+        try {
+            const snapshot = await get(userTasksRef);
+            this.resetBoxColors();
+
+            if (snapshot.exists()) {
+                const tasks = snapshot.val();
+                Object.values(tasks).forEach(task => {
+                    task.selectedBoxes.forEach(boxId => {
+                        // Handle both day view boxes and week view time slots
+                        const box = this.boxes.find(b => b.id === boxId);
+                        if (box) {
+                            box.element.style.backgroundColor = task.color;
+                            box.element.style.color = "#fff";
+                        }
+
+                        // For week view
+                        if (viewManager.viewSelector.value === 'week') {
+                            const dayIndex = Math.floor((boxId - 1) / 48);
+                            const timeIndex = (boxId - 1) % 48;
+                            const timeSlot = document.querySelector(`.week-day-column[data-day-index="${dayIndex}"] .week-time-slot[data-time-index="${timeIndex}"]`);
+                            if (timeSlot) {
+                                timeSlot.style.backgroundColor = task.color;
+                                timeSlot.style.color = "#fff";
+                            }
+                        }
+                    });
+                });
+            }
+        } catch (error) {
+            console.error("Error retrieving data:", error);
+        }
+    }
+
+    // Update the showWeekView method in ViewManager to use this handler:
+    addTimeSlotClickListener(timeSlot) {
+        timeSlot.addEventListener('click', () => {
+            const dayIndex = timeSlot.parentElement.dataset.dayIndex;
+            const timeIndex = timeSlot.dataset.timeIndex;
+            this.handleWeekBoxSelection(dayIndex, timeIndex);
+        });
     }
 
     calculateTotalTime() {
         let totalTime = 0;
-
-        // Loop through all the boxes and add the TimeValue of selected boxes
         this.boxes.forEach(box => {
             if (box.element.classList.contains('selected')) {
                 totalTime += box.TimeValue;
             }
         });
-
         console.log(`Total Time for Selected Boxes: ${totalTime} hours`);
         return totalTime;
     }
@@ -68,49 +417,27 @@ class BoxContainer {
         });
     }
 
-
-
-
-    async showAddTagPopup() {
-        console.log("Showing Add Tag Popup");
-        boxContainer.showPopup();
-
-
-    }
-
-        hexToRgb(hex) { // #f3g4h1 ==> 00 255 00
-
-            let r = parseInt(hex.slice(1,3),16),
-            g = parseInt(hex.slice(3,5),16),
-            b = parseInt(hex.slice(5,7),16)
-        
-            if(hex.length == 4) {
-                r = parseInt(hex[1] + hex[1],16)
-                g = parseInt(hex[2] + hex[2],16)
-                b = parseInt(hex[3] + hex[3],16)
-        
-            }
-
-            var total  =  (r+g+b) ;
-
-            return total
+    hexToRgb(hex) {
+        let r = parseInt(hex.slice(1,3),16),
+        g = parseInt(hex.slice(3,5),16),
+        b = parseInt(hex.slice(5,7),16)
     
-        
+        if(hex.length == 4) {
+            r = parseInt(hex[1] + hex[1],16)
+            g = parseInt(hex[2] + hex[2],16)
+            b = parseInt(hex[3] + hex[3],16)
+        }
+
+        var total  =  (r+g+b);
+        return total
     }
 
     sumRGB(rgbString) {
-        // Extract numbers from the rgb() format
         const rgbValues = rgbString.match(/\d+/g).map(Number);
-        
-        // Sum up the RGB values
         return rgbValues.reduce((sum, value) => sum + value, 0);
     }
     
-    // console.log(sumRGB("rgb(0, 128, 0)")); // Output: 128
-    
-
     showPopup() {
-        // Create the overlay (background blur effect)
         const overlay = document.createElement('div');
         overlay.classList.add('overlay');
         overlay.style.position = 'fixed';
@@ -118,13 +445,12 @@ class BoxContainer {
         overlay.style.left = '0';
         overlay.style.width = '100%';
         overlay.style.height = '100%';
-        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Semi-transparent black
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
         overlay.style.display = 'flex';
         overlay.style.alignItems = 'center';
         overlay.style.justifyContent = 'center';
         overlay.style.zIndex = '1000';
 
-        
         const modal = document.createElement('div');
         modal.classList.add('modal');
         modal.style.backgroundColor = 'white';
@@ -134,18 +460,15 @@ class BoxContainer {
         modal.style.minWidth = '300px';
         modal.style.textAlign = 'center';
 
-        
         const title = document.createElement('h2');
         title.textContent = "Choose you TagName and Color Please";
 
-        
         const inputField = document.createElement('input');
         inputField.type = 'text';
         inputField.placeholder = 'Enter some text...';
         inputField.style.width = '100%';
         inputField.style.marginBottom = '10px';
         inputField.style.padding = '8px';
-        
 
         var colorField = document.createElement('input');
         colorField.type = 'color';
@@ -155,7 +478,6 @@ class BoxContainer {
         colorField.style.marginRight = "70px";
         colorField.id = "colors";
 
-    
         const submitButton = document.createElement('button');
         submitButton.textContent = 'Submit';
         submitButton.style.backgroundColor = '#4CAF50';
@@ -166,27 +488,19 @@ class BoxContainer {
         submitButton.style.marginRight = '10px';
         submitButton.style.borderRadius = '5px';
         submitButton.addEventListener('click', () => {
-
             onAuthStateChanged(this.auth, (user) => {
                 if(!user) {
                     console.log("User not logged in !!")
                 }
                 else {
-                    
                     let userId = user.uid;
-
-                    var selectedColor = colorField.value; //f3f3f3
+                    var selectedColor = colorField.value;
             
                     console.log("Submit tag value is clicked ==> " + inputField.value);
                     console.log("color value is clicked ==>" + selectedColor);
 
                     const TotalRGBValue =  boxContainer.hexToRgb(selectedColor);
-
                     const savedLocal = JSON.parse(localStorage.getItem(`user_${userId}_tags`));
-
-                    
-                    // console.log( `User's color range ==> ${TotalRGBValue} ==> All the colors we have  ==> ${this.sumRGB(task.color)}` );
-
 
                     let isAllowed = savedLocal.every(task => {
                         return Math.abs(TotalRGBValue - this.hexToRgb(task.color)) > 100;
@@ -195,17 +509,9 @@ class BoxContainer {
                     if (isAllowed) {
                         alert("fine to go")
                         console.log("✅ Data is ready to go");
-                        // console.log(TotalRGBValue + "==>(-)" + this.hexToRgb(task.color) )
-
                         const tagSelect = document.getElementById('tagSelect');
-
-
-
                     
-            
                         const UserTag = ref(this.db, 'userTasks/' + userId + "/tags");
-            
-                        // Generate a unique ID for each tag
                         const newTagRef = push(UserTag);
             
                         set(newTagRef, {
@@ -213,20 +519,16 @@ class BoxContainer {
                             color: selectedColor
                         }).then(() => {
                             console.log("Tag successfully added!");
-            
-                            // Fetch the updated tag list
                             return get(UserTag);
                         }).then(snapshot => {
                             if (snapshot.exists()) {
                                 console.log("Tags found:");
                                 console.log(snapshot.val());
             
-            
-            
                                 Object.values(snapshot.val()).forEach(tag => {
                                     console.log("Tag Name:", tag.tagName + ", Color:", tag.color);
                                 });
-                                tagSelect.innerHTML = ''; // Clear the existing options
+                                tagSelect.innerHTML = '';
                                 this.saveTagsToLocalStorage(inputField.value, selectedColor, userId);
                                 this.addTag(inputField.value, selectedColor);
 
@@ -236,7 +538,6 @@ class BoxContainer {
                                     icon: "success",
                                     confirmButtonText: "OK"
                                 });
-            
                             } else {
                                 console.log("No tags found.");
                             }
@@ -252,21 +553,11 @@ class BoxContainer {
                             icon: "error",
                             confirmButtonText: "OK"
                         });
-                        // console.log(TotalRGBValue + "==>(-)" + this.hexToRgb(task.color) )
                     }
-                    
-                    
-                        }
-                    })
-
-            
-
-            
-
-
+                }
+            });
         });
 
-        
         const closeButton = document.createElement('button');
         closeButton.textContent = 'Close';
         closeButton.style.backgroundColor = '#d9534f';
@@ -279,26 +570,16 @@ class BoxContainer {
             document.body.removeChild(overlay);
         });
 
-        
         modal.appendChild(title);
         modal.appendChild(inputField);
         modal.appendChild(colorField);
         modal.appendChild(submitButton);
         modal.appendChild(closeButton);
-
-        // Append modal to overlay
         overlay.appendChild(modal);
-
-        // Append overlay to the document body
         document.body.appendChild(overlay);
     }
 
-    // Example: Attach to a button click event
-   
-
-
     async showCustomPopup() {
-        // Refill selectedBoxes with currently selected boxes
         this.selectedBoxes = this.boxes
             .filter(box => box.element.classList.contains('selected'))
             .map(box => box.id);
@@ -318,10 +599,8 @@ class BoxContainer {
 
         const overlay = document.createElement('div');
         overlay.classList.add('overlay');
-
         const modal = document.createElement('div');
         modal.classList.add('modal');
-
         const title = document.createElement('h2');
         title.textContent = `Selected Boxes: ${selectedBoxesMessage}`;
 
@@ -345,18 +624,8 @@ class BoxContainer {
             const inputData = inputField.value;
             const selectedOption = this.comboBox.value;
 
-            // Get user-selected date
-            let day = document.getElementById("dayComboBox").value;
-            let month = document.getElementById("monthComboBox").value;
-            let year = document.getElementById("yearComboBox").value;
-
-            day = day.padStart(2, '0');
-            month = month.padStart(2, '0');
-
-            const givenDate = `${year}-${month}-${day}`;
-
             const selectedTag = this.tags.find(tag => tag.tagName === selectedOption);
-            let selectedTagColor = selectedTag ? selectedTag.color : "#000"; // Default color
+            let selectedTagColor = selectedTag ? selectedTag.color : "#000";
 
             if (selectedTag) {
                 this.selectedBoxes.forEach(boxId => {
@@ -368,7 +637,6 @@ class BoxContainer {
                 });
             }
 
-            // Group selected boxes by their background color
             const groupedBoxes = {};
             this.selectedBoxes.forEach(boxId => {
                 const box = this.boxes.find(b => b.id === boxId);
@@ -381,30 +649,27 @@ class BoxContainer {
                 }
             });
 
-            // Reference to tasks for the selected date
+            const currentDate = new Date();
+            const givenDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
             const userTasksRef = ref(this.db, `userTasks/${userId}/${givenDate}`);
 
             try {
                 const snapshot = await get(userTasksRef);
                 let existingTasks = snapshot.val() || {};
 
-                // Check if a task with the same color and selected boxes already exists
                 for (const [color, boxIds] of Object.entries(groupedBoxes)) {
                     let taskUpdated = false;
                     let existingTimestamp = null;
 
-                    // Loop through existing tasks to check for existing color and timestamp
                     for (const [taskId, task] of Object.entries(existingTasks)) {
                         if (task.color === color) {
-                            existingTimestamp = task.timestamp; // Store the existing timestamp
-                            // Check if any of the selected boxes are already part of the task
+                            existingTimestamp = task.timestamp;
                             const existingBoxIds = task.selectedBoxes || [];
-                            const newBoxIds = boxIds.filter(boxId => !existingBoxIds.includes(boxId)); // Only include new boxes
+                            const newBoxIds = boxIds.filter(boxId => !existingBoxIds.includes(boxId));
 
                             if (newBoxIds.length > 0) {
-                                // If there are new boxes, update the task
                                 task.selectedBoxes = [...new Set([...existingBoxIds, ...newBoxIds])];
-                                task.totalTime += this.calculateTotalTime(newBoxIds); // Only add time for the new boxes
+                                task.totalTime += this.calculateTotalTime(newBoxIds);
 
                                 await update(ref(this.db, `userTasks/${userId}/${givenDate}/${taskId}`), {
                                     selectedBoxes: task.selectedBoxes,
@@ -414,23 +679,22 @@ class BoxContainer {
                                 taskUpdated = true;
                                 console.log(`Updated task with color ${color} and added new boxes.`);
                             }
-                            break; // Break out of the loop once we find a matching task
+                            break;
                         }
                     }
 
-                    // If no task with the same color exists, create a new task with a new timestamp
                     if (!taskUpdated) {
                         const newTaskId = new Date().getTime().toString();
-                        const newTimestamp = new Date().toISOString(); // Create a new timestamp
+                        const newTimestamp = new Date().toISOString();
 
                         set(ref(this.db, `userTasks/${userId}/${givenDate}/${newTaskId}`), {
                             task: inputData,
                             selectedBoxes: boxIds,
-                            totalTime: this.calculateTotalTime(boxIds), // Calculate total time for these new boxes
+                            totalTime: this.calculateTotalTime(boxIds),
                             tag: selectedOption,
                             color: color,
                             date: givenDate,
-                            timestamp: existingTimestamp || newTimestamp // Use existing timestamp if available, otherwise use new one
+                            timestamp: existingTimestamp || newTimestamp
                         });
 
                         console.log(`Created new task with color ${color}.`);
@@ -455,7 +719,6 @@ class BoxContainer {
                 });
             }
 
-            // Reset selection
             this.selectedBoxes = [];
             this.boxes.forEach(box => {
                 box.element.classList.remove('selected');
@@ -464,7 +727,6 @@ class BoxContainer {
             document.body.removeChild(overlay);
         });
 
-        //AddTag button
         const addTagButton = document.createElement('button');
         addTagButton.classList.add('submitBTN');
         addTagButton.textContent = 'Add Tag';
@@ -472,8 +734,6 @@ class BoxContainer {
             this.showAddTagPopup();
         });
 
-
-        // Close Button
         const closeButton = document.createElement('button');
         closeButton.classList.add('submitBTN');
         closeButton.textContent = 'Close';
@@ -486,20 +746,12 @@ class BoxContainer {
         document.body.appendChild(overlay);
     }
 
-
-
     saveTagsToLocalStorage(name, color, userId) {
         const userTagsKey = `user_${userId}_tags`;
-
         let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
-
-
         storedTags.push({ name, color });
-
         localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
-
         console.log(`Tag "${name}" saved for user ${userId}`);
-
     }
 
     addTag(tagName, color) {
@@ -531,8 +783,6 @@ class BoxContainer {
             });
         }
     }
-
-
 
     async updateSingleBoxTask(userId, taskKey, updatedTaskData, selectedBoxesToUpdate) {
         const taskRef = ref(this.db, 'userTasks/' + userId + '/' + taskKey);
@@ -577,9 +827,6 @@ class BoxContainer {
                     console.log("Original task updated successfully");
                 }
 
-
-
-                // Check for an existing task with the same color
                 const allTasksSnapshot = await get(userTasksRef);
                 let existingTaskKey = null;
                 let existingTaskData = null;
@@ -595,13 +842,11 @@ class BoxContainer {
                 }
 
                 if (existingTaskKey) {
-                    // Merge with the existing task
                     existingTaskData.selectedBoxes = [...existingTaskData.selectedBoxes, ...selectedBoxesToUpdate];
                     existingTaskData.totalTime += timeToRemove;
                     await set(ref(this.db, 'userTasks/' + userId + '/' + existingTaskKey), existingTaskData);
                     console.log("Merged with existing task", existingTaskKey);
                 } else {
-                    // Create a new task if no matching color is found
                     const newTaskData = {
                         task: updatedTaskData.task,
                         selectedBoxes: selectedBoxesToUpdate,
@@ -647,17 +892,8 @@ class BoxContainer {
 
     retrievedData() {
         let TaskFound = false;
-
-        // Get the selected date from dropdowns
-        let day = document.getElementById("dayComboBox").value;
-        let month = document.getElementById("monthComboBox").value;
-        let year = document.getElementById("yearComboBox").value;
-
-        // Ensure proper formatting (e.g., 01 instead of 1)
-        day = day.padStart(2, '0');
-        month = month.padStart(2, '0');
-
-        const givenDate = `${year}-${month}-${day}`;
+        const currentDate = new Date();
+        const givenDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
 
         onAuthStateChanged(this.auth, async (user) => {
             if (!user) {
@@ -681,7 +917,6 @@ class BoxContainer {
                 const tasks = snapshot.val();
                 console.log("Retrieved Data:", tasks);
 
-                // Reset all boxes before applying new colors
                 this.resetBoxColors();
 
                 Object.values(tasks).forEach(task => {
@@ -707,18 +942,38 @@ class BoxContainer {
         });
     }
 
-
-    // Helper function to reset all box colors
     resetBoxColors() {
+        // Reset day view boxes
         this.boxes.forEach(box => {
             box.element.style.backgroundColor = "";
             box.element.style.color = "";
             box.element.classList.remove("selected");
         });
+
+        // Reset week view time slots
+        if (viewManager.viewSelector.value === 'week') {
+            document.querySelectorAll('.week-time-slot').forEach(slot => {
+                slot.style.backgroundColor = "";
+                slot.style.color = "";
+                slot.classList.remove("selected");
+            });
+        }
+
+        // Reset month view cells
+        if (viewManager.viewSelector.value === 'month') {
+            document.querySelectorAll('.month-cell').forEach(cell => {
+                cell.classList.remove("selected-day");
+            });
+        }
+
+        // Reset year view cells
+        if (viewManager.viewSelector.value === 'year') {
+            document.querySelectorAll('.year-day-cell').forEach(cell => {
+                cell.classList.remove("selected-day");
+            });
+        }
     }
 
-
-    // Function to show the update task popup
     showUpdateTaskPopup() {
         const user = this.auth.currentUser;
         if (!user) {
@@ -766,21 +1021,19 @@ class BoxContainer {
             const selectedOption = this.comboBox.value;
 
             const selectedTag = this.tags.find(tag => tag.tagName === selectedOption);
-            const selectedTagColor = selectedTag ? selectedTag.color : "#000"; // Default color if none selected
+            const selectedTagColor = selectedTag ? selectedTag.color : "#000";
 
             const selectedBoxesToUpdate = selectedBoxes;
 
-            // Prepare the updated task data
             const updatedTaskData = {
                 task: inputData,
                 selectedBoxes: selectedBoxes,
                 totalTime: this.calculateTotalTime(),
                 tag: selectedOption,
                 color: selectedTagColor,
-                timestamp: new Date().toISOString()  // Update timestamp
+                timestamp: new Date().toISOString()
             };
 
-            // Get the task data to update from the database
             const taskRef = ref(this.db, 'userTasks/' + userId);
             const snapshot = await get(taskRef);
 
@@ -788,13 +1041,10 @@ class BoxContainer {
                 let taskKey = null;
                 snapshot.forEach(childSnapshot => {
                     const data = childSnapshot.val();
-
                     taskKey = childSnapshot.key;
-
                 });
 
                 if (taskKey) {
-                    // Confirm the update with SweetAlert
                     Swal.fire({
                         title: "Update Task?",
                         text: `Are you sure you want to update the task?`,
@@ -806,7 +1056,6 @@ class BoxContainer {
                         if (result.isConfirmed) {
                             await this.updateSingleBoxTask(userId, taskKey, updatedTaskData, selectedBoxesToUpdate);
 
-                            // Update the UI for the selected boxes with the new tag color
                             this.selectedBoxes.forEach(boxId => {
                                 const box = this.boxes.find(b => b.id === boxId);
                                 if (box) {
@@ -841,8 +1090,7 @@ class BoxContainer {
 
     checkUpdateValitading() {
         console.log("Checking Boxes");
-
-        let hasError = false; // Flag to track if an error occurs
+        let hasError = false;
 
         for (const box of this.boxes) {
             const boxElement = box.element;
@@ -850,9 +1098,9 @@ class BoxContainer {
             const backgroundColor = style.backgroundColor;
 
             if (boxContainer.selectedBoxes.includes(box.id)) {
-                if (backgroundColor == 'rgb(173, 216, 230)') { // 'lightblue' in RGB format
-                    hasError = true; // Mark that we found an invalid box
-                    break; // Stop checking further boxes
+                if (backgroundColor == 'rgb(173, 216, 230)') {
+                    hasError = true;
+                    break;
                 }
             }
         }
@@ -865,29 +1113,27 @@ class BoxContainer {
                 confirmButtonText: "OK"
             });
         } else {
-            boxContainer.showCustomPopup(); // Only runs if no error occurred
+            boxContainer.showCustomPopup();
         }
-
     }
 
     checkBoxes() {
         console.log("Checking Boxes121");
         console.trace();
     
-        let hasError = false; // Flag to track if an error occurs
+        let hasError = false;
     
         for (const box of this.boxes) {
             const boxElement = box.element;
             const style = window.getComputedStyle(boxElement);
             const backgroundColor = style.backgroundColor;
     
-            // Possible background colors in both light and dark mode
-            const validColors = ['rgb(173, 216, 230)', 'rgb(61, 61, 61)']; // Light blue & Dark gray (#3d3d3d)
+            const validColors = ['rgb(173, 216, 230)', 'rgb(61, 61, 61)'];
     
             if (boxContainer.selectedBoxes.includes(box.id)) {
                 if (!validColors.includes(backgroundColor)) {
-                    hasError = true; // Mark that we found an invalid box
-                    break; // Stop checking further boxes
+                    hasError = true;
+                    break;
                 }
             }
         }
@@ -900,31 +1146,24 @@ class BoxContainer {
                 confirmButtonText: "OK"
             });
         } else {
-            boxContainer.showCustomPopup(); // Only runs if no error occurred
+            boxContainer.showCustomPopup();
         }
     }
     
-
-    async deletFunction() {
+    async deleteFunction() {
         const user = auth.currentUser;
         if (!user) {
             Swal.fire("Not Logged In", "You need to log in to delete tasks.", "error");
             return;
         }
 
-        let day = document.getElementById("dayComboBox").value;
-        let month = document.getElementById("monthComboBox").value;
-        let year = document.getElementById("yearComboBox").value;
-
-        day = day.padStart(2, '0');
-        month = month.padStart(2, '0');
-        const givenDate = `${year}-${month}-${day}`;
+        const currentDate = new Date();
+        const givenDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
 
         const userId = user.uid;
         const taskPath = `userTasks/${userId}/${givenDate}`;
         const userTasksRef = ref(db, taskPath);
 
-        // Get the selected boxes
         const selectedBoxes = boxContainer.boxes
             .filter(box => box.element.classList.contains('selected'))
             .map(box => box.id);
@@ -945,29 +1184,23 @@ class BoxContainer {
 
             const tasks = snapshot.val();
 
-            // Iterate over all tasks and remove selected boxes only
             for (const taskKey in tasks) {
                 const task = tasks[taskKey];
-
-                // Get boxes that will remain after deletion
                 const updatedBoxes = task.selectedBoxes.filter(boxId => !selectedBoxes.includes(boxId));
 
                 if (updatedBoxes.length === 0) {
-                    // If no boxes are left, delete the task entry
                     await remove(ref(db, `${taskPath}/${taskKey}`));
                     console.log(`Deleted entire task: ${taskKey}`);
                 } else {
-                    // Calculate reduced time **only for boxes that belong to THIS task**
                     const reducedTime = task.selectedBoxes
-                        .filter(boxId => selectedBoxes.includes(boxId)) // Only consider removed boxes
+                        .filter(boxId => selectedBoxes.includes(boxId))
                         .reduce((total, boxId) => {
                             const box = boxContainer.boxes.find(b => b.id === boxId);
                             return total + (box && box.TimeValue ? box.TimeValue : 0);
                         }, 0);
 
-                    const updatedTotalTime = Math.max(0, task.totalTime - reducedTime); // Ensure it doesn't go negative
+                    const updatedTotalTime = Math.max(0, task.totalTime - reducedTime);
 
-                    // Update only the selectedBoxes and totalTime fields
                     await update(ref(db, `${taskPath}/${taskKey}`), {
                         selectedBoxes: updatedBoxes,
                         totalTime: updatedTotalTime
@@ -978,7 +1211,6 @@ class BoxContainer {
             }
 
             boxContainer.retrievedData();
-
             Swal.fire("Deleted", "selected  have been removed.", "success");
 
         } catch (error) {
@@ -989,8 +1221,7 @@ class BoxContainer {
 
     checkDeleteFunction() {
         console.log("Checking Boxes");
-
-        let hasError = false; // Flag to track if an error occurs
+        let hasError = false;
 
         for (const box of this.boxes) {
             const boxElement = box.element;
@@ -998,9 +1229,9 @@ class BoxContainer {
             const backgroundColor = style.backgroundColor;
 
             if (boxContainer.selectedBoxes.includes(box.id)) {
-                if (backgroundColor == 'rgb(173, 216, 230)') { // 'lightblue' in RGB format
-                    hasError = true; // Mark that we found an invalid box
-                    break; // Stop checking further boxes
+                if (backgroundColor == 'rgb(173, 216, 230)') {
+                    hasError = true;
+                    break;
                 }
             }
         }
@@ -1013,100 +1244,7 @@ class BoxContainer {
                 confirmButtonText: "OK"
             });
         } else {
-            boxContainer.deletFunction(); // Only runs if no error occurred
+            boxContainer.deletèFunction();
         }
     }
-
-
-
-
 }
-
-
-document.addEventListener('DOMContentLoaded', async () => {
-    const submitBTN = document.getElementById('saveBoxes');
-
-    if (!boxContainer || typeof boxContainer.addTag !== 'function') {
-        console.error("boxContainer or addTag function is not defined!");
-        return;
-    }
-
-    async function initializeTags() {
-        onAuthStateChanged(boxContainer.auth, (user) => {
-            if (!user) {
-                console.error("User not authenticated");
-                return;
-            }
-
-            const userTagsKey = `user_${user.uid}_tags`;
-            let storedTags = JSON.parse(localStorage.getItem(userTagsKey)) || [];
-
-            const predefinedTags = [
-                { name: "Work", color: "#ff0000" },
-                { name: "Personal Dev", color: "#a52a2a" },
-                { name: "School", color: "#008000" },
-                { name: "FunTime", color: "#0000ff" },
-                { name: "Team Time", color: "#800080" }
-            ];
-
-            predefinedTags.forEach(preTag => {
-                if (!storedTags.some(tag => tag.name === preTag.name)) {
-                    storedTags.push(preTag);
-                }
-            });
-
-            localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
-
-            storedTags.forEach(tag => boxContainer.addTag(tag.name, tag.color));
-        });
-    }
-
-    initializeTags();
-
-    // Ensure no duplicate event listeners
-    submitBTN?.removeEventListener('click', handleSaveBoxes);
-    submitBTN?.addEventListener('click', handleSaveBoxes);
-});
-
-function handleSaveBoxes(event) {
-    event.preventDefault(); // Prevent any accidental form submission
-    console.log("Calling checkBoxes() at", new Date().toISOString());
-    boxContainer.checkBoxes();
-}
-
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const deleteBTN = document.getElementById('DeleteBoxes');
-
-    deleteBTN.addEventListener('click', () => {
-        boxContainer.checkDeleteFunction();
-    });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    boxContainer.retrievedData();
-
-});
-
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const updateBTN = document.getElementById('UpdateTask');
-
-    if (updateBTN) {
-        updateBTN.addEventListener('click', () => boxContainer.checkUpdateValitading());
-    } else {
-        console.error('Button with ID "UpdateTask" not found!');
-    }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    const selectedDate = document.getElementById("getDayButton");
-
-    selectedDate.addEventListener("click", () => {
-
-
-        boxContainer.retrievedData();
-    })
-});
