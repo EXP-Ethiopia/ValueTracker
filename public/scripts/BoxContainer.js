@@ -6,9 +6,47 @@ class BoxContainer {
         this.tags = [];  // Store the tags dynamically
         this.comboBox = document.createElement('select');
         this.comboBox.id = 'tagSelect';
+        this.colorPicker = new ColorPicker();
 
         this.auth = auth;
         this.db = db;
+
+        // Initialize drag selection
+        dragSelection.init();
+        
+        // Initialize tag select with add option
+        this.initializeTagSelect();
+    }
+
+    initializeTagSelect() {
+        // Clear existing options
+        this.comboBox.innerHTML = '';
+        
+        // Add "Add New Tag" option
+        const addOption = document.createElement('option');
+        addOption.value = 'add-new';
+        addOption.textContent = 'Add New Tag...';
+        addOption.style.color = '#666';
+        addOption.style.fontStyle = 'italic';
+        this.comboBox.appendChild(addOption);
+
+        // Add existing tags
+        this.tags.forEach(tag => {
+            const option = document.createElement('option');
+            option.value = tag.tagName;
+            option.textContent = tag.tagName;
+            option.style.color = tag.color;
+            this.comboBox.appendChild(option);
+        });
+
+        // Add event listener for tag select
+        this.comboBox.addEventListener('change', (e) => {
+            if (e.target.value === 'add-new') {
+                this.showAddTagDialog();
+            } else {
+                this.applyTag(e.target.value);
+            }
+        });
     }
 
     calculateTotalTime() {
@@ -71,11 +109,49 @@ class BoxContainer {
 
 
 
-    async showAddTagPopup() {
-        console.log("Showing Add Tag Popup");
-        boxContainer.showPopup();
+    async showAddTagDialog() {
+        const tagName = prompt('Enter the name for your new tag:');
+        
+        if (!tagName || tagName.trim() === '') {
+            return;
+        }
 
+        // Show color picker
+        this.colorPicker.showColorPicker(async (color) => {
+            const newTag = new Tag(tagName, color);
 
+            // Check if color is too similar to existing colors
+            const isAllowed = this.tags.every(existingTag => {
+                const newColorSum = this.hexToRgb(color).sum;
+                const existingColorSum = this.hexToRgb(existingTag.color).sum;
+                return Math.abs(newColorSum - existingColorSum) > 100;
+            });
+
+            if (!isAllowed) {
+                alert('Please choose a color that is more distinct from existing tags');
+                return;
+            }
+
+            // Add tag to local storage
+            onAuthStateChanged(this.auth, (user) => {
+                if (!user) {
+                    console.log("User not logged in !!");
+                    return;
+                }
+
+                const userId = user.uid;
+                const savedTags = JSON.parse(localStorage.getItem(`user_${userId}_tags`) || '[]');
+                savedTags.push(newTag);
+                localStorage.setItem(`user_${userId}_tags`, JSON.stringify(savedTags));
+
+                // Update UI
+                this.tags.push(newTag);
+                this.initializeTagSelect();
+                
+                // Apply the new tag to selected boxes
+                this.applyTag(tagName);
+            });
+        });
     }
 
         hexToRgb(hex) { // #f3g4h1 ==> 00 255 00
@@ -96,6 +172,33 @@ class BoxContainer {
             return total
     
         
+    }
+
+    sumRGB(rgbString) {
+        // Extract numbers from the rgb() format
+        const rgbValues = rgbString.match(/\d+/g).map(Number);
+        
+        // Sum up the RGB values
+    }
+
+    hexToRgb(hex) { // #f3g4h1 ==> 00 255 00
+
+        let r = parseInt(hex.slice(1,3),16),
+        g = parseInt(hex.slice(3,5),16),
+        b = parseInt(hex.slice(5,7),16)
+    
+        if(hex.length == 4) {
+            r = parseInt(hex[1] + hex[1],16)
+            g = parseInt(hex[2] + hex[2],16)
+            b = parseInt(hex[3] + hex[3],16)
+    
+        }
+
+        var total  =  (r+g+b) ;
+
+        return total
+    
+    
     }
 
     sumRGB(rgbString) {
@@ -197,8 +300,8 @@ class BoxContainer {
                         console.log("✅ Data is ready to go");
                         // console.log(TotalRGBValue + "==>(-)" + this.hexToRgb(task.color) )
 
-                        const tagSelect = document.getElementById('tagSelect');
 
+                        const tagSelect = document.getElementById('tagSelect');
 
 
                     

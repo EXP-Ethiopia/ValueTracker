@@ -1,0 +1,44 @@
+.selection-rect {
+    position: fixed;
+    border: 2px dashed #4CAF50;
+    background-color: rgba(76, 175, 80, 0.1);
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.time-display {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.time-range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.start-time, .end-time {
+    font-weight: 600;
+    color: #333;
+}
+
+.to {
+    color: #666;
+}
+
+.total-boxes {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.count {
+    font-weight: 600;
+    color: #4CAF50;
+}
