@@ -93,7 +93,7 @@ body.dark-mode #getDayButton:active {
 
 
 /* Sidebar CSS */
-#sidebar {
+/* #sidebar {
   background: #f7f9fc;
   width: 260px;
   height: 100vh;
@@ -104,11 +104,11 @@ body.dark-mode #getDayButton:active {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  z-index: 1001; /* Higher z-index than header */
+  z-index: 1001;
 }
 
 #sidebar.active {
-  left: 0; /* Show sidebar when active */
+  left: 0;
 }
 
 body.dark-mode #sidebar {
@@ -130,7 +130,7 @@ body.dark-mode #sidebar {
 
 body.dark-mode .sidebar-header h2 {
   color: #6c5ce7;
-}
+} */
 
 .add-icon {
   font-size: 1.2rem;
@@ -147,10 +147,10 @@ body.dark-mode .add-icon {
   color: #4a3f9e;
 }
 
-.sidebar-menu, .sidebar-categories ul {
+/* .sidebar-menu, .sidebar-categories ul {
   list-style: none;
   padding: 0;
-}
+} */
 
 .menu-item, .category-item {
   display: flex;
@@ -187,8 +187,7 @@ body.dark-mode .category-item.friends { color: #e599f7; }
 
 /* Main Content */
 .main-content {
-  margin-left: 260px; /* Match sidebar width */
-  width: calc(100% - 260px);
+  width: 100%;
   height: 100vh;
   overflow-y: auto;
   transition: margin-left 0.3s ease;
