@@ -560,13 +560,69 @@ body.dark-mode .category-item.friends { color: #e599f7; }
   z-index: 1000;
 }
 
-.modal {
+/* .modal {
   background: white;
   padding: 20px;
   border-radius: 10px;
   text-align: center;
   min-width: 300px;
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+} */
+
+/* Modal/dialog dark mode styles */
+.modal {
+    background-color: white;
+    color: #333;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+body.dark-mode .modal {
+    background-color: #2d2d2d;
+    color: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid #6c5ce7;
+}
+
+.modal input,
+.modal select,
+.modal textarea {
+    background-color: white;
+    color: #333;
+    border: 1px solid #ccc;
+}
+
+body.dark-mode .modal input,
+body.dark-mode .modal select,
+body.dark-mode .modal textarea {
+    background-color: #3d3d3d;
+    color: #ffffff;
+    border: 1px solid #6c5ce7;
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-header {
+    border-bottom: 1px solid #eee;
+}
+
+body.dark-mode .modal-header {
+    border-bottom: 1px solid #6c5ce7;
+}
+
+.modal-close {
+    color: #333;
+}
+
+body.dark-mode .modal-close {
+    color: #ffffff;
 }
 
 input[type="text"] {

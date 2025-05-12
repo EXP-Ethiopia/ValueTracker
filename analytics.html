@@ -75,6 +75,15 @@
             <h1 class="welcome">Welcome <span id="username"></span> </h1>
         </div>
 
+        <script>
+            // To populate the username
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('userName').textContent = user.displayName || 'User';
+            }
+        });
+</script>
+
         <!-- Hamburger Menu Icon -->
         <button id="menuToggle" class="menu-toggle">
             <i class="fas fa-bars"></i> <!-- Font Awesome icon for hamburger menu -->
