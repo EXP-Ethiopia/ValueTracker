@@ -567,15 +567,6 @@ class BoxContainer {
             document.body.removeChild(overlay);
         });
 
-        //AddTag button
-        const addTagButton = document.createElement('button');
-        addTagButton.classList.add('submitBTN');
-        addTagButton.textContent = 'Add Tag';
-        addTagButton.addEventListener('click', () => {
-            this.showAddTagPopup();
-        });
-
-
         // Close Button
         const closeButton = document.createElement('button');
         closeButton.classList.add('submitBTN');
@@ -584,7 +575,7 @@ class BoxContainer {
             document.body.removeChild(overlay);
         });
 
-        modal.append(title, inputField, this.comboBox, submitButton, closeButton, addTagButton);
+        modal.append(title, inputField, this.comboBox, submitButton, closeButton);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }

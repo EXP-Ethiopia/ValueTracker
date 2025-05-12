@@ -104,24 +104,53 @@
                         <option value="">Year</option>
                     </select>
 
-                    <select class="dates" id="tagComboBox">
+                    <select class="dates" id="tagComboBox" onchange="handleTagSelection(this)">
                         <option value="">All</option>
                         <!-- Options will be populated dynamically -->
+                        <option value="addTag">Add New Tag...</option>
                     </select>
 
                     <!-- // ----------------------------------------------- -->
                     <script>
                         const boxContainer = new BoxContainer();
 
+                        function handleTagSelection(selectElement) {
+                            const selectedValue = selectElement.value;
+                            
+                            if (selectedValue === 'addTag') {
+                                // Open the add tag modal or form
+                                openAddTagModal();
+                            } else {
+                                // Handle regular tag selection
+                                handleRegularTagSelection(selectedValue);
+                            }
+                        }
+
                         function populateComboBox() {
-                            this.comboBox.innerHTML = '';
+                            const comboBox = document.querySelector('#tagComboBox');
+                            comboBox.innerHTML = '';
+                            
+                            // Add the default 'All' option
+                            const allOption = document.createElement('option');
+                            allOption.value = '';
+                            allOption.textContent = 'All';
+                            comboBox.appendChild(allOption);
+
+                            // Add all tags
                             this.tags.forEach(tag => {
                                 const option = document.createElement('option');
                                 option.value = tag.tagName;
                                 option.textContent = tag.tagName;
                                 option.style.color = tag.color;
-                                this.comboBox.appendChild(option);
+                                comboBox.appendChild(option);
                             });
+
+                            // Add the 'Add New Tag' option at the bottom
+                            const addTagOption = document.createElement('option');
+                            addTagOption.value = 'addTag';
+                            addTagOption.textContent = 'Add New Tag...';
+                            addTagOption.style.color = '#666'; // Subtle color for the add option
+                            comboBox.appendChild(addTagOption);
                         }
 
                         function addTag(tagName, color) {
@@ -162,9 +191,9 @@
                                 // Save updated tags back to localStorage
                                 localStorage.setItem(userTagsKey, JSON.stringify(storedTags));
 
-                                // Add all tags to the UI
-                                const tagDropdown = document.querySelector('#tagComboBox option');
-                                storedTags.forEach(tag => tagDropdown.addTag(tag.name, tag.color));
+                                // Initialize the dropdown
+                                boxContainer.tags = storedTags;
+                                boxContainer.populateComboBox();
                             });
                         }
                     </script>
