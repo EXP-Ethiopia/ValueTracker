@@ -17,9 +17,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 1rem;
-    height: 60px;
-    z-index: 1000;
+    padding: 16px 2.6rem;
+    height: 68px;
 }
 
 /* Header left */
@@ -364,30 +363,32 @@ body.dark-mode .heatmap-box {
 @media (max-width: 768px) {
     /* Header adjustments */
     .home-header {
-        padding: 12px 1rem;
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
     }
 
     .leftNav {
-        margin-right: 10px;
+        margin-bottom: 10px;
     }
 
     .rightNav .UnorderedList {
-        flex-direction: row;
-        gap: 8px;
+        flex-direction: column;
+        gap: 10px;
     }
 
     .rightNav .UnorderedList li {
-        margin: 0;
+        margin: 5px 0;
     }
 
     /* Dropdowns and search button */
     .dates {
-        width: 70px; /* Smaller dropdowns for mobile */
+        width: 80px; /* Smaller dropdowns for mobile */
     }
 
     #getDayButton {
-        width: 100px;
-        margin-top: 0;
+        width: 100%;
+        margin-top: 10px;
     }
 
     /* Main section adjustments */
