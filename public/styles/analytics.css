@@ -66,14 +66,8 @@ body {
     margin-bottom: 32px;
     padding: .4rem .9rem;
     border-radius: 53px;
+    /* border: 3px solid green; */
     background-color: hsl(0, 0%, 93%);
-    position: absolute;
-    top: 80px;
-    left: 1rem;
-    right: 1rem;
-    z-index: 10;
-    background: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .firstText h1 {
@@ -228,35 +222,15 @@ tr:hover {
     background-color: #ffffff;
     padding: 12px;
     border-radius: 8px;
+    /* border: 3px solid blue; */
+    width: 500px;
+    height: 356px;
+    padding-bottom: 3.4rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-@media (max-width: 768px) {
-    .chart {
-        width: 100%;
-        max-width: 400px;
-        height: auto;
-        min-height: 300px;
-    }
-
-    .chart-container {
-        gap: 1rem;
-    }
-
-    .heatmap-grid {
-        grid-template-columns: repeat(12, 1fr);
-        gap: 0.5rem;
-    }
-
-    .heatmap-box {
-        width: 20px;
-        height: 20px;
-    }
-
-    canvas {
-        max-width: 100%;
-        height: auto;
-    }
+.heatmap-grid {
+    padding-bottom: 0.9rem;
 }
 
 .chart h3,
